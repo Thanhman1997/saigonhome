@@ -186,6 +186,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     }
 
     const reference = generateReference()
+    const startAt = new Date(bookingUtcMs)
+    const endAt = new Date(bookingUtcMs + input.durationMinutes * 60 * 1000)
     const normalizedEmail = input.email.trim().toLowerCase()
     const normalizedPhone = input.phone.trim()
     const existingCustomer = (await db.select().from(customers).where(or(eq(customers.email, normalizedEmail), eq(customers.phone, normalizedPhone))).limit(1))[0]
@@ -199,6 +201,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       serviceId: input.serviceId,
       durationMinutes: input.durationMinutes,
       therapistId: input.therapistId,
+      startAt,
+      endAt,
       date: input.date,
       time: input.time,
       guests: input.guests,

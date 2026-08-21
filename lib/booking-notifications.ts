@@ -26,7 +26,7 @@ type BookingDetails = {
 function config() {
   return {
     apiKey: process.env.RESEND_API_KEY,
-    from: process.env.EMAIL_FROM,
+    from: process.env.EMAIL_FROM || process.env.ADMIN_EMAIL,
     admin: process.env.ADMIN_EMAIL,
     brand: process.env.BRAND_NAME || "Lotus Wellness",
   }
