@@ -141,6 +141,8 @@ export const bookings = pgTable("bookings", {
   serviceId: integer("service_id").notNull(),
   durationMinutes: integer("duration_minutes").notNull(),
   therapistId: integer("therapist_id"),
+  startAt: timestamp("start_at").notNull(),
+  endAt: timestamp("end_at").notNull(),
   date: date("date").notNull(),
   time: text("time").notNull(),
   guests: integer("guests").notNull().default(1),
