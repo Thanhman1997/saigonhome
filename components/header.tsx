@@ -1,7 +1,8 @@
 "use client"
 
+import Image from "next/image"
 import { useState } from "react"
-import { CalendarDays, Flower2, Menu, X } from "lucide-react"
+import { CalendarDays, Menu, X } from "lucide-react"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { Button } from "@/components/ui/button"
 import { useBooking } from "@/lib/booking-context"
@@ -25,14 +26,15 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:h-24 lg:px-8">
-        <a href="#top" className="flex items-center gap-3" aria-label="Lotus Wellness home">
-          <span className="grid size-10 place-items-center rounded-full border border-accent/30 bg-secondary/55 text-accent">
-            <Flower2 aria-hidden="true" className="size-5" />
-          </span>
-          <span className="flex flex-col">
-            <span className="font-serif text-xl font-semibold leading-none tracking-wide">Lotus Wellness</span>
-            <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.24em] text-accent">Massage at home</span>
-          </span>
+        <a href="#top" className="flex shrink-0 items-center" aria-label="Lotus Wellness home">
+          <Image
+            src="/images/lotus-wellness-brand-logo.png"
+            alt="Lotus Wellness Massage — Massage delivered to you"
+            width={220}
+            height={220}
+            priority
+            className="h-16 w-auto object-contain lg:h-20"
+          />
         </a>
 
         <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary navigation">
