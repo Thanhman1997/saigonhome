@@ -1,64 +1,36 @@
 "use client"
 
-import Image from "next/image"
-import { Sparkles, Home, Wallet, Lock, Flower2, Scale, Moon, Heart, Leaf } from "lucide-react"
+import { Flower2, HeartHandshake, Home, Leaf, ShieldCheck, Sparkles } from "lucide-react"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import type { getAboutContent, getLotusValues } from "@/lib/data"
 
-const ICON_MAP: Record<string, typeof Sparkles> = {
-  sparkles: Sparkles,
-  home: Home,
-  wallet: Wallet,
-  lock: Lock,
-  flower: Flower2,
-  scale: Scale,
-  moon: Moon,
-  heart: Heart,
-  leaf: Leaf,
-}
-const fallbackIcons = [Sparkles, Home, Wallet, Lock]
-
 type About = Awaited<ReturnType<typeof getAboutContent>>
 type LotusValue = Awaited<ReturnType<typeof getLotusValues>>[number]
+const icons = [HeartHandshake, Home, Leaf, ShieldCheck]
 
 export function AboutSection({ about, values }: { about: About; values: LotusValue[] }) {
   const { t, locale } = useLanguage()
-
   const title = about ? pickLocalized({ en: about.titleEn, ko: about.titleKo, vi: about.titleVi }, locale) : t.about.title
   const bodyKey = locale === "ko" ? "bodyKo" : locale === "vi" ? "bodyVi" : "bodyEn"
-  const body = about && about[bodyKey].length > 0 ? about[bodyKey] : t.about.body
+  const body = about && about[bodyKey].length ? about[bodyKey] : t.about.body
+  const fallbackValues = t.about.values
 
   return (
     <section id="about" className="bg-background py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <Image src="/images/lotus-philosophy-logo.png" alt="Lotus Wellness" width={720} height={420} className="mx-auto mb-3 h-auto w-80 object-contain sm:w-[28rem] lg:w-[34rem]" priority />
-          <h2 className={`mt-0 text-balance font-extrabold leading-tight tracking-tight text-guiding-pink ${locale === "ko" ? "font-korean-serif text-4xl sm:text-5xl lg:text-6xl" : "font-serif text-4xl sm:text-5xl lg:text-6xl"}`}>{title}</h2>
-          <div className="mt-8 flex flex-col gap-4 text-left">
-            {body.map((paragraph, idx) => <p key={idx} className="text-pretty text-base leading-relaxed text-muted-foreground first:text-lg first:text-foreground">{paragraph}</p>)}
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="relative min-h-[440px] overflow-hidden rounded-xl border border-border bg-secondary/60">
+            <div className="absolute inset-0 opacity-50 [background-image:linear-gradient(45deg,transparent_48%,var(--border)_49%,var(--border)_51%,transparent_52%)] [background-size:42px_42px]" />
+            <div className="relative flex min-h-[440px] flex-col items-center justify-center p-8 text-center"><Flower2 className="size-16 text-accent" /><p className="mt-5 font-serif text-3xl">Private wellness setting</p><p className="mt-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">Editorial image placeholder</p></div>
           </div>
-        </div>
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {values.length > 0
-            ? values.map((value) => {
-                const Icon = ICON_MAP[value.icon] ?? Sparkles
-                const text = pickLocalized({ en: value.textEn, ko: value.textKo, vi: value.textVi }, locale)
-                return (
-                  <article key={value.id} className="rounded-2xl bg-muted p-6">
-                    <Icon className="size-7 text-accent" />
-                    <h3 className="mt-5 font-serif text-2xl">{text}</h3>
-                  </article>
-                )
-              })
-            : t.about.values.map((value, idx) => {
-                const Icon = fallbackIcons[idx]
-                return (
-                  <article key={value} className="rounded-2xl bg-muted p-6">
-                    <Icon className="size-7 text-accent" />
-                    <h3 className="mt-5 font-serif text-2xl">{value}</h3>
-                  </article>
-                )
-              })}
+          <div>
+            <p className="section-kicker">Lotus Wellness</p>
+            <h2 className="section-title">{title}</h2>
+            <div className="mt-6 flex flex-col gap-4">{body.slice(0, 3).map((paragraph, index) => <p key={index} className="text-pretty text-base leading-relaxed text-muted-foreground">{paragraph}</p>)}</div>
+            <div className="mt-8 grid grid-cols-2 gap-4">
+              {(values.length ? values.slice(0, 4).map((value) => pickLocalized({ en: value.textEn, ko: value.textKo, vi: value.textVi }, locale)) : fallbackValues.slice(0, 4)).map((value, index) => { const Icon = icons[index] ?? Sparkles; return <div key={value} className="flex items-center gap-3 border-t border-border pt-4"><Icon className="size-5 shrink-0 text-accent" /><span className="text-sm font-medium">{value}</span></div> })}
+            </div>
+          </div>
         </div>
       </div>
     </section>

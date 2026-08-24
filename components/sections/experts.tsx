@@ -1,110 +1,45 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
-import { Languages, MapPin, Ruler, BadgeCheck } from "lucide-react"
-import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
-import { useBooking, type TherapistRow } from "@/lib/booking-context"
+import { ArrowRight, Languages, UserRound } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { useBooking, type TherapistRow } from "@/lib/booking-context"
+import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 
-const PAGE_SIZE = 8
+const PAGE_SIZE = 4
 
 export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
   const { t, locale } = useLanguage()
   const { openBooking } = useBooking()
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
-  const visible = therapists.slice(0, visibleCount)
-
   return (
-    <section id="experts" className="bg-background py-24 lg:py-32">
+    <section id="experts" className="border-y border-border bg-muted py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
-        <div className="max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">{t.experts.kicker}</p>
-          <h2 className="mt-4 text-balance font-sans text-6xl font-bold leading-tight tracking-tight sm:text-7xl">{t.experts.title}</h2>
-          <p className="mt-6 text-pretty text-lg leading-relaxed text-muted-foreground">{t.experts.subtitle}</p>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl"><p className="section-kicker">{t.experts.kicker}</p><h2 className="section-title">{t.experts.title}</h2><p className="section-copy">{t.experts.subtitle}</p></div>
+          <p className="max-w-sm rounded-lg border border-border bg-background p-4 text-xs leading-relaxed text-muted-foreground">{locale === "vi" ? "Hình ảnh đang là placeholder. Hồ sơ, lịch trống và lựa chọn chuyên viên được lấy trực tiếp từ hệ thống đặt lịch." : locale === "ko" ? "현재 이미지는 플레이스홀더입니다. 프로필과 예약 가능 여부는 예약 시스템에서 불러옵니다." : "Portraits are placeholders. Profiles and availability are loaded from the live booking system."}</p>
         </div>
-
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {visible.map((therapist) => {
-            const location = pickLocalized(
-              { en: therapist.locationEn ?? "", ko: therapist.locationKo ?? "", vi: therapist.locationVi ?? "" },
-              locale,
-            )
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {therapists.slice(0, visibleCount).map((therapist) => {
             const bio = pickLocalized({ en: therapist.bioEn ?? "", ko: therapist.bioKo ?? "", vi: therapist.bioVi ?? "" }, locale)
-
             return (
-              <article key={therapist.id} className="flex flex-col border border-border bg-card">
-                <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
-                  <Image src={therapist.photoUrl || "/images/therapist-placeholder.png"} alt={`Therapist ${therapist.code}`} fill className="object-cover" />
-                  <span
-                    className={cn(
-                      "absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider",
-                      therapist.available ? "bg-secondary text-secondary-foreground" : "bg-muted-foreground/80 text-background",
-                    )}
-                  >
-                    {therapist.available ? t.experts.available : t.experts.unavailable}
-                  </span>
+              <article key={therapist.id} className="overflow-hidden rounded-xl border border-border bg-background">
+                <div className="relative grid aspect-[4/3] place-items-center bg-secondary/55">
+                  <div className="grid size-20 place-items-center rounded-full border border-accent/25 bg-background text-accent"><UserRound className="size-9" /></div>
+                  <span className="absolute bottom-3 left-3 rounded-full bg-background px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Portrait placeholder</span>
                 </div>
-
-                <div className="flex flex-1 flex-col gap-3 p-5">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-serif text-xl">{therapist.code}</h3>
-                    {therapist.experienceYears != null && (
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <BadgeCheck className="size-3.5 text-accent" />
-                        {therapist.experienceYears} {t.experts.years}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
-                    {(therapist.heightCm || therapist.weightKg) && (
-                      <span className="flex items-center gap-1.5">
-                        <Ruler className="size-3.5 shrink-0" />
-                        {therapist.heightCm ? `${therapist.heightCm} cm` : ""}
-                        {therapist.heightCm && therapist.weightKg ? " · " : ""}
-                        {therapist.weightKg ? `${therapist.weightKg} kg` : ""}
-                      </span>
-                    )}
-                    {location && (
-                      <span className="flex items-center gap-1.5">
-                        <MapPin className="size-3.5 shrink-0" />
-                        {location}
-                      </span>
-                    )}
-                    {therapist.languages && (
-                      <span className="flex items-center gap-1.5">
-                        <Languages className="size-3.5 shrink-0" />
-                        {therapist.languages}
-                      </span>
-                    )}
-                  </div>
-
-                  {bio && <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">{bio}</p>}
-
-                  <Button
-                    size="lg"
-                    disabled={!therapist.available}
-                    onClick={() => openBooking({ therapistId: therapist.id })}
-                    className="mt-auto h-14 w-full text-lg font-bold bg-lotus-pink text-lotus-pink-foreground hover:bg-lotus-pink/90 disabled:bg-muted disabled:text-muted-foreground"
-                  >
-                    {t.experts.book}
-                  </Button>
+                <div className="flex min-h-64 flex-col p-5">
+                  <div className="flex items-start justify-between gap-3"><h3 className="font-serif text-2xl font-semibold">{therapist.code}</h3><span className="rounded-full bg-secondary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide">{therapist.available ? t.experts.available : t.experts.unavailable}</span></div>
+                  {therapist.languages && <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><Languages className="size-4" />{therapist.languages}</p>}
+                  {bio && <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{bio}</p>}
+                  <Button disabled={!therapist.available} variant="outline" className="mt-auto w-full" onClick={() => openBooking({ therapistId: therapist.id })}>{t.experts.book}<ArrowRight data-icon="inline-end" /></Button>
                 </div>
               </article>
             )
           })}
         </div>
-
-        {visibleCount < therapists.length && (
-          <div className="mt-10 flex justify-center">
-            <Button variant="outline" size="lg" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
-              {locale === "en" ? "Show more therapists" : locale === "ko" ? "더 많은 테라피스트 보기" : "Xem thêm chuyên viên"}
-            </Button>
-          </div>
-        )}
+        {visibleCount < therapists.length && <div className="mt-9 flex justify-center"><Button variant="outline" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>{locale === "vi" ? "Xem thêm chuyên viên" : locale === "ko" ? "더 보기" : "View more therapists"}</Button></div>}
       </div>
     </section>
   )

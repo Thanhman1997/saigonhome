@@ -10,7 +10,6 @@ import { ExpertsSection } from "@/components/sections/experts"
 import { Promotions } from "@/components/sections/promotions"
 import { Membership } from "@/components/sections/membership"
 import { Faq } from "@/components/sections/faq"
-import { ContactSection } from "@/components/sections/contact"
 import { BookingProvider } from "@/lib/booking-context"
 import { BookingDialog } from "@/components/booking/booking-dialog"
 import { AskQuestionWidget } from "@/components/ask-question-widget"
@@ -21,14 +20,13 @@ import {
   getActivePromotions,
   getMembershipPlans,
   getFaqs,
-  getContactInfo,
   getHeroContent,
   getAboutContent,
   getLotusValues,
 } from "@/lib/data"
 
 export default async function Home() {
-  const [services, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, hero, about, lotusValues] =
+  const [services, allTherapists, availableTherapists, promotions, plans, faqs, hero, about, lotusValues] =
     await Promise.all([
       getServicesWithDurations(),
       getTherapists(),
@@ -36,7 +34,6 @@ export default async function Home() {
       getActivePromotions(),
       getMembershipPlans(),
       getFaqs(),
-      getContactInfo(),
       getHeroContent(),
       getAboutContent(),
       getLotusValues(),
@@ -47,13 +44,12 @@ export default async function Home() {
       <main className="min-h-screen bg-background">
         <Header />
         <HeroSection hero={hero} />
-        <AboutSection about={about} values={lotusValues} />
         <ServicesSection services={services} />
         <ExpertsSection therapists={allTherapists} />
         <Promotions promotions={promotions} />
         <Membership plans={plans} />
+        <AboutSection about={about} values={lotusValues} />
         <Faq faqs={faqs} />
-        <ContactSection contactInfo={contactInfo} />
         <Footer />
       </main>
       <BookingDialog />
