@@ -23,10 +23,11 @@ import {
   getHeroContent,
   getAboutContent,
   getLotusValues,
+  getContactInfo,
 } from "@/lib/data"
 
 export default async function Home() {
-  const [services, allTherapists, availableTherapists, promotions, plans, faqs, hero, about, lotusValues] =
+  const [services, allTherapists, availableTherapists, promotions, plans, faqs, hero, about, lotusValues, contactInfo] =
     await Promise.all([
       getServicesWithDurations(),
       getTherapists(),
@@ -37,6 +38,7 @@ export default async function Home() {
       getHeroContent(),
       getAboutContent(),
       getLotusValues(),
+      getContactInfo(),
     ])
 
   return (
@@ -50,7 +52,7 @@ export default async function Home() {
         <Membership plans={plans} />
         <AboutSection about={about} values={lotusValues} />
         <Faq faqs={faqs} />
-        <Footer />
+        <Footer contactInfo={contactInfo} />
       </main>
       <BookingDialog />
       <AskQuestionWidget />
