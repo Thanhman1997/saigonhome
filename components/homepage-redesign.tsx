@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { ArrowRight, Check, Clock3, HeartHandshake, House, Leaf, Menu, ShieldCheck, Sparkles, Star, Users, X } from "lucide-react"
+import { ArrowRight, Check, Clock3, Facebook, HeartHandshake, House, Instagram, Leaf, Menu, MessageCircle, Phone, Send, ShieldCheck, Sparkles, Star, Users, X, Youtube } from "lucide-react"
 import { useState, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { useBooking } from "@/lib/booking-context"
@@ -88,6 +88,20 @@ export function HomepageRedesign({ services, therapists, reviews }: Props) {
 
         <section className="bg-primary px-5 py-16 text-primary-foreground"><div className="mx-auto flex max-w-5xl flex-col items-center gap-6 text-center"><h2 className="font-serif text-4xl sm:text-5xl">Your better day starts here.</h2><p className="max-w-xl text-primary-foreground/75">A little time for yourself can change everything. Let Lotus Wellness come to you.</p><BookingButton className="bg-accent text-accent-foreground hover:bg-accent/90">Book an Appointment</BookingButton></div></section>
       </main>
+
+      <footer className="border-t border-border bg-secondary/35">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-12 lg:grid-cols-[1.25fr_0.8fr_1fr_1fr_0.8fr] lg:px-8 lg:py-14">
+          <div className="flex flex-col items-start gap-5">
+            <a href="#top" aria-label="Lotus Wellness home"><Image src="/images/lotus-logo.png" alt="Lotus Wellness Massage" width={150} height={70} className="h-20 w-auto object-contain" /></a>
+            <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">Professional in-home massage therapy and wellness care, delivered with warmth and thoughtful attention.</p>
+          </div>
+          <div><h2 className="mb-4 text-sm font-semibold">Quick Links</h2><nav className="flex flex-col items-start gap-2 text-sm text-muted-foreground" aria-label="Footer navigation">{[{ label: "Home", href: "#top" }, { label: "Services", href: "#services" }, { label: "Therapists", href: "#therapists" }, { label: "About", href: "#about" }, { label: "Contact", href: "#contact" }, { label: "FAQ", href: "#contact" }, { label: "Promotions", href: "#services" }].map((link) => <a key={link.label} href={link.href} className="transition-colors hover:text-accent">{link.label}</a>)}</nav></div>
+          <div><h2 className="mb-4 text-sm font-semibold">Our Services</h2><nav className="flex flex-col items-start gap-2 text-sm text-muted-foreground" aria-label="Services navigation">{["Massage Therapy", "Aromatherapy", "Hot Stone Therapy", "Body Treatment", "Relaxation Therapy", "Therapeutic Care", "View All Services"].map((item) => <a key={item} href="#services" className="transition-colors hover:text-accent">{item}</a>)}</nav></div>
+          <div id="footer-contact"><h2 className="mb-4 text-sm font-semibold">Contact Us</h2><div className="flex flex-col gap-2.5 text-sm text-muted-foreground"><a href="https://wa.me/821026451933" className="flex items-center gap-2 hover:text-accent"><MessageCircle className="size-4 text-accent" />WhatsApp</a><a href="#footer-contact" className="flex items-center gap-2 hover:text-accent"><Send className="size-4 text-accent" />LINE</a><a href="#footer-contact" className="flex items-center gap-2 hover:text-accent"><MessageCircle className="size-4 text-accent" />KakaoTalk</a><a href="#footer-contact" className="flex items-center gap-2 hover:text-accent"><Send className="size-4 text-accent" />Messenger</a><a href="https://instagram.com" className="flex items-center gap-2 hover:text-accent"><Instagram className="size-4 text-accent" />Instagram</a><a href="tel:+821026451933" className="flex items-center gap-2 hover:text-accent"><Phone className="size-4 text-accent" />01026451933</a></div></div>
+          <div><h2 className="mb-4 text-sm font-semibold">Follow Us</h2><div className="flex gap-3"><a href="#footer-contact" aria-label="Facebook" className="flex size-9 items-center justify-center rounded-full border border-accent/40 text-accent transition-colors hover:bg-accent hover:text-accent-foreground"><Facebook className="size-4" /></a><a href="https://instagram.com" aria-label="Instagram" className="flex size-9 items-center justify-center rounded-full border border-accent/40 text-accent transition-colors hover:bg-accent hover:text-accent-foreground"><Instagram className="size-4" /></a><a href="#footer-contact" aria-label="YouTube" className="flex size-9 items-center justify-center rounded-full border border-accent/40 text-accent transition-colors hover:bg-accent hover:text-accent-foreground"><Youtube className="size-4" /></a></div></div>
+        </div>
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 border-t border-border px-5 py-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-8"><p>© 2024 Lotus Wellness. All rights reserved.</p><div className="flex gap-5"><a href="#footer-contact" className="hover:text-accent">Privacy Policy</a><span aria-hidden="true">|</span><a href="#footer-contact" className="hover:text-accent">Terms of Service</a></div></div>
+      </footer>
     </div>
   )
 }
