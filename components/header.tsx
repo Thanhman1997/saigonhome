@@ -11,7 +11,7 @@ export function Header() {
   const { t } = useLanguage()
 
   const links = [
-    { label: "Home", href: "#top" },
+    { label: "HOME", href: "#top" },
     { label: t.nav.services, href: "#services" },
     { label: t.nav.experts, href: "#experts" },
     { label: "About", href: "#about" },
@@ -23,14 +23,14 @@ export function Header() {
       <div className="mx-auto flex h-[4.75rem] max-w-6xl items-center justify-between px-5 lg:px-8">
         <a href="#top" className="group flex items-center gap-3" aria-label="Lotus Wellness home">
           <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-20 w-auto scale-150 object-contain sm:h-24 sm:scale-125"
-            style={{ mixBlendMode: "multiply" }} />
+            style={{ mixBlendMode: "darken" }} />
         </a>
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary navigation">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className={`relative text-xs font-medium tracking-[0.08em] transition-colors hover:text-accent ${link.label === "Home" ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
+              className={`relative text-xs font-medium tracking-[0.08em] transition-colors hover:text-accent ${link.label === "HOME" ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
             >
               {link.label}
             </a>
