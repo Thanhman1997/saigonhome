@@ -22,8 +22,8 @@ export function HeroSection({ hero }: { hero: Hero }) {
 
   return (
     <section id="top" className="relative min-h-[calc(100svh-5rem)] overflow-hidden bg-secondary text-foreground">
-      <Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private hotel room" fill priority sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-center opacity-78 lg:left-[38%] lg:w-[62%]" />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--secondary)_0%,color-mix(in_oklab,var(--secondary)_82%,transparent)_38%,transparent_72%)]" />
+      <Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private hotel room" fill priority sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-center opacity-90 saturate-110 lg:left-[38%] lg:w-[62%]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_oklab,var(--secondary)_96%,transparent)_0%,color-mix(in_oklab,var(--secondary)_72%,transparent)_36%,transparent_70%)]" />
       {content.visible && <div className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-7xl flex-col justify-end px-5 py-12 lg:px-8 lg:py-16">
         <div className="max-w-3xl">
           <div className="mb-7 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-accent"><ShieldCheck className="size-4" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
