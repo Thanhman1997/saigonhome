@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { Menu, X } from "lucide-react"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { useLanguage } from "@/lib/i18n/language-provider"
@@ -21,8 +22,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
         <a href="#top" className="group flex items-center gap-3" aria-label="Lotus Wellness home">
-          <span className="grid size-10 place-items-center rounded-full border border-accent/40 font-serif text-sm font-semibold tracking-widest text-accent transition-transform group-hover:rotate-6">LW</span>
-          <span className="hidden leading-none sm:block"><span className="block font-serif text-xl tracking-wide text-foreground">Lotus Wellness</span><span className="mt-1 block text-[9px] uppercase tracking-[0.28em] text-accent">Mobile massage</span></span>
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-16 w-auto scale-125 object-contain mix-blend-multiply sm:h-[4.5rem] sm:scale-110" />
         </a>
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary navigation">
           {links.map((link) => (
