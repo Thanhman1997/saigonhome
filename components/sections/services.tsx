@@ -44,7 +44,7 @@ export function ServicesSection({ services }: { services: ServiceWithDurations[]
             const image = service.imageUrl || fallback?.src
 
             return (
-              <article key={service.id} className="flex flex-col justify-between gap-7 rounded-[1.75rem] bg-background p-4 shadow-[0_12px_40px_-30px_rgba(55,35,30,0.5)] sm:p-5">
+              <article key={service.id} className="flex flex-col justify-between gap-7 rounded-xl border border-border/70 bg-card p-4 shadow-[0_12px_40px_-30px_rgba(92,48,20,0.5)] transition-transform duration-300 hover:-translate-y-1 sm:p-5">
                 <div>
                   <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-secondary">
                     {image ? <Image src={image} alt={name} fill className="object-cover" sizes="(min-width: 1024px) 33vw, 100vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{service.icon}</span>}

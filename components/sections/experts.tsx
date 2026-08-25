@@ -35,7 +35,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
             const bio = pickLocalized({ en: therapist.bioEn ?? "", ko: therapist.bioKo ?? "", vi: therapist.bioVi ?? "" }, locale)
 
             return (
-              <article key={therapist.id} className="flex flex-col border border-border bg-card">
+              <article key={therapist.id} className="flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card shadow-[0_12px_40px_-30px_rgba(92,48,20,0.5)] transition-transform duration-300 hover:-translate-y-1">
                 <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
                   <Image src={therapist.photoUrl || "/images/therapist-placeholder.png"} alt={`Therapist ${therapist.code}`} fill className="object-cover" />
                   <span
