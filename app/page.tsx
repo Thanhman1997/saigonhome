@@ -47,9 +47,9 @@ export default async function Home() {
       <main className="min-h-screen bg-background">
         <Header />
         <HeroSection hero={hero} />
-        <AboutSection about={about} values={lotusValues} />
         <ServicesSection services={services} />
         <ExpertsSection therapists={allTherapists} />
+        <AboutSection about={about} values={lotusValues} />
         <Promotions promotions={promotions} />
         <Membership plans={plans} />
         <Faq faqs={faqs} />
