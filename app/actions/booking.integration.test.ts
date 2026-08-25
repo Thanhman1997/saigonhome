@@ -39,11 +39,17 @@ describe("createBooking integration contract", () => {
   })
 
   it("persists Vietnam local time as the correct UTC instant", async () => {
-    const { createBooking } = await import("./booking")
-    const result = await createBooking(validInput("2026-08-18", "10:00"))
-    expect(result.success).toBe(true)
-    expect(insertedBooking.value?.startAt).toEqual(new Date("2026-08-18T03:00:00.000Z"))
-    expect(insertedBooking.value?.endAt).toEqual(new Date("2026-08-18T04:00:00.000Z"))
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "10:00"))
+      expect(result.success).toBe(true)
+      expect(insertedBooking.value?.startAt).toEqual(new Date("2026-08-18T03:00:00.000Z"))
+      expect(insertedBooking.value?.endAt).toEqual(new Date("2026-08-18T04:00:00.000Z"))
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it("accepts a valid booking", async () => {
