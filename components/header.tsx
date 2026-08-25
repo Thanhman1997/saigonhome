@@ -20,12 +20,11 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-[4.75rem] max-w-6xl items-center justify-between px-5 lg:px-8">
-        <a href="#top" className="group flex items-center gap-3" aria-label="Lotus Wellness home">
-          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-20 w-auto scale-150 object-contain sm:h-24 sm:scale-125"
-            style={{ mixBlendMode: "darken" }} />
+      <div className="relative mx-auto flex h-36 max-w-6xl items-center justify-center px-5 lg:px-8">
+        <a href="#top" className="group flex items-center justify-center" aria-label="Lotus Wellness home">
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-28 w-auto object-contain sm:h-32" style={{ mixBlendMode: "darken" }} />
         </a>
-        <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary navigation">
+        <nav className="absolute right-5 hidden items-center gap-6 lg:flex lg:right-8" aria-label="Primary navigation">
           {links.map((link) => (
             <a
               key={link.href}
@@ -36,11 +35,11 @@ export function Header() {
             </a>
           ))}
         </nav>
-        <div className="hidden items-center gap-5 lg:flex">
+        <div className="absolute left-5 hidden items-center gap-5 lg:flex lg:left-8">
           <LanguageSwitcher />
         </div>
         <button
-          className="flex size-11 items-center justify-center lg:hidden"
+          className="absolute right-5 flex size-11 items-center justify-center lg:hidden"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls="mobile-menu"
