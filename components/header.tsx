@@ -11,18 +11,18 @@ export function Header() {
   const { t } = useLanguage()
 
   const links = [
+    { label: "Home", href: "#top" },
     { label: t.nav.services, href: "#services" },
     { label: t.nav.experts, href: "#experts" },
-    { label: t.nav.promotions, href: "#promotions" },
-    { label: t.nav.faq, href: "#faq" },
+    { label: "About", href: "#about" },
     { label: t.nav.contact, href: "#contact" },
   ]
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
+      <div className="mx-auto flex h-[4.75rem] max-w-6xl items-center justify-between px-5 lg:px-8">
         <a href="#top" className="group flex items-center gap-3" aria-label="Lotus Wellness home">
-          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-20 w-auto scale-[1.65] object-contain sm:h-24 sm:scale-[1.35]"
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-16 w-auto object-contain sm:h-[4.5rem]"
             style={{ mixBlendMode: "multiply" }} />
         </a>
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary navigation">
@@ -30,7 +30,7 @@ export function Header() {
             <a
               key={link.href}
               href={link.href}
-              className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
+              className={`relative text-xs font-medium tracking-[0.08em] transition-colors hover:text-accent ${link.label === "Home" ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
             >
               {link.label}
             </a>

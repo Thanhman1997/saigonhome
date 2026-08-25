@@ -49,8 +49,8 @@ export default async function Home() {
         <HeroSection hero={hero} />
         <ServicesSection services={services} />
         <ExpertsSection therapists={allTherapists} />
-        <AboutSection about={about} values={lotusValues} />
         <Promotions promotions={promotions} />
+        <AboutSection about={about} values={lotusValues} />
         <Membership plans={plans} />
         <Faq faqs={faqs} />
         <ContactSection contactInfo={contactInfo} />

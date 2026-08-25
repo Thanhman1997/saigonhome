@@ -3,11 +3,11 @@
 import Image from "next/image"
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-secondary px-5 py-12 text-foreground lg:px-8">
-      <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.2fr_1fr_1fr_1.2fr]">
+    <footer className="border-t border-border bg-secondary px-5 py-10 text-foreground lg:px-8">
+      <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.25fr_1fr_1fr_1.15fr]">
         <div className="flex flex-col items-center text-center md:items-start md:text-left">
-          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={180} height={140} className="h-28 w-auto mix-blend-multiply" />
-          <p className="mt-4 max-w-xs text-xs leading-6 text-muted-foreground">Professional in-home massage and wellness care, delivered with warmth and privacy.</p>
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={180} height={140} className="h-24 w-auto object-contain mix-blend-multiply" />
+          <p className="mt-3 max-w-xs text-xs leading-5 text-muted-foreground">© 2024 Lotus Wellness. All rights reserved.</p>
         </div>
         <div>
           <h2 className="font-serif text-lg text-foreground">Quick Links</h2>
@@ -26,6 +26,8 @@ export function Footer() {
             <a href="#services" className="transition-colors hover:text-accent">Aromatherapy</a>
             <a href="#services" className="transition-colors hover:text-accent">Hot Stone Therapy</a>
             <a href="#services" className="transition-colors hover:text-accent">Body Treatment</a>
+            <a href="#services" className="transition-colors hover:text-accent">Relaxation Therapy</a>
+            <a href="#services" className="transition-colors hover:text-accent">Therapeutic Care</a>
             <a href="#services" className="transition-colors hover:text-accent">View All Services</a>
           </nav>
         </div>
@@ -36,6 +38,7 @@ export function Footer() {
             <a href="tel:+84901234567" className="transition-colors hover:text-accent">+84 90 123 4567</a>
             <a href="mailto:hello@lotuswellness.vn" className="transition-colors hover:text-accent">hello@lotuswellness.vn</a>
             <p>Ho Chi Minh City, Vietnam</p>
+            <p className="pt-2 text-xs text-accent">Open daily · 7AM–11PM</p>
           </div>
         </div>
       </div>
