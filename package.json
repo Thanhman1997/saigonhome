@@ -7,9 +7,7 @@
     "dev": "next dev",
     "lint": "eslint .",
     "test": "vitest run",
-    "start": "next start",
-    "e2e:cleanup": "node scripts/e2e-cleanup.mjs",
-    "e2e:preview": "playwright test"
+    "start": "next start"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -69,7 +67,6 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
     "@types/pg": "^8.21.0",

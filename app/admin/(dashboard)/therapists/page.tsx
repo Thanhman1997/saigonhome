@@ -38,9 +38,6 @@ export default async function AdminTherapistsPage() {
                   {therapist.experienceYears != null ? `${therapist.experienceYears} yrs experience` : "—"}
                   {therapist.locationEn ? ` · ${therapist.locationEn}` : ""}
                 </span>
-                <span className={`text-xs font-medium ${therapist.status === "active" ? "text-emerald-600" : therapist.status === "inactive" ? "text-destructive" : "text-amber-600"}`}>
-                  {therapist.status === "active" ? "Public" : therapist.status === "inactive" ? "Inactive" : "Draft"} · limit {therapist.maxBookingsPerDay}/day
-                </span>
               </div>
             </div>
             <div className="flex items-center gap-3">

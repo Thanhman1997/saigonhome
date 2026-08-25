@@ -1,8 +1,8 @@
 "use server"
 
-import { cookies, headers } from "next/headers"
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { isRateLimited, makeExpiringSessionToken, ADMIN_SESSION_MAX_AGE_SECONDS } from "@/lib/security"
+import { isRateLimited, ADMIN_SESSION_MAX_AGE_SECONDS } from "@/lib/security"
 import {
   ADMIN_SESSION_COOKIE,
   getAdminSessionCookieOptions,
@@ -22,11 +22,7 @@ export async function loginAdmin(_prevState: { error?: string } | undefined, for
     return { error: "Please enter both email and password." }
   }
 
-  const requestHeaders = await headers()
-  const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim()
-  const clientIp = forwardedFor || requestHeaders.get("x-real-ip") || "unknown"
-  const rateLimitKey = `${clientIp}:${email.toLowerCase()}`
-  if (isRateLimited(rateLimitKey)) return { error: "Too many login attempts. Please try again later." }
+  if (isRateLimited(email.toLowerCase())) return { error: "Too many login attempts. Please try again later." }
 
   const isValid = await verifyAdminCredentials(email, password)
   if (!isValid) {
@@ -39,7 +35,7 @@ export async function loginAdmin(_prevState: { error?: string } | undefined, for
   }
 
   const cookieStore = await cookies()
-  cookieStore.set(ADMIN_SESSION_COOKIE, makeExpiringSessionToken(token), {
+  cookieStore.set(ADMIN_SESSION_COOKIE, token, {
     httpOnly: true,
     path: "/",
     maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,

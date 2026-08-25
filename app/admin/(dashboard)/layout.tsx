@@ -34,8 +34,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <AdminNavLink href="/admin/promotions">Promotions</AdminNavLink>
             <span className="hidden text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:inline">Operations</span>
             <AdminNavLink href="/admin/bookings">Bookings</AdminNavLink>
-            <AdminNavLink href="/admin/customers">Customers</AdminNavLink>
-            <AdminNavLink href="/admin/service-areas">Service areas</AdminNavLink>
             <AdminNavLink href="/admin/questions">Questions</AdminNavLink>
             <AdminNavLink href="/admin/membership">Membership</AdminNavLink>
             <span className="hidden text-xs font-semibold uppercase tracking-wider text-muted-foreground sm:inline">Settings</span>

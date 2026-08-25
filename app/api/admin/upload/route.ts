@@ -1,11 +1,13 @@
 import { put } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, isValidAdminSession } from "@/lib/admin-auth"
+import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
 
 async function isAdmin() {
-  const token = (await cookies()).get(ADMIN_SESSION_COOKIE)?.value
-  return isValidAdminSession(token)
+  const expected = await getExpectedAdminSessionToken()
+  const cookieStore = await cookies()
+  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
+  return Boolean(expected) && token === expected
 }
 
 export async function POST(request: NextRequest) {

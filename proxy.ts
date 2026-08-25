@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { ADMIN_SESSION_COOKIE, isValidAdminSession } from "@/lib/admin-auth"
+import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -9,9 +9,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  const expected = await getExpectedAdminSessionToken()
   const token = request.cookies.get(ADMIN_SESSION_COOKIE)?.value
 
-  if (!(await isValidAdminSession(token))) {
+  if (!expected || token !== expected) {
     const loginUrl = new URL("/admin", request.url)
     return NextResponse.redirect(loginUrl)
   }

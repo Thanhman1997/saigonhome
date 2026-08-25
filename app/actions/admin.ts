@@ -3,27 +3,18 @@
 import { db } from "@/lib/db"
 import { bookings, reviews } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
-import { sendBookingNotification } from "@/lib/booking-notifications"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, isValidAdminSession } from "@/lib/admin-auth"
+import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
 
-const BOOKING_STATUSES = ["pending", "confirmed", "in_progress", "completed", "cancelled", "no_show"] as const
- type BookingStatus = (typeof BOOKING_STATUSES)[number]
-
-const ALLOWED_TRANSITIONS: Record<BookingStatus, readonly BookingStatus[]> = {
-  pending: ["confirmed", "cancelled"],
-  confirmed: ["in_progress", "cancelled"],
-  in_progress: ["completed", "no_show", "cancelled"],
-  completed: [],
-  cancelled: [],
-  no_show: [],
-}
+const BOOKING_STATUSES = ["confirmed", "completed", "cancelled"] as const
+type BookingStatus = (typeof BOOKING_STATUSES)[number]
 
 async function assertAdmin() {
+  const expected = await getExpectedAdminSessionToken()
   const cookieStore = await cookies()
   const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!(await isValidAdminSession(token))) {
+  if (!expected || token !== expected) {
     throw new Error("Unauthorized")
   }
 }
@@ -31,18 +22,8 @@ async function assertAdmin() {
 export async function updateBookingStatus(id: number, status: BookingStatus) {
   await assertAdmin()
   if (!BOOKING_STATUSES.includes(status)) throw new Error("Invalid status")
-  const [booking] = await db.select({ status: bookings.status }).from(bookings).where(eq(bookings.id, id)).limit(1)
-  if (!booking) throw new Error("Booking not found")
-  const currentStatus = booking.status as BookingStatus
-  if (!BOOKING_STATUSES.includes(currentStatus) || !ALLOWED_TRANSITIONS[currentStatus].includes(status)) {
-    throw new Error(`Cannot change booking from ${currentStatus} to ${status}`)
-  }
-  await db.update(bookings).set({ status, updatedAt: new Date() }).where(eq(bookings.id, id))
-  if (status === "confirmed" || status === "cancelled" || status === "completed") {
-    void sendBookingNotification(id, status, "customer")
-  }
+  await db.update(bookings).set({ status }).where(eq(bookings.id, id))
   revalidatePath("/admin/bookings")
-  revalidatePath("/admin")
 }
 
 export async function toggleReviewApproval(id: number, approved: boolean) {

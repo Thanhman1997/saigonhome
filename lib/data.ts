@@ -15,7 +15,7 @@ import {
   bookingSettings,
   siteContent,
 } from "@/lib/db/schema"
-import { and, asc, eq, desc } from "drizzle-orm"
+import { asc, eq, desc } from "drizzle-orm"
 
 export async function getServicesWithDurations() {
   const allServices = await db.select().from(services).where(eq(services.active, true)).orderBy(asc(services.sortOrder))
@@ -34,9 +34,7 @@ export async function getTherapists() {
 }
 
 export async function getAvailableTherapists() {
-  return db.select().from(therapists)
-    .where(and(eq(therapists.available, true), eq(therapists.status, "active")))
-    .orderBy(asc(therapists.code))
+  return db.select().from(therapists).where(eq(therapists.available, true)).orderBy(asc(therapists.code))
 }
 
 export async function getApprovedReviews() {

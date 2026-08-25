@@ -45,19 +45,6 @@ export async function updateTherapist(id: number, _prevState: { error?: string }
     bioKo: String(formData.get("bioKo") ?? "").trim() || null,
     bioVi: String(formData.get("bioVi") ?? "").trim() || null,
     photoUrl: String(formData.get("photoUrl") ?? "").trim() || null,
-    status: String(formData.get("status") ?? "draft").trim() || "draft",
-    maxBookingsPerDay: Math.max(1, toIntOrNull(formData.get("maxBookingsPerDay")) ?? 4),
-  }
-
-  if (!["draft", "active", "inactive"].includes(values.status)) return { error: "Invalid therapist status." }
-  if (values.status === "active") {
-    const missing = [
-      !values.photoUrl && "photo",
-      !values.bioEn && "English bio",
-      !values.bioKo && "Korean bio",
-      !values.bioVi && "Vietnamese bio",
-    ].filter(Boolean)
-    if (missing.length) return { error: `Cannot publish: missing ${missing.join(", ")}.` }
   }
 
   await db.update(therapists).set(values).where(eq(therapists.id, id))
@@ -78,13 +65,13 @@ export async function createTherapist(formData: FormData) {
   await assertAdmin()
   const code = String(formData.get("code") ?? "").trim()
   if (!code) throw new Error("Code is required.")
-  await db.insert(therapists).values({ code, available: false, status: "draft", maxBookingsPerDay: 4, sortOrder: 0 })
+  await db.insert(therapists).values({ code, available: true, sortOrder: 0 })
   revalidatePath("/admin/therapists")
 }
 
 export async function archiveTherapist(id: number) {
   await assertAdmin()
-  await db.update(therapists).set({ available: false, status: "inactive" }).where(eq(therapists.id, id))
+  await db.update(therapists).set({ available: false }).where(eq(therapists.id, id))
   revalidatePath("/admin/therapists")
   revalidatePath("/")
 }
