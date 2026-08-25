@@ -80,7 +80,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const designTokenCss = buildDesignTokenCss(activeDesign)
 
   return (
-    <html lang="en" className="bg-background">
+    <html lang="en" className="bg-background" suppressHydrationWarning>
       <head>
         <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
       </head>

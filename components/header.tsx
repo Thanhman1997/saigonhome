@@ -22,7 +22,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-[4.75rem] max-w-6xl items-center justify-between px-5 lg:px-8">
         <a href="#top" className="group flex items-center gap-3" aria-label="Lotus Wellness home">
-          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-16 w-auto object-contain sm:h-[4.5rem]"
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-20 w-auto scale-150 object-contain sm:h-24 sm:scale-125"
             style={{ mixBlendMode: "multiply" }} />
         </a>
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary navigation">
