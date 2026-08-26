@@ -20,11 +20,11 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
-      <div className="relative mx-auto flex h-36 max-w-6xl items-center justify-center px-5 lg:px-8">
-        <a href="#top" className="group flex items-center justify-center" aria-label="Lotus Wellness home">
-          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-28 w-auto object-contain sm:h-32" style={{ mixBlendMode: "darken" }} />
+      <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-5 lg:px-8">
+        <a href="#top" className="group flex items-center" aria-label="Lotus Wellness home">
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-20 w-auto object-contain sm:h-24" style={{ mixBlendMode: "darken" }} />
         </a>
-        <nav className="absolute right-5 hidden items-center gap-6 lg:flex lg:right-8" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary navigation">
           {links.map((link) => (
             <a
               key={link.href}
@@ -35,11 +35,8 @@ export function Header() {
             </a>
           ))}
         </nav>
-        <div className="absolute left-5 hidden items-center gap-5 lg:flex lg:left-8">
-          <LanguageSwitcher />
-        </div>
         <button
-          className="absolute right-5 flex size-11 items-center justify-center lg:hidden"
+          className="flex size-11 items-center justify-center lg:hidden"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls="mobile-menu"
@@ -47,6 +44,9 @@ export function Header() {
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
+        <div className="hidden lg:flex">
+          <LanguageSwitcher />
+        </div>
       </div>
       {open && (
         <nav id="mobile-menu" className="border-t border-border bg-background px-5 py-6 lg:hidden" aria-label="Mobile navigation">
