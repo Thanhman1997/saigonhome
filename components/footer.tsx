@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { Clock3, Mail, MapPin, Phone } from "lucide-react"
+import { Clock3, MapPin, Phone } from "lucide-react"
 import { getContactInfo } from "@/lib/data"
 
 type ContactInfo = Awaited<ReturnType<typeof getContactInfo>>
@@ -8,9 +8,9 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
   const contactMethods = [
     contactInfo?.whatsappUrl && { label: "WhatsApp", href: contactInfo.whatsappUrl, icon: "/images/contact-whatsapp.png" },
     contactInfo?.lineUrl && { label: "LINE", href: contactInfo.lineUrl, icon: "/images/contact-line.png" },
-    contactInfo?.kakaoUrl && { label: "KakaoTalk", href: contactInfo.kakaoUrl, icon: null },
+    contactInfo?.kakaoUrl && { label: "KakaoTalk", href: contactInfo.kakaoUrl, icon: "https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/kakaotalk/default.svg" },
     contactInfo?.messengerUrl && { label: "Messenger", href: contactInfo.messengerUrl, icon: "/images/contact-messenger.png" },
-    contactInfo?.instagramUrl && { label: "Instagram", href: contactInfo.instagramUrl, icon: null },
+    contactInfo?.instagramUrl && { label: "Instagram", href: contactInfo.instagramUrl, icon: "https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/instagram/default.svg" },
   ].filter(Boolean) as { label: string; href: string; icon: string | null }[]
 
   return (
@@ -39,9 +39,8 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
         <div id="contact" className="border-l border-border/70 pl-6">
           <h2 className="font-serif text-lg text-foreground">Contact Us</h2>
           <div className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground">
-            {contactMethods.map((method) => <a key={method.label} href={method.href} target="_blank" rel="noreferrer" className="flex items-center gap-3 transition-colors hover:text-accent">{method.icon ? <Image src={method.icon} alt="" width={22} height={22} className="size-5 rounded object-contain" /> : <span className="grid size-5 place-items-center rounded-full border border-accent/70 text-[8px] font-semibold text-accent">{method.label.slice(0, 1)}</span>}{method.label}</a>)}
-            <a href={`tel:${contactInfo?.phone ?? "01026451933"}`} className="flex items-center gap-3 transition-colors hover:text-accent"><Phone className="size-5 text-accent" aria-hidden="true" />{contactInfo?.phone ?? "01026451933"}</a>
-            <a href={`mailto:${contactInfo?.email ?? ""}`} className="flex items-center gap-3 transition-colors hover:text-accent"><Mail className="size-5 text-accent" aria-hidden="true" />{contactInfo?.email}</a>
+            {contactMethods.map((method) => <a key={method.label} href={method.href} target="_blank" rel="noreferrer" className="flex items-center gap-3 transition-colors hover:text-accent">{method.icon ? <img src={method.icon} alt="" width={22} height={22} className="size-5 rounded object-contain" /> : <span className="grid size-5 place-items-center rounded-full border border-accent/70 text-[8px] font-semibold text-accent">{method.label.slice(0, 1)}</span>}{method.label}</a>)}
+            <a href={`tel:${contactInfo?.phone ?? "01026451933"}`} className="flex items-center gap-3 transition-colors hover:text-accent"><Phone className="size-5 text-blue-600" aria-hidden="true" />01026451934</a>
             <p className="flex items-center gap-3"><MapPin className="size-5 text-accent" aria-hidden="true" />{contactInfo?.addressEn ?? "Ho Chi Minh City, Vietnam"}</p>
             <p className="flex items-center gap-3 text-xs text-accent"><Clock3 className="size-5" aria-hidden="true" />Open daily · 7AM–11PM</p>
           </div>
