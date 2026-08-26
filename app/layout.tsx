@@ -81,8 +81,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" className="bg-background" suppressHydrationWarning>
-      <head>
-        <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
+      <head suppressHydrationWarning>
+        <style id="design-tokens" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: designTokenCss }} />
       </head>
       <body
         className={`${dmSans.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${notoSans.variable} ${notoSansKr.variable} ${notoSerifKr.variable} ${playfair.variable} ${dmSerifDisplay.variable} ${lora.variable} ${manrope.variable} ${inter.variable} font-sans antialiased`}
