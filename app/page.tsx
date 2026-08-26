@@ -54,7 +54,7 @@ export default async function Home() {
         <Membership plans={plans} />
         <Faq faqs={faqs} />
         <ContactSection contactInfo={contactInfo} />
-        <Footer />
+        <Footer contactInfo={contactInfo} />
       </main>
       <BookingDialog />
       <AskQuestionWidget />
