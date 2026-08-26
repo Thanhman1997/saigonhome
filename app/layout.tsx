@@ -76,17 +76,17 @@ export const dynamic = "force-dynamic"
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [defaultLocale, designSettings] = await Promise.all([getDefaultLocale(), getDesignSettings()])
-  const activeDesign = designSettings ?? DESIGN_PRESETS[0].values
+  // Keep the public Lotus experience aligned with the approved reference preset.
+  // Legacy database rows may contain the previous muted palette and make the page appear broken.
+  const activeDesign = designSettings?.presetKey === "lotus-premium" ? DESIGN_PRESETS[0].values : (designSettings ?? DESIGN_PRESETS[0].values)
   const designTokenCss = buildDesignTokenCss(activeDesign)
 
   return (
     <html lang="en" className="bg-background" suppressHydrationWarning>
-      <head suppressHydrationWarning>
-        <style id="design-tokens" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: designTokenCss }} />
-      </head>
       <body
         className={`${dmSans.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${notoSans.variable} ${notoSansKr.variable} ${notoSerifKr.variable} ${playfair.variable} ${dmSerifDisplay.variable} ${lora.variable} ${manrope.variable} ${inter.variable} font-sans antialiased`}
       >
+        <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
         <LanguageProvider defaultLocale={defaultLocale}>{children}</LanguageProvider>
         <Analytics />
       </body>
