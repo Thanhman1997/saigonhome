@@ -37,7 +37,7 @@ export function ImageReveal({
           observer.disconnect()
         }
       },
-      { threshold: 0.1 }
+      { rootMargin: "240px 0px", threshold: 0.01 }
     )
 
     if (containerRef.current) {
@@ -65,6 +65,7 @@ export function ImageReveal({
           priority={priority}
           className={className}
           sizes={sizes}
+          loading={priority ? "eager" : "lazy"}
         />
       ) : (
         <Image
@@ -75,6 +76,7 @@ export function ImageReveal({
           priority={priority}
           className={className}
           sizes={sizes}
+          loading={priority ? "eager" : "lazy"}
         />
       )}
       

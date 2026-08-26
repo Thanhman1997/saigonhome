@@ -51,7 +51,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
                 >
                   {promo.imageUrl && (
                     <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-                      <Image src={promo.imageUrl} alt={name} fill className="object-cover" />
+                      <Image src={promo.imageUrl} alt={name} fill loading="lazy" sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
                     </div>
                   )}
                   <div className="flex flex-1 flex-col justify-between p-8">

@@ -13,9 +13,10 @@ const PAGE_SIZE = 8
 export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
   const { t, locale } = useLanguage()
   const { openBooking } = useBooking()
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [visibleCount, setVisibleCount] = useState(Math.min(4, PAGE_SIZE))
 
-  const visible = therapists.slice(0, visibleCount)
+  const realTherapists = therapists.filter((therapist) => Boolean(therapist.photoUrl) && !therapist.code.match(/^KTV\s*0\d$/i))
+  const visible = realTherapists.slice(0, visibleCount)
 
   return (
     <section id="experts" className="bg-background py-24 lg:py-32">
@@ -37,7 +38,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
             return (
               <article key={therapist.id} className="flex flex-col overflow-hidden rounded-xl border border-border/70 bg-card shadow-[0_12px_40px_-30px_rgba(92,48,20,0.5)] transition-transform duration-300 hover:-translate-y-1">
                 <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
-                  <Image src={therapist.photoUrl || "/images/therapist-placeholder.png"} alt={`Therapist ${therapist.code}`} fill className="object-cover" />
+                  <Image src={therapist.photoUrl!} alt={`Therapist ${therapist.code}`} fill sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 92vw" loading="lazy" className="object-cover" />
                   <span
                     className={cn(
                       "absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider",
@@ -98,7 +99,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
           })}
         </div>
 
-        {visibleCount < therapists.length && (
+        {visibleCount < realTherapists.length && (
           <div className="mt-10 flex justify-center">
             <Button variant="outline" size="lg" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
               {locale === "en" ? "Show more therapists" : locale === "ko" ? "더 많은 테라피스트 보기" : "Xem thêm chuyên viên"}
