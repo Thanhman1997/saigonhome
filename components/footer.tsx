@@ -20,7 +20,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           <p className="mt-4 text-xs text-muted-foreground">© 2026 Lotus Wellness. All rights reserved.</p>
         </div>
         <div>
-          <h2 className="font-sans text-xs font-semibold uppercase tracking-[0.16em] text-foreground">SERVICES</h2>
+          <h2 className="font-serif text-2xl text-guiding-pink">SERVICES</h2>
           <nav className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground" aria-label="Services navigation">
             <a href="#services" className="transition-colors hover:text-accent">Massage</a>
             <a href="#services" className="transition-colors hover:text-accent">Aroma Massage</a>
@@ -30,7 +30,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           </nav>
         </div>
         <div>
-          <h2 className="font-sans text-xs font-semibold uppercase tracking-[0.16em] text-foreground">ABOUT</h2>
+          <h2 className="font-serif text-2xl text-guiding-pink">ABOUT</h2>
           <nav className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground" aria-label="About navigation">
             <a href="#about" className="transition-colors hover:text-accent">About Us</a>
             <a href="#about" className="transition-colors hover:text-accent">Our Space</a>
