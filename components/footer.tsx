@@ -1,18 +1,10 @@
 import Image from "next/image"
-import { Clock3, Facebook, Instagram, MapPin, Phone, Youtube } from "lucide-react"
+import { Clock3, Facebook, Instagram, MapPin, Youtube } from "lucide-react"
 import { getContactInfo } from "@/lib/data"
 
 type ContactInfo = Awaited<ReturnType<typeof getContactInfo>>
 
 export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
-  const contactMethods = [
-    contactInfo?.whatsappUrl && { label: "WhatsApp", href: contactInfo.whatsappUrl, icon: "/images/contact-whatsapp.png" },
-    contactInfo?.lineUrl && { label: "LINE", href: contactInfo.lineUrl, icon: "/images/contact-line.png" },
-    contactInfo?.kakaoUrl && { label: "KakaoTalk", href: contactInfo.kakaoUrl, icon: "https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/kakaotalk/default.svg" },
-    contactInfo?.messengerUrl && { label: "Messenger", href: contactInfo.messengerUrl, icon: "/images/contact-messenger.png" },
-    contactInfo?.instagramUrl && { label: "Instagram", href: contactInfo.instagramUrl, icon: "https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/instagram/default.svg" },
-  ].filter(Boolean) as { label: string; href: string; icon: string | null }[]
-
   return (
     <footer className="border-t border-border bg-secondary px-5 py-10 text-foreground lg:px-8">
       <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.15fr_0.9fr_1fr_1.35fr]">
@@ -47,13 +39,24 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
             <a href="#faq" className="transition-colors hover:text-accent">FAQ</a>
           </nav>
         </div>
-        <div id="contact" className="border-l border-border/70 pl-6">
-          <h2 className="font-serif text-lg text-foreground">Contact Us</h2>
-          <div className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground">
-            {contactMethods.map((method) => <a key={method.label} href={method.href} target="_blank" rel="noreferrer" className="flex items-center gap-3 transition-colors hover:text-accent">{method.icon ? <img src={method.icon} alt="" width={22} height={22} className="size-5 object-contain" style={{ mixBlendMode: "multiply" }} /> : <span className="grid size-5 place-items-center rounded-full border border-accent/70 text-[8px] font-semibold text-accent">{method.label.slice(0, 1)}</span>}{method.label}</a>)}
-            <a href={`tel:${contactInfo?.phone ?? "01026451933"}`} className="flex items-center gap-3 transition-colors hover:text-accent"><Phone className="size-5 text-blue-600" aria-hidden="true" />01026451934</a>
-            <p className="flex items-center gap-3"><MapPin className="size-5 text-accent" aria-hidden="true" />{contactInfo?.addressEn ?? "Ho Chi Minh City, Vietnam"}</p>
-            <p className="flex items-center gap-3 text-xs text-accent"><Clock3 className="size-5" aria-hidden="true" />Open daily · 7AM–11PM</p>
+        <div id="contact" className="rounded-md bg-background px-7 py-6 text-foreground shadow-sm">
+          <h2 className="font-sans text-base font-bold uppercase tracking-[0.12em] text-lotus-pink">WORKING HOURS</h2>
+          <div className="mt-6 flex items-start gap-5">
+            <Clock3 className="mt-1 size-9 shrink-0 text-foreground" strokeWidth={1.6} aria-hidden="true" />
+            <div className="flex flex-col gap-5">
+              <div>
+                <p className="text-xl font-bold leading-tight">Open daily</p>
+                <p className="mt-1 text-xl font-bold leading-tight">7:00 AM – 11:00 PM</p>
+              </div>
+              <div>
+                <p className="text-xl font-bold leading-tight">Last booking</p>
+                <p className="mt-1 text-xl font-bold leading-tight">10:00 PM</p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-7 flex items-center gap-5">
+            <span className="text-4xl leading-none text-lotus-pink" aria-hidden="true">♡</span>
+            <p className="text-base font-semibold leading-6">Chúng tôi luôn sẵn sàng<br />chăm sóc bạn.</p>
           </div>
         </div>
       </div>
