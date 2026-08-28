@@ -39,24 +39,24 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
             <a href="#faq" className="transition-colors hover:text-accent">FAQ</a>
           </nav>
         </div>
-        <div id="contact" className="rounded-md bg-background px-7 py-6 text-foreground shadow-sm">
-          <h2 className="font-sans text-base font-bold uppercase tracking-[0.12em] text-lotus-pink">WORKING HOURS</h2>
-          <div className="mt-6 flex items-start gap-5">
-            <Clock3 className="mt-1 size-9 shrink-0 text-foreground" strokeWidth={1.6} aria-hidden="true" />
-            <div className="flex flex-col gap-5">
+        <div id="contact" className="px-2 py-2 text-foreground">
+          <h2 className="font-serif text-2xl text-guiding-pink">WORKING HOURS</h2>
+          <div className="mt-6 flex items-start gap-4">
+            <Clock3 className="mt-1 size-7 shrink-0 text-accent" strokeWidth={1.6} aria-hidden="true" />
+            <div className="flex flex-col gap-5 font-sans text-base leading-relaxed text-muted-foreground">
               <div>
-                <p className="text-xl font-bold leading-tight">Open daily</p>
-                <p className="mt-1 text-xl font-bold leading-tight">7:00 AM – 11:00 PM</p>
+                <p className="font-semibold text-foreground">Open daily</p>
+                <p>7:00 AM – 11:00 PM</p>
               </div>
               <div>
-                <p className="text-xl font-bold leading-tight">Last booking</p>
-                <p className="mt-1 text-xl font-bold leading-tight">10:00 PM</p>
+                <p className="font-semibold text-foreground">Last booking</p>
+                <p>10:00 PM</p>
               </div>
             </div>
           </div>
-          <div className="mt-7 flex items-center gap-5">
-            <span className="text-4xl leading-none text-lotus-pink" aria-hidden="true">♡</span>
-            <p className="text-base font-semibold leading-6">Chúng tôi luôn sẵn sàng<br />chăm sóc bạn.</p>
+          <div className="mt-7 flex items-center gap-4">
+            <span className="font-serif text-4xl leading-none text-guiding-pink" aria-hidden="true">♡</span>
+            <p className="font-sans text-base leading-relaxed text-muted-foreground">Chúng tôi luôn sẵn sàng<br />chăm sóc bạn.</p>
           </div>
         </div>
       </div>
