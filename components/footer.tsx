@@ -6,7 +6,7 @@ type ContactInfo = Awaited<ReturnType<typeof getContactInfo>>
 
 export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
   return (
-    <footer className="border-t border-border bg-secondary px-5 py-10 text-foreground lg:px-8">
+    <footer className="border-t border-border bg-secondary px-5 py-10 font-serif text-foreground lg:px-8">
       <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.15fr_0.9fr_1fr_1.35fr]">
         <div className="flex flex-col items-center text-center md:items-start md:text-left">
           <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={180} height={140} className="h-24 w-auto object-contain" style={{ mixBlendMode: "darken" }} />
@@ -43,7 +43,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           <h2 className="font-serif text-2xl text-guiding-pink">WORKING HOURS</h2>
           <div className="mt-6 flex items-start gap-4">
             <Clock3 className="mt-1 size-7 shrink-0 text-accent" strokeWidth={1.6} aria-hidden="true" />
-            <div className="flex flex-col gap-5 font-sans text-base leading-relaxed text-muted-foreground">
+            <div className="flex flex-col gap-5 text-base leading-relaxed text-muted-foreground">
               <div>
                 <p className="font-semibold text-foreground">Open daily</p>
                 <p>7:00 AM – 11:00 PM</p>
@@ -56,7 +56,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           </div>
           <div className="mt-7 flex items-center gap-4">
             <span className="font-serif text-4xl leading-none text-guiding-pink" aria-hidden="true">♡</span>
-            <p className="font-sans text-base leading-relaxed text-muted-foreground">Chúng tôi luôn sẵn sàng<br />chăm sóc bạn.</p>
+            <p className="text-base leading-relaxed text-muted-foreground">Chúng tôi luôn sẵn sàng<br />chăm sóc bạn.</p>
           </div>
         </div>
       </div>
