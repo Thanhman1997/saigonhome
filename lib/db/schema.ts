@@ -230,6 +230,23 @@ export const siteContent = pgTable("site_content", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+export const navigationSettings = pgTable("navigation_settings", {
+  id: serial("id").primaryKey(),
+  menuKey: text("menu_key").notNull().unique(),
+  labelEn: text("label_en").notNull().default(""),
+  labelVi: text("label_vi").notNull().default(""),
+  labelKo: text("label_ko").notNull().default(""),
+  href: text("href").notNull().default("#"),
+  visible: boolean("visible").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  fontFamily: text("font_family").notNull().default("inherit"),
+  fontSize: text("font_size").notNull().default("sm"),
+  fontWeight: text("font_weight").notNull().default("normal"),
+  textColor: text("text_color").notNull().default("inherit"),
+  hoverColor: text("hover_color").notNull().default("inherit"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const sectionStyles = pgTable("section_styles", {
   sectionKey: text("section_key").primaryKey(),
   titleColor: text("title_color"),

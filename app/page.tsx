@@ -14,6 +14,7 @@ import { ContactSection } from "@/components/sections/contact"
 import { BookingProvider } from "@/lib/booking-context"
 import { BookingDialog } from "@/components/booking/booking-dialog"
 import { AskQuestionWidget } from "@/components/ask-question-widget"
+import { getNavigationSettings } from "@/lib/admin-data"
 import {
   getServicesWithDurations,
   getAvailableTherapists,
@@ -28,7 +29,7 @@ import {
 } from "@/lib/data"
 
 export default async function Home() {
-  const [services, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, hero, about, lotusValues] =
+  const [services, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues] =
     await Promise.all([
       getServicesWithDurations(),
       getTherapists(),
@@ -37,6 +38,7 @@ export default async function Home() {
       getMembershipPlans(),
       getFaqs(),
       getContactInfo(),
+      getNavigationSettings(),
       getHeroContent(),
       getAboutContent(),
       getLotusValues(),
@@ -45,7 +47,7 @@ export default async function Home() {
   return (
     <BookingProvider services={services} therapists={availableTherapists}>
       <main className="min-h-screen bg-background">
-        <Header />
+        <Header navigationSettings={navigationSettings} />
         <HeroSection hero={hero} />
         <ServicesSection services={services} />
         <ExpertsSection therapists={allTherapists} />

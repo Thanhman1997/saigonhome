@@ -16,6 +16,7 @@ import {
   bookingSettings,
   siteContent,
   questions,
+  navigationSettings,
 } from "@/lib/db/schema"
 import { asc, desc, eq } from "drizzle-orm"
 
@@ -84,6 +85,14 @@ export async function getAboutContentAdmin() {
 
 export async function getAllLotusValuesAdmin() {
   return db.select().from(lotusValues).orderBy(asc(lotusValues.sortOrder))
+}
+
+export async function getNavigationSettingsAdmin() {
+  return db.select().from(navigationSettings).orderBy(asc(navigationSettings.sortOrder))
+}
+
+export async function getNavigationSettings() {
+  return db.select().from(navigationSettings).where(eq(navigationSettings.visible, true)).orderBy(asc(navigationSettings.sortOrder))
 }
 
 export async function getDesignSettingsAdmin() {

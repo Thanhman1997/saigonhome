@@ -6,17 +6,19 @@ import { Menu, X } from "lucide-react"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { useLanguage } from "@/lib/i18n/language-provider"
 
-export function Header() {
+type NavigationSetting = { menuKey: string; labelEn: string; labelVi: string; labelKo: string; href: string; visible: boolean; fontFamily?: string; fontSize?: string; fontWeight?: string; textColor?: string; hoverColor?: string }
+
+export function Header({ navigationSettings = [] }: { navigationSettings?: NavigationSetting[] }) {
   const [open, setOpen] = useState(false)
   const { t } = useLanguage()
 
-  const links = [
-    { label: "HOME", href: "#top" },
-    { label: t.nav.services, href: "#services" },
-    { label: t.nav.experts, href: "#experts" },
-    { label: "About", href: "#about" },
-    { label: t.nav.contact, href: "#contact" },
-  ]
+  const links = (navigationSettings.length ? navigationSettings : [
+    { menuKey: "home", labelEn: "HOME", labelVi: "TRANG CHỦ", labelKo: "홈", href: "#top", visible: true },
+    { menuKey: "services", labelEn: t.nav.services, labelVi: t.nav.services, labelKo: t.nav.services, href: "#services", visible: true },
+    { menuKey: "experts", labelEn: t.nav.experts, labelVi: t.nav.experts, labelKo: t.nav.experts, href: "#experts", visible: true },
+    { menuKey: "about", labelEn: "About", labelVi: "Giới thiệu", labelKo: "소개", href: "#about", visible: true },
+    { menuKey: "contact", labelEn: t.nav.contact, labelVi: t.nav.contact, labelKo: t.nav.contact, href: "#contact", visible: true },
+  ]).filter((link) => link.visible).map((link) => ({ ...link, label: link.labelEn }))
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
@@ -29,7 +31,8 @@ export function Header() {
             <a
               key={link.href}
               href={link.href}
-              className={`relative text-xs font-medium tracking-[0.08em] transition-colors hover:text-accent ${link.label === "HOME" ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
+              className={`relative tracking-[0.08em] transition-colors ${link.label === "HOME" ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
+              style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.125rem" : link.fontSize === "md" ? "1rem" : "0.75rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}
             >
               {link.label}
             </a>
