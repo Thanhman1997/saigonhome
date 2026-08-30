@@ -29,9 +29,9 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
         </div>
         <div id="contact" className="text-foreground">
           <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">WORKING HOURS</h2>
-          <div className="mt-4 flex items-start gap-4">
-            <Clock3 className="mt-1 size-7 shrink-0 text-accent" strokeWidth={1.6} aria-hidden="true" />
-            <div className="flex flex-col gap-2 text-base leading-6 text-muted-foreground">
+          <div className="mt-2 flex items-start gap-3">
+            <Clock3 className="mt-1 size-6 shrink-0 text-accent" strokeWidth={1.6} aria-hidden="true" />
+            <div className="flex flex-col gap-1 text-base leading-5 text-muted-foreground">
               <div>
                 <p className="font-semibold text-foreground">Open daily</p>
                 <p>7:00 AM – 11:00 PM</p>
@@ -42,7 +42,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
               </div>
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-4">
+          <div className="mt-2 flex items-center gap-3">
             <span className="text-2xl leading-none text-guiding-pink" aria-hidden="true">♡</span>
             <p className="text-base leading-6 text-muted-foreground">Chúng tôi luôn sẵn sàng<br />chăm sóc bạn.</p>
           </div>
