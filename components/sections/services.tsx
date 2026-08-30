@@ -50,7 +50,6 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                 <div>
                   <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-secondary">
                     {image ? <Image src={image} alt={name} fill loading="lazy" className="object-cover" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{service.icon}</span>}
-                    {fallback?.flag && <span className="absolute right-3 top-3 rounded-full bg-background/90 px-2.5 py-1 text-sm shadow-sm" aria-label={`${name} style`}>{fallback.flag}</span>}
                   </div>
                   <div className="px-1">
                     <h3 className="font-serif text-2xl leading-tight">{name}</h3>
