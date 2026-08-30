@@ -11,6 +11,7 @@ import { Promotions } from "@/components/sections/promotions"
 import { Membership } from "@/components/sections/membership"
 import { Faq } from "@/components/sections/faq"
 import { ContactSection } from "@/components/sections/contact"
+import { ReviewsSection } from "@/components/sections/reviews"
 import { BookingProvider } from "@/lib/booking-context"
 import { BookingDialog } from "@/components/booking/booking-dialog"
 import { AskQuestionWidget } from "@/components/ask-question-widget"
@@ -26,10 +27,11 @@ import {
   getHeroContent,
   getAboutContent,
   getLotusValues,
+  getApprovedReviews,
 } from "@/lib/data"
 
 export default async function Home() {
-  const [services, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues] =
+  const [services, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews] =
     await Promise.all([
       getServicesWithDurations(),
       getTherapists(),
@@ -42,6 +44,7 @@ export default async function Home() {
       getHeroContent(),
       getAboutContent(),
       getLotusValues(),
+      getApprovedReviews(),
     ])
 
   return (
@@ -55,6 +58,7 @@ export default async function Home() {
         <AboutSection about={about} values={lotusValues} />
         <Membership plans={plans} />
         <Faq faqs={faqs} />
+        <ReviewsSection reviews={reviews} />
         <ContactSection contactInfo={contactInfo} />
         <Footer contactInfo={contactInfo} />
       </main>

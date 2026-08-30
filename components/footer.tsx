@@ -25,7 +25,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
         <div>
           <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">{footerCopy.about}</h2>
           <nav className="mt-4 flex flex-col gap-2 text-base leading-6 text-muted-foreground" aria-label="About navigation">
-            {footerCopy.aboutLinks.map((label, index) => <a key={label} href={["#about", "#about", "#experts", "#contact", "#faq"][index]} className="transition-colors hover:text-accent">{label}</a>)}
+            {footerCopy.aboutLinks.map((label, index) => <a key={label} href={["#about", "#about", "#experts", "/reviews", "#faq"][index]} className="transition-colors hover:text-accent">{label}</a>)}
           </nav>
         </div>
         <div id="contact" className="text-foreground">

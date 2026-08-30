@@ -17,6 +17,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     { menuKey: "services", labelEn: t.nav.services, labelVi: t.nav.services, labelKo: t.nav.services, href: "#services", visible: true },
     { menuKey: "experts", labelEn: t.nav.experts, labelVi: t.nav.experts, labelKo: t.nav.experts, href: "#experts", visible: true },
     { menuKey: "about", labelEn: "About", labelVi: "Giới thiệu", labelKo: "소개", href: "#about", visible: true },
+    { menuKey: "reviews", labelEn: "Reviews", labelVi: "Đánh giá", labelKo: "후기", href: "/reviews", visible: true },
     { menuKey: "contact", labelEn: t.nav.contact, labelVi: t.nav.contact, labelKo: t.nav.contact, href: "#contact", visible: true },
   ]).filter((link) => link.visible).map((link) => ({ ...link, label: pickLocalized({ en: link.labelEn, vi: link.labelVi, ko: link.labelKo }, locale) }))
 
