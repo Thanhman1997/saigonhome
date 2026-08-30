@@ -7,7 +7,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
   return (
     <footer className="border-t border-border bg-secondary px-5 py-10 font-sans text-sm text-foreground lg:px-8">
       <div className="mx-auto grid max-w-6xl gap-2 md:grid-cols-3">
-        <div className="md:translate-x-4">
+        <div className="md:translate-x-8">
           <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">SERVICES</h2>
           <nav className="mt-4 flex flex-col gap-2 text-base leading-6 text-muted-foreground" aria-label="Services navigation">
             <a href="#services" className="transition-colors hover:text-accent">Massage</a>
@@ -17,7 +17,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
             <a href="#services" className="transition-colors hover:text-accent">Foot Massage</a>
           </nav>
         </div>
-        <div className="md:translate-x-4">
+        <div className="md:translate-x-8">
           <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">ABOUT</h2>
           <nav className="mt-4 flex flex-col gap-2 text-base leading-6 text-muted-foreground" aria-label="About navigation">
             <a href="#about" className="transition-colors hover:text-accent">About Us</a>
