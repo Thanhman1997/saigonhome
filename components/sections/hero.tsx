@@ -27,7 +27,7 @@ export function HeroSection({ hero }: { hero: Hero }) {
       {content.visible && <div className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-7xl flex-col justify-end px-5 py-12 lg:px-8 lg:py-16">
         <div className="max-w-3xl">
           <div className="mb-7 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-accent"><ShieldCheck className="size-4" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
-          <h1 className="max-w-3xl text-balance font-serif text-6xl font-light leading-[0.92] tracking-tight sm:text-7xl lg:text-8xl">{localized(content.titleLine1En, content.titleLine1Ko, content.titleLine1Vi)}<br /><em className="font-light text-accent">{localized(content.titleLine2En, content.titleLine2Ko, content.titleLine2Vi)}</em></h1>
+          <h1 className="max-w-3xl text-balance font-serif font-light tracking-tight" style={{ fontSize: "clamp(3.5rem, 7vw, 7.5rem)", lineHeight: 1.12 }}>{localized(content.titleLine1En, content.titleLine1Ko, content.titleLine1Vi)}<br /><em className="font-light text-accent">{localized(content.titleLine2En, content.titleLine2Ko, content.titleLine2Vi)}</em></h1>
           <p className="mt-7 max-w-xl text-pretty text-base font-light leading-relaxed text-foreground/80 sm:text-lg">{localized(content.subtitleEn, content.subtitleKo, content.subtitleVi)}</p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row"><Button asChild size="lg" variant="default" className="bg-primary text-primary-foreground shadow-sm hover:bg-accent"><a href="#services">{t.hero.ctaSecondary}</a></Button></div>
         </div>
