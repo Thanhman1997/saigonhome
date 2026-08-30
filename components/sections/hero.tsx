@@ -2,7 +2,6 @@
 
 import Image from "next/image"
 import { ArrowDown, ShieldCheck } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import type { heroContent } from "@/lib/db/schema"
 
@@ -28,7 +27,6 @@ export function HeroSection({ hero }: { hero: Hero }) {
           <div className="mb-7 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-accent"><ShieldCheck className="size-4" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
           <h1 className="max-w-3xl text-balance font-serif font-light tracking-tight" style={{ fontSize: "clamp(3.5rem, 7vw, 7.5rem)", lineHeight: 1.12 }}>{localized(content.titleLine1En, content.titleLine1Ko, content.titleLine1Vi)}<br /><em className="font-light text-accent">{localized(content.titleLine2En, content.titleLine2Ko, content.titleLine2Vi)}</em></h1>
           <p className="mt-7 max-w-xl text-pretty text-base font-light leading-relaxed text-foreground/80 sm:text-lg">{localized(content.subtitleEn, content.subtitleKo, content.subtitleVi)}</p>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row"><Button asChild size="lg" variant="default" className="bg-primary text-primary-foreground shadow-sm hover:bg-accent"><a href="#services">{t.hero.ctaSecondary}</a></Button></div>
         </div>
         <div className="mt-14 flex flex-col gap-4 border-t border-primary-foreground/25 pt-5 text-[11px] uppercase tracking-[0.18em] text-foreground/65 sm:flex-row sm:items-center sm:justify-between"><span>{t.hero.hours}</span><a href="#about" className="flex items-center gap-2 text-foreground"><ArrowDown className="size-4" />Lotus Wellness</a></div>
       </div>}
