@@ -4,6 +4,7 @@ import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { useBooking, type ServiceWithDurations } from "@/lib/booking-context"
 import { formatVnd } from "@/lib/pricing"
 import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 const fallbackImages: Record<string, { src: string; flag: string }> = {
@@ -22,8 +23,9 @@ function imageForService(service: ServiceWithDurations) {
   return fallbackImages[service.slug] ?? { src: "/images/service-thai.png", flag: "LW" }
 }
 
-export function ServicesSection({ services }: { services: ServiceWithDurations[] }) {
+export function ServicesSection({ services, featured = services.slice(0, 3), fullPage = false }: { services: ServiceWithDurations[]; featured?: ServiceWithDurations[]; fullPage?: boolean }) {
   const { t, locale } = useLanguage()
+  const displayedServices = fullPage ? services : featured
   const { openBooking } = useBooking()
 
   return (
@@ -36,7 +38,7 @@ export function ServicesSection({ services }: { services: ServiceWithDurations[]
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((service) => {
+          {displayedServices.map((service) => {
             const localizedName = pickLocalized({ en: service.nameEn, ko: service.nameKo, vi: service.nameVi }, locale)
             const name = localizedName
             const desc = pickLocalized({ en: service.descEn, ko: service.descKo, vi: service.descVi }, locale)
@@ -63,6 +65,7 @@ export function ServicesSection({ services }: { services: ServiceWithDurations[]
             )
           })}
         </div>
+        {!fullPage && <div className="mt-10 flex justify-center"><Link href="/services" className="rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground">{t.services.viewAll}</Link></div>}
       </div>
     </section>
   )

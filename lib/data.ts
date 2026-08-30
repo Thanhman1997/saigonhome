@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import {
   services,
   serviceDurations,
+  bookings,
   therapists,
   reviews,
   events,
@@ -15,7 +16,7 @@ import {
   bookingSettings,
   siteContent,
 } from "@/lib/db/schema"
-import { asc, eq, desc } from "drizzle-orm"
+import { asc, eq, desc, sql } from "drizzle-orm"
 
 export async function getServicesWithDurations() {
   const allServices = await db.select().from(services).where(eq(services.active, true)).orderBy(asc(services.sortOrder))
@@ -27,6 +28,19 @@ export async function getServicesWithDurations() {
       .filter((d) => d.serviceId === service.id)
       .sort((a, b) => a.minutes - b.minutes),
   }))
+}
+
+export async function getFeaturedServices() {
+  const serviceList = await getServicesWithDurations()
+  const since = new Date()
+  since.setMonth(since.getMonth() - 1)
+  const counts = await db
+    .select({ serviceId: bookings.serviceId, bookingCount: sql<number>`count(*)` })
+    .from(bookings)
+    .where(sql`${bookings.createdAt} >= ${since} AND ${bookings.status} IN ('confirmed', 'completed')`)
+    .groupBy(bookings.serviceId)
+  const countMap = new Map(counts.map((row) => [row.serviceId, Number(row.bookingCount)]))
+  return [...serviceList].sort((a, b) => (countMap.get(b.id) ?? 0) - (countMap.get(a.id) ?? 0) || a.sortOrder - b.sortOrder).slice(0, 3)
 }
 
 export async function getTherapists() {

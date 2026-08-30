@@ -18,6 +18,7 @@ import { AskQuestionWidget } from "@/components/ask-question-widget"
 import { getNavigationSettings } from "@/lib/admin-data"
 import {
   getServicesWithDurations,
+  getFeaturedServices,
   getAvailableTherapists,
   getTherapists,
   getActivePromotions,
@@ -31,9 +32,10 @@ import {
 } from "@/lib/data"
 
 export default async function Home() {
-  const [services, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews] =
+  const [services, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews] =
     await Promise.all([
       getServicesWithDurations(),
+      getFeaturedServices(),
       getTherapists(),
       getAvailableTherapists(),
       getActivePromotions(),
@@ -52,7 +54,7 @@ export default async function Home() {
       <main className="min-h-screen bg-background">
         <Header navigationSettings={navigationSettings} />
         <HeroSection hero={hero} />
-        <ServicesSection services={services} />
+        <ServicesSection services={services} featured={featuredServices} />
         <ExpertsSection therapists={allTherapists} />
         <Promotions promotions={promotions} />
         <AboutSection about={about} values={lotusValues} />

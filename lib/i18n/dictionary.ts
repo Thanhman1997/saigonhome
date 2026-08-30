@@ -38,6 +38,7 @@ export const dictionary = {
       viewDurations: "View durations & prices",
       book: "BOOK IT NOW",
       minutes: "min",
+      viewAll: "View all services",
     },
     experts: {
       kicker: "Massage Experts",
@@ -189,12 +190,13 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       viewDurations: "시간 및 가격 보기",
       book: "예약하기",
       minutes: "분",
+      viewAll: "전체 서비스 보기",
     },
     experts: {
       kicker: "마사지 전문가",
       title: "테라피스트 소개",
       subtitle: "신원 확인을 마친 30명의 전문 테라피스트가 방문합니다.",
-      years: "년 경력",
+      years: "년 경��",
       book: "예약",
       viewProfile: "프로필 보기",
       available: "예약 가능",
@@ -310,6 +312,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       viewDurations: "Xem thời gian & giá",
       book: "ĐẶT DỊCH VỤ",
       minutes: "phút",
+      viewAll: "Xem tất cả dịch vụ",
     },
     experts: {
       kicker: "Chuyên gia massage",
