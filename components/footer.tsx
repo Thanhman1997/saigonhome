@@ -27,7 +27,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
             <a href="#faq" className="transition-colors hover:text-accent">FAQ</a>
           </nav>
         </div>
-        <div id="contact" className="px-2 py-2 text-foreground">
+        <div id="contact" className="px-2 py-2 text-foreground md:translate-x-8">
           <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">WORKING HOURS</h2>
           <div className="mt-5 flex items-start gap-4">
             <Clock3 className="mt-1 size-7 shrink-0 text-accent" strokeWidth={1.6} aria-hidden="true" />
