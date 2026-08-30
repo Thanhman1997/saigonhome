@@ -20,15 +20,17 @@ export function HeroSection({ hero }: { hero: Hero }) {
   const localized = (en: string, ko: string, vi: string) => pickLocalized({ en, ko, vi }, locale)
 
   return (
-    <section id="top" className="relative min-h-[calc(100svh-5rem)] overflow-hidden bg-secondary text-foreground">
-      <Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private hotel room" fill priority sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-center opacity-95 saturate-125 lg:left-[38%] lg:w-[62%]" />
-      {content.visible && <div className="relative mx-auto flex min-h-[calc(100svh-5rem)] max-w-7xl flex-col justify-end px-5 py-12 lg:px-8 lg:py-16">
+    <section id="top" className="overflow-hidden bg-secondary text-foreground">
+      <div className="relative h-[52svh] min-h-[20rem] w-full lg:h-[62svh]">
+        <Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private hotel room" fill priority sizes="100vw" className="object-cover object-center opacity-95 saturate-125" />
+      </div>
+      {content.visible && <div className="mx-auto flex max-w-7xl flex-col px-5 py-10 sm:py-12 lg:px-8 lg:py-14">
         <div className="max-w-3xl">
-          <div className="mb-7 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-accent"><ShieldCheck className="size-4" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
-          <h1 className="max-w-3xl text-balance font-serif font-light tracking-tight" style={{ fontSize: "clamp(3.5rem, 7vw, 7.5rem)", lineHeight: 1.12 }}>{localized(content.titleLine1En, content.titleLine1Ko, content.titleLine1Vi)}<br /><em className="font-light text-accent">{localized(content.titleLine2En, content.titleLine2Ko, content.titleLine2Vi)}</em></h1>
-          <p className="mt-7 max-w-xl text-pretty text-base font-light leading-relaxed text-foreground/80 sm:text-lg">{localized(content.subtitleEn, content.subtitleKo, content.subtitleVi)}</p>
+          <div className="mb-5 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-accent"><ShieldCheck className="size-4" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
+          <h1 className="max-w-3xl text-balance font-serif font-light tracking-tight" style={{ fontSize: "clamp(3rem, 7vw, 7.5rem)", lineHeight: 1.08 }}>{localized(content.titleLine1En, content.titleLine1Ko, content.titleLine1Vi)}<br /><em className="font-light text-accent">{localized(content.titleLine2En, content.titleLine2Ko, content.titleLine2Vi)}</em></h1>
+          <p className="mt-5 max-w-xl text-pretty text-base font-light leading-relaxed text-foreground/80 sm:text-lg">{localized(content.subtitleEn, content.subtitleKo, content.subtitleVi)}</p>
         </div>
-        <div className="mt-14 flex flex-col gap-4 border-t border-primary-foreground/25 pt-5 text-[11px] uppercase tracking-[0.18em] text-foreground/65 sm:flex-row sm:items-center sm:justify-between"><span>{t.hero.hours}</span><a href="#about" className="flex items-center gap-2 text-foreground"><ArrowDown className="size-4" />Lotus Wellness</a></div>
+        <div className="mt-8 flex flex-col gap-4 border-t border-primary-foreground/25 pt-5 text-[11px] uppercase tracking-[0.18em] text-foreground/65 sm:flex-row sm:items-center sm:justify-between"><span>{t.hero.hours}</span><a href="#about" className="flex items-center gap-2 text-foreground"><ArrowDown className="size-4" />Lotus Wellness</a></div>
       </div>}
     </section>
   )
