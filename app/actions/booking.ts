@@ -96,7 +96,6 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const isClockTimeValid = (hours < 24 && minutes < 60) || isMidnight
     if (!isCalendarDateValid || !isClockTimeValid) return { success: false, error: "Invalid date or time" }
 
-    const maxDate = addDays(vietnamToday, settingsRow?.advanceBookingDays ?? 30)
     const weekday = parsedDate.getUTCDay()
     const [openHour, openMinute] = (settingsRow?.openTime ?? "09:00").split(":").map(Number)
     const [closeHour, closeMinute] = (settingsRow?.closeTime ?? "21:00").split(":").map(Number)
@@ -106,7 +105,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const bookingUtcMs = vietnamLocalToUtcMs(input.date, input.time)
     const minBookingUtcMs = now.getTime() + (settingsRow?.minNoticeHours ?? 2) * 60 * 60 * 1000
 
-    if (input.date < vietnamToday || input.date > maxDate) {
+    if (input.date < vietnamToday) {
       return { success: false, error: "Selected date is outside the booking window" }
     }
     if (settingsRow?.closedWeekdays?.includes(weekday)) return { success: false, error: "Selected day is unavailable" }
