@@ -27,20 +27,20 @@ export function StepService({ onNext }: { onNext: () => void }) {
         <h2 className="font-serif text-2xl">{t.booking.selectService}</h2>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {services.map((service) => {
           const name = pickLocalized({ en: service.nameEn, ko: service.nameKo, vi: service.nameVi }, locale)
           const isSelected = draft.serviceId === service.id
           return (
-            <div key={service.id} className={cn("aspect-square border p-3 transition-colors", isSelected ? "border-primary bg-muted" : "border-border")}>
-              <button type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null }) }} className="flex w-full items-start gap-2 text-left">
+            <div key={service.id} className={cn("flex h-44 flex-col border p-3 transition-colors", isSelected ? "border-primary bg-muted" : "border-border")}>
+              <button type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null }) }} className="flex w-full min-w-0 items-start gap-2 text-left">
                 <span className="text-xl" aria-hidden="true">{service.icon}</span>
                 <span className="flex min-w-0 flex-col">
                   <span className="text-sm font-medium leading-5">{name}</span>
                 </span>
               </button>
-              <div className="mt-2 flex justify-end" aria-label={`${name} duration`}>
-                <div className="flex flex-col items-start gap-1.5">
+              <div className="mt-1 flex flex-1 items-end justify-end" aria-label={`${name} duration`}>
+                <div className="flex min-w-0 flex-col items-start gap-1">
                   {[60, 90, 120].map((minutes) => {
                     const duration = service.durations.find((d) => d.minutes === minutes)
                     if (!duration) return null
@@ -50,7 +50,7 @@ export function StepService({ onNext }: { onNext: () => void }) {
                         <span className={cn("grid size-4 place-items-center rounded-full border", selected ? "border-primary" : "border-muted-foreground/50")} aria-hidden="true">
                           {selected && <span className="size-2 rounded-full bg-primary" />}
                         </span>
-                        <span className={cn("whitespace-nowrap text-[11px] leading-4", selected ? "font-semibold text-foreground" : "text-muted-foreground")}>{minutes} {t.services.minutes} / {formatVnd(duration.priceVnd)}</span>
+                        <span className={cn("whitespace-nowrap text-[10px] leading-3", selected ? "font-semibold text-foreground" : "text-muted-foreground")}>{minutes} {t.services.minutes} / {formatVnd(duration.priceVnd)}</span>
                       </button>
                     )
                   })}
