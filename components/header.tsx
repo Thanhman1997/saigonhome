@@ -15,17 +15,23 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
   const pathname = usePathname()
   const resolveHref = (href: string) => href.startsWith("#") && pathname !== "/" ? `/${href}` : href
   const navigate = (href: string) => {
-    const transition = (document as Document & { startViewTransition?: (callback: () => void) => void }).startViewTransition
+    const viewTransitionDocument = document as Document & { startViewTransition?: (callback: () => void) => void }
     if (href.startsWith("#") && pathname === "/") {
       const target = document.querySelector(href)
       if (target) {
-        if (transition) transition(() => target.scrollIntoView({ behavior: "smooth", block: "start" }))
-        else target.scrollIntoView({ behavior: "smooth", block: "start" })
+        if (viewTransitionDocument.startViewTransition) {
+          viewTransitionDocument.startViewTransition(() => target.scrollIntoView({ behavior: "smooth", block: "start" }))
+        } else {
+          target.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
         return
       }
     }
-    if (transition) transition(() => { window.location.href = href })
-    else window.location.href = href
+    if (viewTransitionDocument.startViewTransition) {
+      viewTransitionDocument.startViewTransition(() => { window.location.href = href })
+    } else {
+      window.location.href = href
+    }
   }
 
   const links = (navigationSettings.length ? navigationSettings : [
