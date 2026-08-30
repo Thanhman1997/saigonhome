@@ -40,14 +40,20 @@ export function StepService({ onNext }: { onNext: () => void }) {
                   <span className="mt-1 text-xs text-muted-foreground">{t.services.from} {formatVnd(Math.min(...service.durations.map((d) => d.priceVnd)))}</span>
                 </span>
               </button>
-              <div className="mt-3 flex items-center justify-between gap-3" aria-label={`${name} duration`}>
-                <span className="text-xs text-muted-foreground">{t.booking.selectDuration}</span>
-                <div className="flex flex-col items-end gap-1.5">
+              <div className="mt-3 flex justify-end" aria-label={`${name} duration`}>
+                <div className="flex flex-col items-start gap-2">
                   {[60, 90, 120].map((minutes) => {
                     const duration = service.durations.find((d) => d.minutes === minutes)
                     if (!duration) return null
                     const selected = draft.serviceId === service.id && draft.durationMinutes === minutes
-                    return <button key={duration.id} type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: minutes }) }} className={cn("flex size-9 shrink-0 items-center justify-center rounded-full border text-[10px] font-semibold leading-none transition-colors", selected ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground hover:border-primary/50")} aria-pressed={selected} aria-label={`${minutes} ${t.services.minutes}`}>{minutes}</button>
+                    return (
+                      <button key={duration.id} type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: minutes }) }} className="flex items-center gap-2 text-sm" aria-pressed={selected} aria-label={`${minutes} ${t.services.minutes}`}>
+                        <span className={cn("grid size-4 place-items-center rounded-full border", selected ? "border-primary" : "border-muted-foreground/50")} aria-hidden="true">
+                          {selected && <span className="size-2 rounded-full bg-primary" />}
+                        </span>
+                        <span className={cn("whitespace-nowrap", selected ? "font-semibold text-foreground" : "text-muted-foreground")}>{minutes} {t.services.minutes}</span>
+                      </button>
+                    )
                   })}
                 </div>
               </div>
