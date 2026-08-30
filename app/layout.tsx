@@ -68,7 +68,7 @@ export const metadata: Metadata = {
   generator: "v0.app",
 }
 
-export const viewport: Viewport = { themeColor: "#f5f0e7", width: "device-width", initialScale: 1, userScalable: true }
+export const viewport: Viewport = { themeColor: "#FCE2C1", width: "device-width", initialScale: 1, userScalable: true }
 
 // Locale and design tokens come from the database, so this root layout must
 // render at runtime instead of trying to connect during static generation.
