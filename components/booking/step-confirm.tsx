@@ -9,6 +9,7 @@ import { formatVnd, getGroupDiscountRate } from "@/lib/pricing"
 import { createBooking } from "@/app/actions/booking"
 import { checkIsFirstTimeCustomer } from "@/app/actions/customer"
 import type { CustomerInfo } from "./step-details"
+import { PaymentButton } from "./payment-button"
 
 export function StepConfirm({
   customerInfo,
@@ -90,6 +91,7 @@ export function StepConfirm({
           <p className="mt-1 font-mono text-lg">{bookingResult.reference}</p>
         </div>
         <p className="font-serif text-2xl">{formatVnd(bookingResult.totalVnd)}</p>
+        <PaymentButton reference={bookingResult.reference} />
         <Button onClick={onClose} size="lg" className="mt-2">
           {t.booking.bookAnother}
         </Button>
