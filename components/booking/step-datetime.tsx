@@ -8,11 +8,13 @@ import { useLanguage } from "@/lib/i18n/language-provider"
 import { Minus, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// The booking settings default to 09:00–21:00. The closing time itself is not bookable.
-const TIME_SLOTS = [
-  "09:00", "10:00", "11:00", "12:00", "13:00", "14:00",
-  "15:00", "16:00", "17:00", "18:00", "19:00", "20:00",
-]
+// Booking is available from 09:00 through 24:00 in 15-minute intervals.
+const TIME_SLOTS = Array.from({ length: 61 }, (_, index) => {
+  const totalMinutes = 9 * 60 + index * 15
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+})
 
 export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { draft, updateDraft } = useBooking()
