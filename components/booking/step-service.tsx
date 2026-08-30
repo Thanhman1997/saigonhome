@@ -5,6 +5,7 @@ import { useBooking } from "@/lib/booking-context"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { formatVnd } from "@/lib/pricing"
 
 export function StepService({ onNext }: { onNext: () => void }) {
   const { services, draft, updateDraft } = useBooking()
@@ -49,7 +50,7 @@ export function StepService({ onNext }: { onNext: () => void }) {
                         <span className={cn("grid size-4 place-items-center rounded-full border", selected ? "border-primary" : "border-muted-foreground/50")} aria-hidden="true">
                           {selected && <span className="size-2 rounded-full bg-primary" />}
                         </span>
-                        <span className={cn("whitespace-nowrap", selected ? "font-semibold text-foreground" : "text-muted-foreground")}>{minutes} {t.services.minutes}</span>
+                        <span className={cn("whitespace-nowrap", selected ? "font-semibold text-foreground" : "text-muted-foreground")}>{minutes} {t.services.minutes} / {formatVnd(duration.priceVnd)}</span>
                       </button>
                     )
                   })}
