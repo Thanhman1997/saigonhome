@@ -58,6 +58,9 @@ export const reviews = pgTable("reviews", {
   customerName: text("customer_name").notNull(),
   rating: integer("rating").notNull(),
   comment: text("comment").notNull(),
+  commentEn: text("comment_en"),
+  commentKo: text("comment_ko"),
+  commentVi: text("comment_vi"),
   reviewDate: date("review_date").notNull(),
   approved: boolean("approved").notNull().default(false),
 })
