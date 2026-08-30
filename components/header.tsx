@@ -14,6 +14,19 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
   const { locale, t } = useLanguage()
   const pathname = usePathname()
   const resolveHref = (href: string) => href.startsWith("#") && pathname !== "/" ? `/${href}` : href
+  const navigate = (href: string) => {
+    const transition = (document as Document & { startViewTransition?: (callback: () => void) => void }).startViewTransition
+    if (href.startsWith("#") && pathname === "/") {
+      const target = document.querySelector(href)
+      if (target) {
+        if (transition) transition(() => target.scrollIntoView({ behavior: "smooth", block: "start" }))
+        else target.scrollIntoView({ behavior: "smooth", block: "start" })
+        return
+      }
+    }
+    if (transition) transition(() => { window.location.href = href })
+    else window.location.href = href
+  }
 
   const links = (navigationSettings.length ? navigationSettings : [
     { menuKey: "home", labelEn: "HOME", labelVi: "TRANG CHỦ", labelKo: "홈", href: "#top", visible: true },
@@ -35,6 +48,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
             <a
               key={link.href}
               href={resolveHref(link.href)}
+              onClick={(event) => { event.preventDefault(); navigate(resolveHref(link.href)) }}
               className={`relative tracking-[0.08em] transition-colors ${link.label === "HOME" ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
               style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.125rem" : link.fontSize === "md" ? "1rem" : "0.75rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}
             >
@@ -59,7 +73,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         <nav id="mobile-menu" className="border-t border-border bg-background px-5 py-6 lg:hidden" aria-label="Mobile navigation">
           <div className="flex flex-col gap-5">
             {links.map((link) => (
-              <a key={link.href} href={resolveHref(link.href)} onClick={() => setOpen(false)} className="font-serif text-2xl" style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.5rem" : link.fontSize === "md" ? "1.25rem" : "1rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}>
+              <a key={link.href} href={resolveHref(link.href)} onClick={(event) => { event.preventDefault(); setOpen(false); navigate(resolveHref(link.href)) }} className="font-serif text-2xl" style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.5rem" : link.fontSize === "md" ? "1.25rem" : "1rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}>
                 {link.label}
               </a>
             ))}

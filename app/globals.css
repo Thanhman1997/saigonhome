@@ -1,4 +1,11 @@
 @import 'tailwindcss';
+
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: 280ms; animation-timing-function: ease-out; }
+::view-transition-old(root) { animation-name: lotus-fade-out; }
+::view-transition-new(root) { animation-name: lotus-fade-in; }
+@keyframes lotus-fade-out { to { opacity: 0.35; transform: scale(0.99); } }
+@keyframes lotus-fade-in { from { opacity: 0; transform: scale(1.01); } }
 @import 'tw-animate-css';
 @custom-variant dark (&:is(.dark *));
 :root{--background:#FCE2C1;--foreground:oklch(0.22 0.045 42);--card:oklch(0.985 0.022 78);--card-foreground:var(--foreground);--popover:var(--card);--popover-foreground:var(--foreground);--primary:oklch(0.51 0.16 48);--primary-foreground:oklch(0.99 0.015 80);--secondary:oklch(0.90 0.075 66);--secondary-foreground:oklch(0.27 0.06 42);--muted:oklch(0.925 0.05 72);--muted-foreground:oklch(0.45 0.04 46);--accent:oklch(0.62 0.19 35);--accent-foreground:oklch(0.99 0.015 80);--destructive:oklch(0.55 0.2 27);--destructive-foreground:oklch(0.98 0.01 82);--border:oklch(0.82 0.06 63);--input:var(--border);--ring:var(--accent);--radius:0.75rem;--sidebar:var(--background);--sidebar-foreground:var(--foreground);--sidebar-primary:var(--primary);--sidebar-primary-foreground:var(--primary-foreground);--sidebar-accent:var(--secondary);--sidebar-accent-foreground:var(--secondary-foreground);--sidebar-border:var(--border);--sidebar-ring:var(--ring);--lotus-pink:oklch(0.58 0.19 12);--lotus-pink-foreground:oklch(0.99 0.015 80);--radius-button:9999px;--radius-card:1rem;--shadow-card:0 12px 40px -30px rgb(92 48 20 / 0.5);--heading-scale:1;--body-font-weight:400;--body-line-height:1.5}
