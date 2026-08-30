@@ -6,8 +6,8 @@ type ContactInfo = Awaited<ReturnType<typeof getContactInfo>>
 
 export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
   return (
-    <footer className="border-t border-border bg-secondary px-5 py-10 font-serif text-foreground lg:px-8">
-      <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.15fr_0.9fr_1fr_1.35fr]">
+    <footer className="border-t border-border bg-secondary px-5 py-10 font-sans text-sm text-foreground lg:px-8">
+      <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-4">
         <div className="flex flex-col items-center text-center md:items-start md:text-left">
           <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={180} height={140} className="h-24 w-auto object-contain" style={{ mixBlendMode: "darken" }} />
           <p className="mt-3 max-w-xs text-sm leading-6 text-muted-foreground">Professional in-home massage and wellness care, delivered with warmth, privacy, and natural balance.</p>
@@ -20,7 +20,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           <p className="mt-4 text-xs text-muted-foreground">© 2026 Lotus Wellness. All rights reserved.</p>
         </div>
         <div>
-          <h2 className="font-serif text-2xl text-guiding-pink">SERVICES</h2>
+          <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">SERVICES</h2>
           <nav className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground" aria-label="Services navigation">
             <a href="#services" className="transition-colors hover:text-accent">Massage</a>
             <a href="#services" className="transition-colors hover:text-accent">Aroma Massage</a>
@@ -30,7 +30,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           </nav>
         </div>
         <div>
-          <h2 className="font-serif text-2xl text-guiding-pink">ABOUT</h2>
+          <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">ABOUT</h2>
           <nav className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground" aria-label="About navigation">
             <a href="#about" className="transition-colors hover:text-accent">About Us</a>
             <a href="#about" className="transition-colors hover:text-accent">Our Space</a>
@@ -40,10 +40,10 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           </nav>
         </div>
         <div id="contact" className="px-2 py-2 text-foreground">
-          <h2 className="font-serif text-2xl text-guiding-pink">WORKING HOURS</h2>
-          <div className="mt-6 flex items-start gap-4">
+          <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">WORKING HOURS</h2>
+          <div className="mt-5 flex items-start gap-4">
             <Clock3 className="mt-1 size-7 shrink-0 text-accent" strokeWidth={1.6} aria-hidden="true" />
-            <div className="flex flex-col gap-5 text-base leading-relaxed text-muted-foreground">
+            <div className="flex flex-col gap-4 leading-6 text-muted-foreground">
               <div>
                 <p className="font-semibold text-foreground">Open daily</p>
                 <p>7:00 AM – 11:00 PM</p>
@@ -55,8 +55,8 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
             </div>
           </div>
           <div className="mt-7 flex items-center gap-4">
-            <span className="font-serif text-4xl leading-none text-guiding-pink" aria-hidden="true">♡</span>
-            <p className="text-base leading-relaxed text-muted-foreground">Chúng tôi luôn sẵn sàng<br />chăm sóc bạn.</p>
+            <span className="text-2xl leading-none text-guiding-pink" aria-hidden="true">♡</span>
+            <p className="leading-6 text-muted-foreground">Chúng tôi luôn sẵn sàng<br />chăm sóc bạn.</p>
           </div>
         </div>
       </div>
