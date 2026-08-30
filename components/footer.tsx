@@ -6,10 +6,10 @@ type ContactInfo = Awaited<ReturnType<typeof getContactInfo>>
 export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
   return (
     <footer className="border-t border-border bg-secondary px-5 py-10 font-sans text-sm text-foreground lg:px-8">
-      <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
         <div>
           <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">SERVICES</h2>
-          <nav className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground" aria-label="Services navigation">
+          <nav className="mt-4 flex flex-col gap-2 text-base leading-6 text-muted-foreground" aria-label="Services navigation">
             <a href="#services" className="transition-colors hover:text-accent">Massage</a>
             <a href="#services" className="transition-colors hover:text-accent">Aroma Massage</a>
             <a href="#services" className="transition-colors hover:text-accent">Deep Tissue</a>
@@ -19,7 +19,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
         </div>
         <div>
           <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">ABOUT</h2>
-          <nav className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground" aria-label="About navigation">
+          <nav className="mt-4 flex flex-col gap-2 text-base leading-6 text-muted-foreground" aria-label="About navigation">
             <a href="#about" className="transition-colors hover:text-accent">About Us</a>
             <a href="#about" className="transition-colors hover:text-accent">Our Space</a>
             <a href="#experts" className="transition-colors hover:text-accent">Therapists</a>
@@ -31,7 +31,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">WORKING HOURS</h2>
           <div className="mt-5 flex items-start gap-4">
             <Clock3 className="mt-1 size-7 shrink-0 text-accent" strokeWidth={1.6} aria-hidden="true" />
-            <div className="flex flex-col gap-4 leading-6 text-muted-foreground">
+            <div className="flex flex-col gap-4 text-base leading-6 text-muted-foreground">
               <div>
                 <p className="font-semibold text-foreground">Open daily</p>
                 <p>7:00 AM – 11:00 PM</p>
@@ -44,7 +44,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           </div>
           <div className="mt-7 flex items-center gap-4">
             <span className="text-2xl leading-none text-guiding-pink" aria-hidden="true">♡</span>
-            <p className="leading-6 text-muted-foreground">Chúng tôi luôn sẵn sàng<br />chăm sóc bạn.</p>
+            <p className="text-base leading-6 text-muted-foreground">Chúng tôi luôn sẵn sàng<br />chăm sóc bạn.</p>
           </div>
         </div>
       </div>
