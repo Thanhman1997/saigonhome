@@ -27,7 +27,7 @@ export function StepService({ onNext }: { onNext: () => void }) {
         <h2 className="font-serif text-2xl">{t.booking.selectService}</h2>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
         {services.map((service) => {
           const name = pickLocalized({ en: service.nameEn, ko: service.nameKo, vi: service.nameVi }, locale)
           const isSelected = draft.serviceId === service.id
