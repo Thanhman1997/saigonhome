@@ -29,7 +29,7 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
   const body = about && about[bodyKey].length > 0 ? about[bodyKey] : t.about.body
 
   return (
-    <section id="about" className="bg-background py-20 lg:py-28">
+    <section id="about" className="bg-muted py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <Image src="/images/lotus-philosophy-logo.png" alt="Lotus Wellness" width={720} height={420} className="mx-auto mb-3 h-auto w-48 object-contain sm:w-56 lg:w-64" loading="lazy" />

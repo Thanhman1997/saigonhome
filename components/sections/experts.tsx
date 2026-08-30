@@ -19,7 +19,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
   const visible = realTherapists.slice(0, visibleCount)
 
   return (
-    <section id="experts" className="bg-background py-24 lg:py-32">
+    <section id="experts" className="bg-muted py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">{t.experts.kicker}</p>
