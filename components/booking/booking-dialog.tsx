@@ -50,7 +50,7 @@ export function BookingDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[92vh] max-w-2xl overflow-y-auto p-0" showCloseButton>
+      <DialogContent className="max-h-[94vh] max-w-5xl overflow-y-auto p-0" showCloseButton>
         <DialogTitle className="sr-only">{t.booking.title}</DialogTitle>
         <DialogDescription className="sr-only">
           {t.booking.step} {stepIndex + 1} {t.booking.of} {STEP_KEYS.length}
