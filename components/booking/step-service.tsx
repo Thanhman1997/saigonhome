@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useBooking } from "@/lib/booking-context"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
-import { formatVnd } from "@/lib/pricing"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -37,7 +36,6 @@ export function StepService({ onNext }: { onNext: () => void }) {
                 <span className="text-2xl" aria-hidden="true">{service.icon}</span>
                 <span className="flex flex-col">
                   <span className="font-medium">{name}</span>
-                  <span className="mt-1 text-xs text-muted-foreground">{t.services.from} {formatVnd(Math.min(...service.durations.map((d) => d.priceVnd)))}</span>
                 </span>
               </button>
               <div className="mt-3 flex justify-end" aria-label={`${name} duration`}>
