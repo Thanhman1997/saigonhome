@@ -39,7 +39,7 @@ export function StepService({ onNext }: { onNext: () => void }) {
                   <span className="text-sm font-medium leading-5">{name}</span>
                 </span>
               </button>
-              <div className="mt-1 flex flex-1 items-end justify-end" aria-label={`${name} duration`}>
+              <div className="mt-2 flex justify-end" aria-label={`${name} duration`}>
                 <div className="flex min-w-0 flex-col items-start gap-1.5">
                   {[60, 90, 120].map((minutes) => {
                     const duration = service.durations.find((d) => d.minutes === minutes)
