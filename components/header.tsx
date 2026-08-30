@@ -4,13 +4,13 @@ import { useState } from "react"
 import Image from "next/image"
 import { Menu, X } from "lucide-react"
 import { LanguageSwitcher } from "@/components/language-switcher"
-import { useLanguage } from "@/lib/i18n/language-provider"
+import { pickLocalized, useLanguage } from "@/lib/i18n/language-provider"
 
 type NavigationSetting = { menuKey: string; labelEn: string; labelVi: string; labelKo: string; href: string; visible: boolean; fontFamily?: string; fontSize?: string; fontWeight?: string; textColor?: string; hoverColor?: string }
 
 export function Header({ navigationSettings = [] }: { navigationSettings?: NavigationSetting[] }) {
   const [open, setOpen] = useState(false)
-  const { t } = useLanguage()
+  const { locale, t } = useLanguage()
 
   const links = (navigationSettings.length ? navigationSettings : [
     { menuKey: "home", labelEn: "HOME", labelVi: "TRANG CHỦ", labelKo: "홈", href: "#top", visible: true },
@@ -18,7 +18,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     { menuKey: "experts", labelEn: t.nav.experts, labelVi: t.nav.experts, labelKo: t.nav.experts, href: "#experts", visible: true },
     { menuKey: "about", labelEn: "About", labelVi: "Giới thiệu", labelKo: "소개", href: "#about", visible: true },
     { menuKey: "contact", labelEn: t.nav.contact, labelVi: t.nav.contact, labelKo: t.nav.contact, href: "#contact", visible: true },
-  ]).filter((link) => link.visible).map((link) => ({ ...link, label: link.labelEn }))
+  ]).filter((link) => link.visible).map((link) => ({ ...link, label: pickLocalized({ en: link.labelEn, vi: link.labelVi, ko: link.labelKo }, locale) }))
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
@@ -55,7 +55,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         <nav id="mobile-menu" className="border-t border-border bg-background px-5 py-6 lg:hidden" aria-label="Mobile navigation">
           <div className="flex flex-col gap-5">
             {links.map((link) => (
-              <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="font-serif text-2xl">
+              <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="font-serif text-2xl" style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.5rem" : link.fontSize === "md" ? "1.25rem" : "1rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}>
                 {link.label}
               </a>
             ))}
