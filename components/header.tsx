@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { Menu, X } from "lucide-react"
 import { LanguageSwitcher } from "@/components/language-switcher"
@@ -11,6 +12,8 @@ type NavigationSetting = { menuKey: string; labelEn: string; labelVi: string; la
 export function Header({ navigationSettings = [] }: { navigationSettings?: NavigationSetting[] }) {
   const [open, setOpen] = useState(false)
   const { locale, t } = useLanguage()
+  const pathname = usePathname()
+  const resolveHref = (href: string) => href.startsWith("#") && pathname !== "/" ? `/${href}` : href
 
   const links = (navigationSettings.length ? navigationSettings : [
     { menuKey: "home", labelEn: "HOME", labelVi: "TRANG CHỦ", labelKo: "홈", href: "#top", visible: true },
@@ -24,14 +27,14 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-5 lg:px-8">
-        <a href="#top" className="group flex items-center" aria-label="Lotus Wellness home">
+        <a href={resolveHref("#top")} className="group flex items-center" aria-label="Lotus Wellness home">
           <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-20 w-auto object-contain sm:h-24" style={{ mixBlendMode: "darken" }} />
         </a>
         <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary navigation">
           {links.map((link) => (
             <a
               key={link.href}
-              href={link.href}
+              href={resolveHref(link.href)}
               className={`relative tracking-[0.08em] transition-colors ${link.label === "HOME" ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
               style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.125rem" : link.fontSize === "md" ? "1rem" : "0.75rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}
             >
@@ -56,7 +59,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         <nav id="mobile-menu" className="border-t border-border bg-background px-5 py-6 lg:hidden" aria-label="Mobile navigation">
           <div className="flex flex-col gap-5">
             {links.map((link) => (
-              <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="font-serif text-2xl" style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.5rem" : link.fontSize === "md" ? "1.25rem" : "1rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}>
+              <a key={link.href} href={resolveHref(link.href)} onClick={() => setOpen(false)} className="font-serif text-2xl" style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.5rem" : link.fontSize === "md" ? "1.25rem" : "1rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}>
                 {link.label}
               </a>
             ))}
