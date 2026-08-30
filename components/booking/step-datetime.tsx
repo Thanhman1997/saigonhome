@@ -24,6 +24,8 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
   const selectedDate = draft.date ? new Date(draft.date + "T00:00:00") : undefined
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const maxBookingDate = new Date(today)
+  maxBookingDate.setDate(maxBookingDate.getDate() + 30)
 
   function handleContinue() {
     if (!draft.date || !draft.time) {
@@ -53,7 +55,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
                 updateDraft({ date: localDate })
               }
             }}
-            disabled={{ before: today }}
+            disabled={{ before: today, after: maxBookingDate }}
           />
         </div>
 
