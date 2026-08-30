@@ -46,11 +46,11 @@ export function StepService({ onNext }: { onNext: () => void }) {
                     if (!duration) return null
                     const selected = draft.serviceId === service.id && draft.durationMinutes === minutes
                     return (
-                      <button key={duration.id} type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: minutes }) }} className="flex items-center gap-1.5 text-xs" aria-pressed={selected} aria-label={`${minutes} ${t.services.minutes}`}>
+                      <button key={duration.id} type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: minutes }) }} className="flex items-center gap-1.5 text-sm" aria-pressed={selected} aria-label={`${minutes} ${t.services.minutes}`}>
                         <span className={cn("grid size-4 place-items-center rounded-full border", selected ? "border-primary" : "border-muted-foreground/50")} aria-hidden="true">
                           {selected && <span className="size-2 rounded-full bg-primary" />}
                         </span>
-                        <span className={cn("whitespace-nowrap text-[10px] leading-3", selected ? "font-semibold text-foreground" : "text-muted-foreground")}>{minutes} {t.services.minutes} / {formatVnd(duration.priceVnd)}</span>
+                        <span className={cn("whitespace-nowrap text-[11px] leading-4", selected ? "font-semibold text-foreground" : "text-muted-foreground")}>{minutes} {t.services.minutes} / {formatVnd(duration.priceVnd)}</span>
                       </button>
                     )
                   })}

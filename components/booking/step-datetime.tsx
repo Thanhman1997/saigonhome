@@ -69,7 +69,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
                     updateDraft({ time })
                   }}
                   className={cn(
-                    "border px-2 py-2 text-xs font-medium transition-colors sm:text-sm",
+                    "border px-2 py-2 text-sm font-medium transition-colors",
                     draft.time === time
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border hover:border-primary/50",
