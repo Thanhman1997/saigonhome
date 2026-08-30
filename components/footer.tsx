@@ -6,7 +6,7 @@ type ContactInfo = Awaited<ReturnType<typeof getContactInfo>>
 export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
   return (
     <footer className="border-t border-border bg-secondary px-5 py-10 font-sans text-sm text-foreground lg:px-8">
-      <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-2 md:grid-cols-3">
         <div>
           <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">SERVICES</h2>
           <nav className="mt-4 flex flex-col gap-2 text-base leading-6 text-muted-foreground" aria-label="Services navigation">
