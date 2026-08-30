@@ -33,13 +33,13 @@ export function StepService({ onNext }: { onNext: () => void }) {
           const isSelected = draft.serviceId === service.id
           return (
             <div key={service.id} className={cn("flex h-44 flex-col border p-3 transition-colors", isSelected ? "border-primary bg-muted" : "border-border")}>
-              <button type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null }) }} className="flex w-full min-w-0 items-start gap-2 text-left">
-                <span className="text-xl" aria-hidden="true">{service.icon}</span>
-                <span className="flex h-10 min-w-0 flex-col">
-                  <span className="text-sm font-medium leading-5">{name}</span>
+              <button type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null }) }} className="flex h-10 w-full min-w-0 items-start gap-2 text-left">
+                <span className="text-xl leading-5" aria-hidden="true">{service.icon}</span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="line-clamp-2 text-sm font-medium leading-5">{name}</span>
                 </span>
               </button>
-              <div className="mt-2 flex justify-end" aria-label={`${name} duration`}>
+              <div className="mt-2 flex h-[6.75rem] justify-end" aria-label={`${name} duration`}>
                 <div className="flex min-w-0 flex-col items-start gap-1.5">
                   {[60, 90, 120].map((minutes) => {
                     const duration = service.durations.find((d) => d.minutes === minutes)
