@@ -27,12 +27,12 @@ export function StepService({ onNext }: { onNext: () => void }) {
         <h2 className="font-serif text-2xl">{t.booking.selectService}</h2>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {services.map((service) => {
           const name = pickLocalized({ en: service.nameEn, ko: service.nameKo, vi: service.nameVi }, locale)
           const isSelected = draft.serviceId === service.id
           return (
-            <div key={service.id} className={cn("min-h-52 border p-3 transition-colors", isSelected ? "border-primary bg-muted" : "border-border")}>
+            <div key={service.id} className={cn("aspect-square border p-3 transition-colors", isSelected ? "border-primary bg-muted" : "border-border")}>
               <button type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null }) }} className="flex w-full items-start gap-2 text-left">
                 <span className="text-xl" aria-hidden="true">{service.icon}</span>
                 <span className="flex min-w-0 flex-col">
