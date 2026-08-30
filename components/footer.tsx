@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { Clock3, Facebook, Instagram, MapPin, Youtube } from "lucide-react"
+import { Clock3, Facebook, MapPin, Youtube } from "lucide-react"
 import { getContactInfo } from "@/lib/data"
 
 type ContactInfo = Awaited<ReturnType<typeof getContactInfo>>
@@ -14,7 +14,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground"><MapPin className="size-4 text-accent" aria-hidden="true" />Ho Chi Minh City, Vietnam</p>
           <div className="mt-4 flex items-center gap-3" aria-label="Social media links">
             <a href="#contact" aria-label="Facebook" className="grid size-8 place-items-center rounded-full border border-border text-accent transition-colors hover:bg-accent hover:text-accent-foreground"><Facebook className="size-4" /></a>
-            {contactInfo?.instagramUrl && <a href={contactInfo.instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram" className="grid size-8 place-items-center rounded-full border border-border text-accent transition-colors hover:bg-accent hover:text-accent-foreground"><Instagram className="size-4" /></a>}
+            {contactInfo?.instagramUrl && <a href={contactInfo.instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram" className="grid size-8 place-items-center rounded-full border border-border transition-colors hover:bg-accent"><img src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/instagram/default.svg" alt="" width="18" height="18" className="size-[18px] object-contain" /></a>}
             <a href="#contact" aria-label="YouTube" className="grid size-8 place-items-center rounded-full border border-border text-accent transition-colors hover:bg-accent hover:text-accent-foreground"><Youtube className="size-4" /></a>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">© 2026 Lotus Wellness. All rights reserved.</p>
