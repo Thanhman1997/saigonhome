@@ -37,7 +37,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
       <h2 className="font-serif text-2xl">{t.booking.steps.datetime}</h2>
 
       <div className="flex flex-col gap-3">
-        <div className="flex justify-center overflow-hidden border border-border sm:justify-center [&_.rdp-root]:p-1 [&_.rdp-root]:[--cell-size:2.25rem]">
+        <div className="mx-auto flex w-fit justify-center overflow-hidden border border-border sm:justify-center [&_.rdp-root]:p-1 [&_.rdp-root]:[--cell-size:2rem]">
           <Calendar
             mode="single"
             showOutsideDays={false}
