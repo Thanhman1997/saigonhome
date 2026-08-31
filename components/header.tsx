@@ -71,7 +71,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
               key={link.href}
               href={resolveHref(link.href, link.menuKey)}
               onClick={(event) => { event.preventDefault(); navigate(resolveHref(link.href, link.menuKey)) }}
-              className={`relative tracking-[0.08em] transition-colors ${locale === "en" ? "uppercase" : ""} ${isActive(link) ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
+              className={`relative tracking-[0.08em] transition-colors ${locale === "en" || locale === "vi" ? "uppercase" : ""} ${isActive(link) ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
               style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "1.15rem" : link.fontSize === "md" ? "1.05rem" : "0.95rem") : locale === "en" ? (link.fontSize === "lg" ? "2rem" : link.fontSize === "md" ? "1.8rem" : "1.35rem") : (link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem"), fontWeight: 800, color: isActive(link) ? "var(--accent)" : link.textColor === "inherit" ? undefined : link.textColor }}
             >
               {link.label}
