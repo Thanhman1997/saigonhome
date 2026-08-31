@@ -73,7 +73,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
               href={resolveHref(link.href, link.menuKey)}
               onClick={(event) => { event.preventDefault(); navigate(resolveHref(link.href, link.menuKey)) }}
               className={`relative tracking-[0.08em] transition-colors ${isActive(link) ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
-              style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "1.8rem" : link.fontSize === "md" ? "1.6rem" : "1.2rem") : (link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem"), fontWeight: 800, color: isActive(link) ? "var(--accent)" : link.textColor === "inherit" ? undefined : link.textColor }}
+              style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "1rem" : link.fontSize === "md" ? "0.9rem" : "0.8rem") : (link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem"), fontWeight: 800, color: isActive(link) ? "var(--accent)" : link.textColor === "inherit" ? undefined : link.textColor }}
             >
               {link.label}
             </a>
@@ -96,7 +96,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         <nav id="mobile-menu" className="border-t border-border bg-background px-5 py-6 lg:hidden" aria-label="Mobile navigation">
           <div className="flex flex-col gap-5">
             {links.map((link) => (
-              <a key={link.href} href={resolveHref(link.href, link.menuKey)} onClick={(event) => { event.preventDefault(); setOpen(false); navigate(resolveHref(link.href, link.menuKey)) }} className={`font-serif text-4xl font-bold ${isActive(link) ? "text-accent" : "text-foreground"}`} style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "2.5rem" : link.fontSize === "md" ? "2.1rem" : "1.7rem") : (link.fontSize === "lg" ? "3rem" : link.fontSize === "md" ? "2.5rem" : "2rem"), fontWeight: 800, color: isActive(link) || link.textColor === "inherit" ? undefined : link.textColor }}>
+              <a key={link.href} href={resolveHref(link.href, link.menuKey)} onClick={(event) => { event.preventDefault(); setOpen(false); navigate(resolveHref(link.href, link.menuKey)) }} className={`font-serif text-4xl font-bold ${isActive(link) ? "text-accent" : "text-foreground"}`} style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "2rem" : link.fontSize === "md" ? "1.7rem" : "1.4rem") : (link.fontSize === "lg" ? "3rem" : link.fontSize === "md" ? "2.5rem" : "2rem"), fontWeight: 800, color: isActive(link) || link.textColor === "inherit" ? undefined : link.textColor }}>
                 {link.label}
               </a>
             ))}
