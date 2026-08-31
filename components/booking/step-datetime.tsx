@@ -70,7 +70,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
                     updateDraft({ time })
                   }}
                   className={cn(
-                    "aspect-square size-16 border p-1 text-sm font-medium leading-5 transition-colors",
+                    "aspect-square size-14 border p-1 text-sm font-medium leading-5 transition-colors",
                     draft.time === time
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border hover:border-primary/50",
