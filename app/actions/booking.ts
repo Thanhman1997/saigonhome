@@ -136,13 +136,16 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     // apply whichever is greater for the customer.
     const groupRate = getGroupDiscountRate(input.guests, rates)
     const firstTimeRate = input.isFirstTime ? rates.firstTimeDiscount : 0
-    const appliedRate = Math.max(groupRate, firstTimeRate)
+    const holidayGroupRate = input.guests >= 2 && input.date >= "2026-09-01" && input.date <= "2026-09-03" ? 0.05 : 0
+    const appliedRate = Math.max(groupRate, firstTimeRate, holidayGroupRate)
     const discountVnd = Math.round(subtotal * appliedRate)
     const totalVnd = subtotal - discountVnd
 
     let discountLabel: string | null = null
     if (appliedRate === firstTimeRate && firstTimeRate > 0) {
       discountLabel = `First-time customer discount: ${Math.round(firstTimeRate * 100)}% off`
+    } else if (appliedRate === holidayGroupRate && holidayGroupRate > 0) {
+      discountLabel = "National Day group discount: 5% off"
     } else if (appliedRate === groupRate && groupRate > 0) {
       discountLabel = getGroupDiscountLabel(input.guests, rates)
     }
