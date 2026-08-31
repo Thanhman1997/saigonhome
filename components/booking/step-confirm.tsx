@@ -16,13 +16,11 @@ export function StepConfirm({
   onBack,
   bookingResult,
   setBookingResult,
-  onClose,
 }: {
   customerInfo: CustomerInfo
   onBack: () => void
   bookingResult: { reference: string; totalVnd: number; subtotalVnd: number; discountVnd: number } | null
   setBookingResult: (r: { reference: string; totalVnd: number; subtotalVnd: number; discountVnd: number } | null) => void
-  onClose: () => void
 }) {
   const { draft, services, therapists } = useBooking()
   const { t, locale } = useLanguage()
@@ -92,9 +90,6 @@ export function StepConfirm({
         </div>
         <p className="font-sans text-2xl font-semibold tracking-tight">{formatVnd(bookingResult.totalVnd)}</p>
         <PaymentButton reference={bookingResult.reference} />
-        <Button onClick={onClose} size="lg" className="mt-2">
-          {t.booking.bookAnother}
-        </Button>
       </div>
     )
   }

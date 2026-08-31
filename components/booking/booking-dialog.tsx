@@ -97,7 +97,6 @@ export function BookingDialog() {
                 onBack={goBack}
                 bookingResult={bookingResult}
                 setBookingResult={setBookingResult}
-                onClose={() => handleClose(false)}
               />
             )}
           </div>
