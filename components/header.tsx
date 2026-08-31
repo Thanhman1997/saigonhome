@@ -44,7 +44,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
               href={resolveHref(link.href)}
               onClick={(event) => { event.preventDefault(); navigate(resolveHref(link.href)) }}
               className={`relative tracking-[0.08em] transition-colors ${link.label === "HOME" ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
-              style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "3.375rem" : link.fontSize === "md" ? "3rem" : "2.25rem", fontWeight: 800, color: link.textColor === "inherit" ? undefined : link.textColor }}
+              style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.125rem" : link.fontSize === "md" ? "1rem" : "0.75rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}
             >
               {link.label}
             </a>
