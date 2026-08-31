@@ -1,6 +1,7 @@
 "use client"
 
 import { useActionState, useState } from "react"
+import { useAdminAutosave } from "@/hooks/use-admin-autosave"
 import { updateAboutContent } from "@/app/actions/about"
 import { ImageUpload } from "@/components/admin/image-upload"
 import { Button } from "@/components/ui/button"
@@ -22,9 +23,11 @@ type About = {
 export function AboutForm({ about }: { about: About }) {
   const [state, action, pending] = useActionState(updateAboutContent, undefined)
   const [imageUrl, setImageUrl] = useState<string | null>(about.imageUrl)
+  const [draftValues, setDraftValues] = useState<Record<string, string>>({})
+  const autosaveStatus = useAdminAutosave("about", "all", draftValues)
 
   return (
-    <form action={action} className="flex flex-col gap-6">
+    <form action={action} onChange={(event) => setDraftValues(Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string, string>)} className="flex flex-col gap-6">
       <div className="flex items-center gap-3 border-b border-border pb-4">
         <input id="visible" name="visible" type="checkbox" defaultChecked={about.visible} className="size-4" />
         <Label htmlFor="visible" className="text-sm font-medium">
