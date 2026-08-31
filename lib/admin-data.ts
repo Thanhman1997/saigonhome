@@ -18,7 +18,7 @@ import {
   questions,
   navigationSettings,
 } from "@/lib/db/schema"
-import { asc, desc, eq } from "drizzle-orm"
+import { asc, desc, eq, sql } from "drizzle-orm"
 
 export async function getAllBookingsWithRelations() {
   const allBookings = await db.select().from(bookings).orderBy(desc(bookings.createdAt))
@@ -66,7 +66,7 @@ export async function getContactInfoAdmin() {
 }
 
 export async function getAllTherapistsAdmin() {
-  return db.select().from(therapists).orderBy(asc(therapists.sortOrder), asc(therapists.code))
+  return db.select().from(therapists).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getHeroContentAdmin() {
