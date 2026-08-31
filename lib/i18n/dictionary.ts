@@ -93,6 +93,7 @@ export const dictionary = {
         },
       ],
     },
+    reviews: { kicker: "Guest experiences", title: "Care that stays with you.", link: "Read all reviews" },
     contact: {
       kicker: "Reservations",
 title: "If you have any questions, please feel free to contact us. We will be happy to provide you with more detailed information.",
@@ -174,7 +175,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       kicker: "우리의 핵심 가치",
       title: "우리의 핵심 가치",
       body: [
-        "Lotus Wellness는 진정한 휴식이 완전한 편안함에서 시작된다고 믿습니다.",
+        "Lotus Wellness는 진정한 휴식이 완전한 편���함에서 시작된다고 믿습니다.",
         "저희는 고객이 원하는 공간으로 전문 마사지 서비스를 제공하며, 숙련된 기술과 세심하고 개인화된 케어를 결합하여 프라이빗하고 편안한 웰니스 경험을 선사합니다.",
         "탁월함, 편리함, 합리적인 가격, 프라이버시라는 네 가지 핵심 가치를 바탕으로, 모든 경험이 매끄럽고 회복적이며 고객님의 필요에 맞춰지도록 최선을 다하고 있습니다.",
         "저희가 신중하게 선별한 테라피스트들은 다양한 마사지 기법에 능숙하며 기본적인 영어 소통 능력을 갖추고 있어, 전 세계에서 오시는 고객님들을 따뜻하게 맞이할 수 있습니다.",
@@ -230,6 +231,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
         { q: "취소 정책은 어떻게 되나요?", a: "계좌 이체로 결제한 예약의 경우, 예약 시간 1시간 전까지 취소 시 전액 환불이 가능합니다. 예약 시간 1시간 이내 취소 시에는 예약 금액의 70%가 환불됩니다." },
       ],
     },
+    reviews: { kicker: "고객 후기", title: "마음에 오래 남는 케어.", link: "모든 후기 보기" },
     contact: { kicker: "예약 문의", title: "궁금하신 사항이 있으시면 언제든지 문의해 주세요. 자세히 안내해 드리겠습니다.", subtitle: "" },
     booking: {
       title: "예약하기",
@@ -298,7 +300,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       body: [
         "Tại Lotus Wellness, chúng tôi tin rằng sự thư giãn thực sự bắt đầu từ cảm giác hoàn toàn thoải mái.",
         "Chúng tôi mang liệu trình massage chuyên nghiệp đến không gian bạn yêu thích, kết hợp kỹ thuật thành thục với sự chăm sóc tận tâm, cá nhân hóa để tạo nên trải nghiệm chăm sóc sức khỏe riêng tư và thoải mái.",
-        "Được định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Tiện lợi, Hợp lý và Riêng tư — chúng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
+        "Đư���c định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Tiện lợi, Hợp lý và Riêng tư — chúng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
         "Các chuyên viên được chúng tôi lựa chọn kỹ càng đều có kinh nghiệm với nhiều kỹ thuật massage khác nhau và có khả năng giao tiếp tiếng Anh cơ bản, giúp chúng tôi chào đón nồng nhiệt khách hàng từ khắp nơi trên thế giới.",
       ],
       values: ["CHUYÊN NGHIỆP", "TẬN TÂM", "LINH HOẠT", "RIÊNG TƯ"],
@@ -352,6 +354,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
         { q: "Chính sách hủy lịch như thế nào?", a: "Đối với các đặt lịch thanh toán qua chuyển khoản ngân hàng: bạn có thể hủy lịch trước giờ hẹn 1 giờ để được hoàn tiền toàn bộ. Hủy lịch trong vòng 1 giờ trước giờ hẹn sẽ được hoàn lại 70% giá trị đặt lịch." },
       ],
     },
+    reviews: { kicker: "TRẢI NGHIỆM KHÁCH HÀNG", title: "Sự chăm sóc còn đọng lại.", link: "Xem tất cả đánh giá" },
     contact: { kicker: "LIÊN HỆ", title: "Nếu quý khách có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi để được giải đáp chi tiết hơn!", subtitle: "" },
     booking: {
       title: "Đặt lịch của bạn",
