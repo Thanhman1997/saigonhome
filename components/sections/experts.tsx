@@ -15,8 +15,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
   const { openBooking } = useBooking()
   const [visibleCount, setVisibleCount] = useState(Math.min(4, PAGE_SIZE))
 
-  const realTherapists = therapists.filter((therapist) => Boolean(therapist.photoUrl) && !therapist.code.match(/^KTV\s*0\d$/i))
-  const visible = realTherapists.slice(0, visibleCount)
+  const visible = therapists.slice(0, visibleCount)
 
   return (
     <section id="experts" className="bg-background py-24 lg:py-32">
@@ -99,7 +98,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
           })}
         </div>
 
-        {visibleCount < realTherapists.length && (
+        {visibleCount < therapists.length && (
           <div className="mt-10 flex justify-center">
             <Button variant="outline" size="lg" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
               {locale === "en" ? "Show more therapists" : locale === "ko" ? "더 많은 테라피스트 보기" : "Xem thêm chuyên viên"}
