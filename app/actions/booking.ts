@@ -29,12 +29,7 @@ export type CreateBookingResult =
   | { success: false; error: string }
 
 function generateReference(): string {
-  const now = new Date()
-  const y = now.getFullYear().toString().slice(-2)
-  const m = (now.getMonth() + 1).toString().padStart(2, "0")
-  const d = now.getDate().toString().padStart(2, "0")
-  const rand = Math.random().toString(36).slice(2, 6).toUpperCase()
-  return `LW-${y}${m}${d}-${rand}`
+  return String(Math.floor(10000 + Math.random() * 90000))
 }
 
 function isValidEmail(email: string): boolean {
