@@ -16,7 +16,7 @@ export default async function AdminTherapistsPage() {
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Therapists</h1>
           <p className="text-sm text-muted-foreground">
-            {therapists.length} therapist{therapists.length === 1 ? "" : "s"} · edit profile details, photo, and availability
+            {therapists.length} therapist{therapists.length === 1 ? "" : "s"} · edit profile details, photo, and website visibility
           </p>
         </div>
         <CreateTherapistForm />
