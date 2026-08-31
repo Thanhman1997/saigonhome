@@ -33,13 +33,14 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3">
       <h2 className="font-serif text-2xl">{t.booking.steps.datetime}</h2>
 
-      <div className="flex flex-col gap-6">
-        <div className="flex justify-center border border-border sm:justify-center">
+      <div className="flex flex-col gap-3">
+        <div className="flex justify-center overflow-hidden border border-border sm:justify-center [&_.rdp-root]:p-1 [&_.rdp-root]:[--cell-size:2.25rem]">
           <Calendar
             mode="single"
+            showOutsideDays={false}
             selected={selectedDate}
             onSelect={(date) => {
               if (date) {
@@ -58,8 +59,8 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
 
         <div className="flex flex-col gap-6">
           <div>
-            <p className="mb-3 text-sm font-medium">{t.booking.selectTime}</p>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+            <p className="mb-2 text-sm font-medium">{t.booking.selectTime}</p>
+            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-6">
               {TIME_SLOTS.map((time) => (
                 <button
                   key={time}
@@ -69,7 +70,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
                     updateDraft({ time })
                   }}
                   className={cn(
-                    "border px-2 py-2 text-sm font-medium transition-colors",
+                    "border px-1.5 py-1 text-sm font-medium leading-5 transition-colors",
                     draft.time === time
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border hover:border-primary/50",
@@ -82,7 +83,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
           </div>
 
           <div>
-            <p className="mb-3 text-sm font-medium">{t.booking.guests}</p>
+            <p className="mb-2 text-sm font-medium">{t.booking.guests}</p>
             <div className="flex items-center gap-4">
               <button
                 type="button"
@@ -108,7 +109,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
 
       {error && <p className="text-sm text-destructive">{t.booking.selectDateTimeFirst}</p>}
 
-      <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
+      <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
         <Button variant="outline" onClick={onBack} size="lg">
           {t.booking.back}
         </Button>
