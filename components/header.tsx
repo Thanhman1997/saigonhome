@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { Menu, X } from "lucide-react"
@@ -13,14 +13,34 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
   const [open, setOpen] = useState(false)
   const { locale, t } = useLanguage()
   const pathname = usePathname()
+  const [activeSection, setActiveSection] = useState(pathname === "/" ? "home" : "")
+
+  useEffect(() => {
+    if (pathname !== "/") return
+    const sectionIds = ["top", "services", "experts", "about", "contact"]
+    const updateActiveSection = () => {
+      const current = sectionIds.reduce((active, id) => {
+        const element = document.getElementById(id)
+        if (!element) return active
+        return element.getBoundingClientRect().top <= 140 ? id : active
+      }, "top")
+      setActiveSection(current === "top" ? "home" : current)
+    }
+    updateActiveSection()
+    window.addEventListener("scroll", updateActiveSection, { passive: true })
+    return () => window.removeEventListener("scroll", updateActiveSection)
+  }, [pathname])
+
   const resolveHref = (href: string, menuKey?: string) => {
     if (menuKey === "services") return "/services"
     return href.startsWith("#") && pathname !== "/" ? `/${href}` : href
   }
-  const isActive = (link: { menuKey: string; href: string }) => link.menuKey === "services" ? pathname === "/services" : link.menuKey === "home" ? pathname === "/" : link.href.startsWith("/") && pathname.startsWith(link.href)
+  const isActive = (link: { menuKey: string; href: string }) => pathname === "/" ? (link.href.startsWith("#") ? activeSection === link.menuKey : false) : (link.menuKey === "services" ? pathname === "/services" : link.href.startsWith("/") && pathname.startsWith(link.href))
   const navigate = (href: string) => {
     if (href.startsWith("#") && pathname === "/") {
       document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" })
+      window.history.replaceState(null, "", href)
+      setActiveSection(href === "#top" ? "home" : href.slice(1))
       return
     }
     window.location.assign(href)
@@ -48,7 +68,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
               href={resolveHref(link.href, link.menuKey)}
               onClick={(event) => { event.preventDefault(); navigate(resolveHref(link.href, link.menuKey)) }}
               className={`relative tracking-[0.08em] transition-colors ${isActive(link) ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
-              style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem", fontWeight: 800, color: link.textColor === "inherit" ? undefined : link.textColor }}
+              style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem", fontWeight: 800, color: isActive(link) ? "var(--accent)" : link.textColor === "inherit" ? undefined : link.textColor }}
             >
               {link.label}
             </a>
