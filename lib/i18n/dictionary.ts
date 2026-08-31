@@ -134,7 +134,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       success: "Booking confirmed!",
       successMessage: "We've sent a confirmation to your email. Our concierge will contact you shortly to confirm therapist arrival.",
       reference: "Booking reference",
-      bookAnother: "Make another booking",
+      bookAnother: "",
       required: "This field is required",
       invalidEmail: "Please enter a valid email address",
       selectServiceFirst: "Please select a service and duration",
@@ -298,7 +298,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       body: [
         "Tại Lotus Wellness, chúng tôi tin rằng sự thư giãn thực sự bắt đầu từ cảm giác hoàn toàn thoải mái.",
         "Chúng tôi mang liệu trình massage chuyên nghiệp đến không gian bạn yêu thích, kết hợp kỹ thuật thành thục với sự chăm sóc tận tâm, cá nhân hóa để tạo nên trải nghiệm chăm sóc sức khỏe riêng tư và thoải mái.",
-        "Được định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Tiện lợi, Hợp lý và Riêng tư — chúng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
+        "Được định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Tiện lợi, Hợp lý và Riêng tư — ch��ng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
         "Các chuyên viên được chúng tôi lựa chọn kỹ càng đều có kinh nghiệm với nhiều kỹ thuật massage khác nhau và có khả năng giao tiếp tiếng Anh cơ bản, giúp chúng tôi chào đón nồng nhiệt khách hàng từ khắp nơi trên thế giới.",
       ],
       values: ["CHUYÊN NGHIỆP", "TẬN TÂM", "LINH HOẠT", "RIÊNG TƯ"],
