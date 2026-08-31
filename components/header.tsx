@@ -17,7 +17,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
 
   useEffect(() => {
     if (pathname !== "/") return
-    const sectionIds = ["top", "services", "experts", "promotions", "about", "faq", "contact"]
+    const sectionIds = ["top", "services", "experts", "faq", "contact"]
     const updateActiveSection = () => {
       const current = sectionIds.reduce((active, id) => {
         const element = document.getElementById(id)
@@ -49,15 +49,14 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     { menuKey: "home", labelEn: "HOME", labelVi: "TRANG CHỦ", labelKo: "홈", href: "#top", visible: true },
     { menuKey: "services", labelEn: t.nav.services, labelVi: t.nav.services, labelKo: t.nav.services, href: "#services", visible: true },
     { menuKey: "experts", labelEn: t.nav.experts, labelVi: t.nav.experts, labelKo: t.nav.experts, href: "#experts", visible: true },
-    { menuKey: "promotions", labelEn: t.nav.promotions, labelVi: t.nav.promotions, labelKo: t.nav.promotions, href: "#promotions", visible: true },
-    { menuKey: "about", labelEn: "About", labelVi: "Giới thiệu", labelKo: "소개", href: "#about", visible: true },
     { menuKey: "faq", labelEn: t.nav.faq, labelVi: t.nav.faq, labelKo: t.nav.faq, href: "#faq", visible: true },
-    { menuKey: "reviews", labelEn: "Reviews", labelVi: "Đánh giá", labelKo: "후기", href: "/reviews", visible: true },
+    { menuKey: "reviews", labelEn: t.nav.reviews, labelVi: t.nav.reviews, labelKo: t.nav.reviews, href: "/reviews", visible: true },
     { menuKey: "contact", labelEn: t.nav.contact, labelVi: t.nav.contact, labelKo: t.nav.contact, href: "#contact", visible: true },
   ]
+  const allowedMenuKeys = new Set(["home", "services", "experts", "contact", "faq", "reviews"])
   const configuredKeys = new Set(navigationSettings.map((link) => link.menuKey))
-  const links = [...navigationSettings, ...defaultLinks.filter((link) => !configuredKeys.has(link.menuKey))]
-    .filter((link) => link.visible)
+  const links = [...navigationSettings.filter((link) => allowedMenuKeys.has(link.menuKey)), ...defaultLinks.filter((link) => !configuredKeys.has(link.menuKey))]
+    .filter((link) => allowedMenuKeys.has(link.menuKey) && link.visible)
     .map((link) => ({ ...link, label: pickLocalized({ en: link.labelEn, vi: link.labelVi, ko: link.labelKo }, locale) }))
 
   return (

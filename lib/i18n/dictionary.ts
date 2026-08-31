@@ -8,7 +8,7 @@ export const locales: { code: Locale; label: string; short: string; flag: string
 
 export const dictionary = {
   en: {
-    nav: { home: "Home", services: "SERVICES", experts: "THERAPISTS", promotions: "PROMOTIONS", faq: "FAQ", contact: "CONTACT", book: "BOOK NOW" },
+    nav: { home: "Home", services: "Services", experts: "KTV", reviews: "Reviews", faq: "FAQ", contact: "Contact", book: "Book now" },
     hero: {
       kicker: "Excellence · Convenience · Affordability · Privacy",
       titleLine1: "Wellness,",
@@ -160,7 +160,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     },
   },
   ko: {
-    nav: { home: "홈", services: "서비스", experts: "테라피스트", promotions: "프로모션", faq: "FAQ", contact: "문의", book: "예약하기" },
+    nav: { home: "홈", services: "서비스", experts: "KTV", reviews: "후기", faq: "FAQ", contact: "문의", book: "예약하기" },
     hero: {
       kicker: "탁월함 · 편리함 · 합리적인 가격 · 프라이버시",
       titleLine1: "웰니스를,",
@@ -175,7 +175,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       title: "우리의 핵심 가치",
       body: [
         "Lotus Wellness는 진정한 휴식이 완전한 편안함에서 시작된다고 믿습니다.",
-        "저희는 고객이 원하는 공간으로 전문 마사지 서비스를 제공하며, 숙련된 기술과 세심하고 개인화된 케어를 결합하여 프라이빗하고 편안한 웰니스 경험을 선사합니다.",
+        "��희는 고객이 원하는 공간으로 전문 마사지 서비스를 제공하며, 숙련된 기술과 세심하고 개인화된 케어를 결합하여 프라이빗하고 편안한 웰니스 경험을 선사합니다.",
         "탁월함, 편리함, 합리적인 가격, 프라이버시라는 네 가지 핵심 가치를 바탕으로, 모든 경험이 매끄럽고 회복적이며 고객님의 필요에 맞춰지도록 최선을 다하고 있습니다.",
         "저희가 신중하게 선별한 테라피스트들은 다양한 마사지 기법에 능숙하며 기본적인 영어 소통 능력을 갖추고 있어, 전 세계에서 오시는 고객님들을 따뜻하게 맞이할 수 있습니다.",
       ],
@@ -282,7 +282,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     },
   },
   vi: {
-    nav: { home: "Trang chủ", services: "DỊCH VỤ", experts: "CHUYÊN VIÊN", promotions: "KHUYẾN MÃI", faq: "FAQ", contact: "LIÊN HỆ", book: "ĐẶT LỊCH" },
+    nav: { home: "Trang chủ", services: "Dịch vụ", experts: "KTV", reviews: "Đánh giá", faq: "Hỏi đáp", contact: "Liên hệ", book: "Đặt lịch" },
     hero: {
       kicker: "Xuất sắc · Tiện lợi · Hợp lý · Riêng tư",
       titleLine1: "Chăm sóc sức khỏe,",
