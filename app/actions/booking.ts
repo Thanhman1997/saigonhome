@@ -100,7 +100,11 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const bookingUtcMs = vietnamLocalToUtcMs(input.date, input.time)
     const minBookingUtcMs = now.getTime() + (settingsRow?.minNoticeHours ?? 2) * 60 * 60 * 1000
 
-    if (input.date < vietnamToday) {
+    const maxAdvanceDays = settingsRow?.advanceBookingDays ?? 30
+    const maxBookingDate = new Date(`${vietnamToday}T00:00:00Z`)
+    maxBookingDate.setUTCDate(maxBookingDate.getUTCDate() + maxAdvanceDays)
+    const maxBookingDateString = maxBookingDate.toISOString().slice(0, 10)
+    if (input.date < vietnamToday || input.date > maxBookingDateString) {
       return { success: false, error: "Selected date is outside the booking window" }
     }
     if (settingsRow?.closedWeekdays?.includes(weekday)) return { success: false, error: "Selected day is unavailable" }

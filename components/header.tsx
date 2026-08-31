@@ -17,7 +17,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
 
   useEffect(() => {
     if (pathname !== "/") return
-    const sectionIds = ["top", "services", "experts", "about", "contact"]
+    const sectionIds = ["top", "services", "experts", "promotions", "about", "faq", "contact"]
     const updateActiveSection = () => {
       const current = sectionIds.reduce((active, id) => {
         const element = document.getElementById(id)
@@ -45,14 +45,20 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     window.location.assign(href)
   }
 
-  const links = (navigationSettings.length ? navigationSettings : [
+  const defaultLinks: NavigationSetting[] = [
     { menuKey: "home", labelEn: "HOME", labelVi: "TRANG CHỦ", labelKo: "홈", href: "#top", visible: true },
     { menuKey: "services", labelEn: t.nav.services, labelVi: t.nav.services, labelKo: t.nav.services, href: "#services", visible: true },
     { menuKey: "experts", labelEn: t.nav.experts, labelVi: t.nav.experts, labelKo: t.nav.experts, href: "#experts", visible: true },
+    { menuKey: "promotions", labelEn: t.nav.promotions, labelVi: t.nav.promotions, labelKo: t.nav.promotions, href: "#promotions", visible: true },
     { menuKey: "about", labelEn: "About", labelVi: "Giới thiệu", labelKo: "소개", href: "#about", visible: true },
+    { menuKey: "faq", labelEn: t.nav.faq, labelVi: t.nav.faq, labelKo: t.nav.faq, href: "#faq", visible: true },
     { menuKey: "reviews", labelEn: "Reviews", labelVi: "Đánh giá", labelKo: "후기", href: "/reviews", visible: true },
     { menuKey: "contact", labelEn: t.nav.contact, labelVi: t.nav.contact, labelKo: t.nav.contact, href: "#contact", visible: true },
-  ]).filter((link) => link.visible).map((link) => ({ ...link, label: pickLocalized({ en: link.labelEn, vi: link.labelVi, ko: link.labelKo }, locale) }))
+  ]
+  const configuredKeys = new Set(navigationSettings.map((link) => link.menuKey))
+  const links = [...navigationSettings, ...defaultLinks.filter((link) => !configuredKeys.has(link.menuKey))]
+    .filter((link) => link.visible)
+    .map((link) => ({ ...link, label: pickLocalized({ en: link.labelEn, vi: link.labelVi, ko: link.labelKo }, locale) }))
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
