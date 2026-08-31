@@ -36,8 +36,8 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
     <div className="flex flex-col gap-6">
       <h2 className="font-serif text-2xl">{t.booking.steps.datetime}</h2>
 
-      <div className="grid gap-6 sm:grid-cols-[auto_1fr]">
-        <div className="flex justify-center border border-border sm:justify-start">
+      <div className="flex flex-col gap-6">
+        <div className="flex justify-center border border-border sm:justify-center">
           <Calendar
             mode="single"
             selected={selectedDate}
@@ -59,7 +59,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
         <div className="flex flex-col gap-6">
           <div>
             <p className="mb-3 text-sm font-medium">{t.booking.selectTime}</p>
-            <div className="grid grid-cols-4 gap-2 sm:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
               {TIME_SLOTS.map((time) => (
                 <button
                   key={time}
