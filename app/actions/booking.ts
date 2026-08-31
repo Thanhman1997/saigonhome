@@ -172,7 +172,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       discountVnd,
       totalVnd,
       discountLabel,
-      status: "confirmed",
+      status: "pending",
       startAt,
       endAt,
     })
@@ -196,10 +196,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       discountLabel,
     }
 
-    await Promise.all([
-      sendAdminNotification(bookingDetails),
-      sendCustomerConfirmation(bookingDetails),
-    ])
+    await sendAdminNotification(bookingDetails)
 
     return { success: true, reference, totalVnd, subtotalVnd: subtotal, discountVnd }
   } catch (error) {
