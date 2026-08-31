@@ -44,7 +44,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
               href={resolveHref(link.href)}
               onClick={(event) => { event.preventDefault(); navigate(resolveHref(link.href)) }}
               className={`relative tracking-[0.08em] transition-colors ${link.label === "HOME" ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
-              style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.125rem" : link.fontSize === "md" ? "1rem" : "0.75rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}
+              style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem", fontWeight: 800, color: link.textColor === "inherit" ? undefined : link.textColor }}
             >
               {link.label}
             </a>
@@ -67,7 +67,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         <nav id="mobile-menu" className="border-t border-border bg-background px-5 py-6 lg:hidden" aria-label="Mobile navigation">
           <div className="flex flex-col gap-5">
             {links.map((link) => (
-              <a key={link.href} href={resolveHref(link.href)} onClick={(event) => { event.preventDefault(); setOpen(false); navigate(resolveHref(link.href)) }} className="font-serif text-2xl" style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "1.5rem" : link.fontSize === "md" ? "1.25rem" : "1rem", fontWeight: link.fontWeight === "bold" ? 700 : 500, color: link.textColor === "inherit" ? undefined : link.textColor }}>
+              <a key={link.href} href={resolveHref(link.href)} onClick={(event) => { event.preventDefault(); setOpen(false); navigate(resolveHref(link.href)) }} className="font-serif text-4xl font-bold" style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: link.fontSize === "lg" ? "3rem" : link.fontSize === "md" ? "2.5rem" : "2rem", fontWeight: 800, color: link.textColor === "inherit" ? undefined : link.textColor }}>
                 {link.label}
               </a>
             ))}
