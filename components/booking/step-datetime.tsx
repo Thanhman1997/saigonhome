@@ -60,7 +60,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
         <div className="flex flex-col gap-6">
           <div>
             <p className="mb-2 text-sm font-medium">{t.booking.selectTime}</p>
-            <div className="grid grid-cols-4 gap-1 sm:grid-cols-5 lg:grid-cols-7">
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-7">
               {TIME_SLOTS.map((time) => (
                 <button
                   key={time}
@@ -70,7 +70,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
                     updateDraft({ time })
                   }}
                   className={cn(
-                    "aspect-square size-11 border p-1 text-sm font-medium leading-5 transition-colors",
+                    "flex aspect-square size-11 items-center justify-center border p-0 font-sans text-sm font-medium leading-none tabular-nums transition-colors",
                     draft.time === time
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border hover:border-primary/50",
