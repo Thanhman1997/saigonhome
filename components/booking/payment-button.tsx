@@ -23,5 +23,5 @@ export function PaymentButton({ reference }: { reference: string }) {
       setLoading(false)
     }
   }
-  return <div className="flex flex-col items-center gap-3"><button type="button" onClick={handlePayment} disabled={loading} className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60">{loading ? "Opening checkout…" : "PAY"}</button>{error && <p role="alert" className="text-sm text-destructive">{error}</p>}<p className="text-sm text-muted-foreground">Test mode · Visa and Mastercard supported by Stripe</p></div>
+  return <div className="flex flex-col items-center gap-3"><button type="button" onClick={handlePayment} disabled={loading} className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60">{loading ? "Opening checkout…" : "PAY"}</button>{error && <p role="alert" className="text-sm text-destructive">{error}</p>}</div>
 }
