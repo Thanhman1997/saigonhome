@@ -21,7 +21,7 @@ export function HeroSection({ hero }: { hero: Hero }) {
 
   return (
     <section id="top" className="overflow-hidden bg-card text-foreground">
-      <div className="relative h-[52svh] min-h-[20rem] w-full lg:h-[62svh]">
+      <div className="relative h-[65svh] min-h-[24rem] w-full lg:h-[76svh]">
         <Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private hotel room" fill priority sizes="100vw" className="object-cover object-center opacity-95 saturate-125" />
       </div>
       {content.visible && <div className="mx-auto flex max-w-7xl flex-col px-5 py-10 sm:py-12 lg:px-8 lg:py-14">
