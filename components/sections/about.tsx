@@ -40,7 +40,7 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
           </div>
         </div>
         <div className="mt-16 grid items-stretch gap-4 lg:grid-cols-[1.45fr_.55fr]">
-          <div className="relative min-h-80 overflow-hidden rounded-2xl lg:min-h-[26rem]"><Image src="/images/spa-massage.png" alt="Therapist delivering a calming massage at home" fill loading="lazy" className="object-cover transition-transform duration-700 hover:scale-105" /></div>
+          <div className="relative min-h-80 overflow-hidden rounded-2xl lg:min-h-[22rem]"><Image src="/images/spa-massage.png" alt="Therapist delivering a calming massage at home" fill loading="lazy" className="object-cover transition-transform duration-700 hover:scale-105" /></div>
           <div className="grid gap-3">
             {values.length > 0 ? values.map((value, index) => {
               const Icon = ICON_MAP[value.icon] ?? Sparkles
