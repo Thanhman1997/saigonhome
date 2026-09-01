@@ -63,7 +63,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-5 lg:px-8">
         <a href="#top" onClick={(event) => { event.preventDefault(); navigate("#top") }} className="group flex -translate-x-8 items-center" aria-label="Lotus Wellness home">
-          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-20 w-auto object-contain sm:h-24" style={{ mixBlendMode: "darken" }} />
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-20 w-auto object-contain sm:h-24" style={{ mixBlendMode: "multiply" }} />
         </a>
         <nav className="hidden translate-x-16 items-center gap-7 lg:flex" aria-label="Primary navigation">
           {links.map((link) => (
