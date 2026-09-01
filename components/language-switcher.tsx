@@ -51,7 +51,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       </button>
 
       {open && (
-        <div role="listbox" aria-label="Languages" className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-48 overflow-hidden rounded-xl border border-border/80 bg-background/95 p-2 shadow-xl backdrop-blur-md">
+        <div role="listbox" aria-label="Languages" className="absolute right-0 top-[calc(100%+0.35rem)] z-50 min-w-40 overflow-hidden rounded-lg border border-border/80 bg-background/95 p-1 shadow-xl backdrop-blur-md">
           {locales.map((item) => (
             <button
               key={item.code}
@@ -60,14 +60,14 @@ export function LanguageSwitcher({ className }: { className?: string }) {
               aria-selected={locale === item.code}
               aria-current={locale === item.code ? "true" : undefined}
               onClick={() => choose(item.code)}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium tracking-normal text-foreground transition-all hover:bg-muted hover:pl-3.5"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium tracking-normal text-foreground transition-all hover:bg-muted hover:pl-2.5"
             >
               <img
                 src={`https://flagcdn.com/w40/${countryFlags[item.code]}.png`}
                 alt={`${item.label} country flag`}
                 width={20}
                 height={15}
-                className="h-[15px] w-5 shrink-0 rounded-[2px] object-cover"
+className="h-3 w-4 shrink-0 rounded-[2px] object-cover"
               />
               <span className="flex-1">{item.label}</span>
               {locale === item.code && <Check aria-hidden="true" className="size-3.5" />}
