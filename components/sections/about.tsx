@@ -47,17 +47,17 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
                 const Icon = ICON_MAP[value.icon] ?? Sparkles
                 const text = pickLocalized({ en: value.textEn, ko: value.textKo, vi: value.textVi }, locale)
                 return (
-                  <article key={value.id} className="group flex min-h-36 items-center gap-3 rounded-2xl bg-accent/10 px-3 py-8 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15">
-                    <div className="relative size-28 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[values.indexOf(value) % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div>
-                    <div className="flex min-w-0 items-center gap-2"><Icon className="size-4 shrink-0 text-accent" aria-hidden="true" /><h3 className="font-serif text-xl leading-tight text-foreground">{text}</h3></div>
+                  <article key={value.id} className="group flex min-h-44 items-center gap-4 rounded-2xl bg-accent/10 px-4 py-6 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15">
+                    <div className="relative size-36 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[values.indexOf(value) % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div>
+                    <div className="flex min-w-0 items-center gap-2"><Icon className="size-5 shrink-0 text-accent" aria-hidden="true" /><h3 className="font-serif text-2xl font-semibold leading-tight text-accent">{text}</h3></div>
                   </article>
                 )
               })
             : t.about.values.map((value, idx) => {
                 const Icon = fallbackIcons[idx]
                 return (
-                  <article key={value} className="group flex min-h-36 items-center gap-3 rounded-2xl bg-accent/10 px-3 py-8 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15">
-                    <div className="relative size-28 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[idx % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div>
+                  <article key={value} className="group flex min-h-44 items-center gap-4 rounded-2xl bg-accent/10 px-4 py-6 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15">
+                    <div className="relative size-36 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[idx % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div>
                     <div className="flex min-w-0 items-center gap-2"><Icon className="size-4 shrink-0 text-accent" aria-hidden="true" /><h3 className="font-serif text-xl leading-tight text-foreground">{value}</h3></div>
                   </article>
                 )
