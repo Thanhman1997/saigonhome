@@ -17,13 +17,12 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
 
   useEffect(() => {
     if (pathname !== "/") return
-    const sectionIds = ["top", "services", "experts", "faq", "contact"]
+    const sectionIds = ["top", "services", "experts", "faq", "reviews", "contact"]
     const updateActiveSection = () => {
-      const current = sectionIds.reduce((active, id) => {
-        const element = document.getElementById(id)
-        if (!element) return active
-        return element.getBoundingClientRect().top <= 140 ? id : active
-      }, "top")
+      const visibleSections = sectionIds
+        .map((id) => ({ id, top: document.getElementById(id)?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY }))
+        .filter((section) => section.top <= 160)
+      const current = visibleSections.at(-1)?.id ?? "top"
       setActiveSection(current === "top" ? "home" : current)
     }
     updateActiveSection()
@@ -38,7 +37,12 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
   const isActive = (link: { menuKey: string; href: string }) => pathname === "/" ? (link.href.startsWith("#") ? activeSection === link.menuKey : false) : (link.menuKey === "services" ? pathname === "/services" : link.href.startsWith("/") && pathname.startsWith(link.href))
   const navigate = (href: string) => {
     if (href.startsWith("#") && pathname === "/") {
-      document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" })
+      const target = document.querySelector(href)
+      if (target) {
+        const headerOffset = 96
+        const top = target.getBoundingClientRect().top + window.scrollY - headerOffset
+        window.scrollTo({ top, behavior: "smooth" })
+      }
       setActiveSection(href === "#top" ? "home" : href.slice(1))
       return
     }
