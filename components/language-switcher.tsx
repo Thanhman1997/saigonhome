@@ -37,12 +37,12 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         aria-expanded={open}
         aria-label={`Language: ${active.label}`}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border/80 bg-background/90 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-foreground shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:bg-muted hover:shadow-md"
+        className="inline-flex min-h-7 translate-x-2 items-center gap-1 rounded-md border border-accent bg-accent px-1.5 text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-accent-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md"
       >
         <span
           aria-hidden="true"
           title={active.label}
-          className="inline-flex aspect-[3/2] w-6 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-foreground/10 bg-primary/10 font-mono text-[0.65rem] font-bold leading-none text-primary shadow-sm"
+          className="inline-flex aspect-[3/2] w-4 shrink-0 items-center justify-center overflow-hidden rounded-[2px] border border-accent-foreground/30 bg-accent/80 font-mono text-[0.45rem] font-bold leading-none text-accent-foreground"
         >
           {countryCodes[active.code]}
         </span>
@@ -65,7 +65,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
               <span
                 aria-hidden="true"
                 title={item.label}
-                className="inline-flex aspect-[3/2] w-6 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-foreground/10 bg-primary/10 font-mono text-[0.65rem] font-bold leading-none text-primary shadow-sm"
+                className="inline-flex aspect-[3/2] w-4 shrink-0 items-center justify-center overflow-hidden rounded-[2px] border border-accent-foreground/30 bg-accent/80 font-mono text-[0.45rem] font-bold leading-none text-accent-foreground"
               >
                 {countryCodes[item.code]}
               </span>
