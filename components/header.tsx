@@ -65,7 +65,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         <a href="#top" onClick={(event) => { event.preventDefault(); navigate("#top") }} className="group flex items-center" aria-label="Lotus Wellness home">
           <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-20 w-auto object-contain sm:h-24" style={{ mixBlendMode: "darken" }} />
         </a>
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary navigation">
+        <nav className="hidden translate-x-8 items-center gap-7 lg:flex" aria-label="Primary navigation">
           {links.map((link) => (
             <a
               key={link.href}
