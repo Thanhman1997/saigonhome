@@ -11,6 +11,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const active = locales.find((item) => item.code === locale) ?? locales[0]
+  const countryCodes = { en: "US", ko: "KR", vi: "VN" } as const
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -40,11 +41,10 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       >
         <span
           aria-hidden="true"
-          className="inline-flex aspect-[3/2] w-6 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-foreground/10 bg-muted text-[1.05rem] leading-none shadow-sm"
           title={active.label}
-          style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}
+          className="inline-flex aspect-[3/2] w-6 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-foreground/10 bg-primary/10 font-mono text-[0.65rem] font-bold leading-none text-primary shadow-sm"
         >
-          {active.flag}
+          {countryCodes[active.code]}
         </span>
         <span>{active.short}</span>
         <ChevronDown aria-hidden="true" className={cn("size-3.5 transition-transform", open && "rotate-180")} />
@@ -64,11 +64,10 @@ export function LanguageSwitcher({ className }: { className?: string }) {
             >
               <span
                 aria-hidden="true"
-                className="inline-flex aspect-[3/2] w-6 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-foreground/10 bg-muted text-[1.05rem] leading-none shadow-sm"
                 title={item.label}
-                style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}
+                className="inline-flex aspect-[3/2] w-6 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-foreground/10 bg-primary/10 font-mono text-[0.65rem] font-bold leading-none text-primary shadow-sm"
               >
-                {item.flag}
+                {countryCodes[item.code]}
               </span>
               <span className="flex-1">{item.label}</span>
               {locale === item.code && <Check aria-hidden="true" className="size-3.5" />}
