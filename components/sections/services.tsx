@@ -46,7 +46,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
             const image = service.imageUrl || fallback?.src
 
             return (
-              <article key={service.id} className="flex flex-col justify-between gap-7 rounded-xl border border-border/70 bg-card p-4 shadow-[0_12px_40px_-30px_rgba(92,48,20,0.5)] transition-transform duration-300 hover:-translate-y-1 sm:p-5">
+              <article key={service.id} className="reveal-up flex flex-col justify-between gap-7 rounded-xl border border-border/70 bg-card p-4 shadow-[0_12px_40px_-30px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_48px_-28px_rgba(92,48,20,0.55)] sm:p-5">
                 <div>
                   <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-secondary">
                     {image ? <Image src={image} alt={name} fill loading="lazy" className="object-cover" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{service.icon}</span>}

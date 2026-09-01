@@ -38,7 +38,9 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
             {body.map((paragraph, idx) => <p key={idx} className="text-pretty text-base leading-relaxed text-muted-foreground first:text-lg first:text-foreground">{paragraph}</p>)}
           </div>
         </div>
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.15fr_.85fr]">
+          <div className="relative min-h-64 overflow-hidden rounded-2xl sm:row-span-2 lg:min-h-full"><Image src="/images/spa-massage.png" alt="Therapist delivering a calming massage at home" fill loading="lazy" className="object-cover transition-transform duration-700 hover:scale-105" /><div className="absolute inset-x-4 bottom-4 rounded-xl bg-card/85 px-4 py-3 text-sm text-foreground backdrop-blur-sm">Personal care, brought to your own space.</div></div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
           {values.length > 0
             ? values.map((value) => {
                 const Icon = ICON_MAP[value.icon] ?? Sparkles
@@ -59,6 +61,7 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
                   </article>
                 )
               })}
+          </div>
         </div>
       </div>
     </section>

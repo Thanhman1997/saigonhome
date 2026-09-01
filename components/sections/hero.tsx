@@ -3,12 +3,15 @@
 import Image from "next/image"
 import { ArrowDown, ShieldCheck } from "lucide-react"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
+import { useBooking } from "@/lib/booking-context"
 import type { heroContent } from "@/lib/db/schema"
+import { Button } from "@/components/ui/button"
 
 type Hero = typeof heroContent.$inferSelect | null
 
 export function HeroSection({ hero }: { hero: Hero }) {
   const { t, locale } = useLanguage()
+  const { openBooking } = useBooking()
   const content = hero ?? {
     imageUrl: "/images/spa-hero.png", visible: true,
     kickerEn: t.hero.kicker, kickerKo: t.hero.kicker, kickerVi: t.hero.kicker,
@@ -21,17 +24,17 @@ export function HeroSection({ hero }: { hero: Hero }) {
 
   return (
     <section id="top" className="overflow-hidden bg-card text-foreground">
-      <div className="relative h-[52svh] min-h-[20rem] w-full lg:h-[62svh]">
-        <Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private hotel room" fill priority sizes="100vw" className="object-cover object-center opacity-95 saturate-125" />
-      </div>
-      {content.visible && <div className="mx-auto flex max-w-7xl flex-col px-5 py-10 sm:py-12 lg:px-8 lg:py-14">
-        <div className="max-w-3xl">
-          <div className="mb-5 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-accent"><ShieldCheck className="size-4" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
-          <h1 className="max-w-3xl text-balance font-serif font-light tracking-tight" style={{ fontSize: "clamp(3rem, 7vw, 7.5rem)", lineHeight: 1.08 }}>{localized(content.titleLine1En, content.titleLine1Ko, content.titleLine1Vi)}<br /><em className="font-light text-accent">{localized(content.titleLine2En, content.titleLine2Ko, content.titleLine2Vi)}</em></h1>
-          <p className="mt-5 max-w-xl text-pretty text-base font-light leading-relaxed text-foreground/80 sm:text-lg">{localized(content.subtitleEn, content.subtitleKo, content.subtitleVi)}</p>
+      <div className="mx-auto grid max-w-7xl lg:grid-cols-[1.05fr_.95fr]">
+        <div className="flex flex-col justify-center px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+          {content.visible && <>
+            <div className="reveal-up mb-5 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-accent"><ShieldCheck className="size-4" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
+            <h1 className="reveal-up reveal-delay-1 max-w-3xl text-balance font-serif font-light tracking-tight" style={{ fontSize: "clamp(3rem, 7vw, 6.5rem)", lineHeight: 1.02 }}>{localized(content.titleLine1En, content.titleLine1Ko, content.titleLine1Vi)}<br /><em className="font-light text-accent">{localized(content.titleLine2En, content.titleLine2Ko, content.titleLine2Vi)}</em></h1>
+            <p className="reveal-up reveal-delay-2 mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">{localized(content.subtitleEn, content.subtitleKo, content.subtitleVi)}</p>
+            <div className="reveal-up reveal-delay-3 mt-8 flex flex-wrap items-center gap-4"><Button onClick={() => openBooking()} className="h-12 rounded-full bg-accent px-7 text-base font-semibold text-accent-foreground hover:bg-accent/90">{localized(content.ctaEn, content.ctaKo, content.ctaVi)}</Button><a href="#about" className="flex items-center gap-2 text-sm font-medium text-foreground"><ArrowDown className="size-4" />{t.hero.hours}</a></div>
+          </>}
         </div>
-        <div className="mt-8 flex flex-col gap-4 border-t border-primary-foreground/25 pt-5 text-[11px] uppercase tracking-[0.18em] text-foreground/65 sm:flex-row sm:items-center sm:justify-between"><span>{t.hero.hours}</span><a href="#about" className="flex items-center gap-2 text-foreground"><ArrowDown className="size-4" />Lotus Wellness</a></div>
-      </div>}
+        <div className="relative min-h-[24rem] overflow-hidden lg:min-h-[42rem]"><Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private home" fill priority sizes="(min-width: 1024px) 48vw, 100vw" className="object-cover object-center saturate-110 transition-transform duration-700 hover:scale-[1.03]" /><div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent" /><div className="absolute bottom-5 left-5 rounded-full border border-card/40 bg-card/80 px-4 py-2 text-xs uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">{t.hero.hours}</div></div>
+      </div>
     </section>
   )
 }
