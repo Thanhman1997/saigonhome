@@ -77,7 +77,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
               href={resolveHref(link.href, link.menuKey)}
               onClick={(event) => { event.preventDefault(); navigate(resolveHref(link.href, link.menuKey)) }}
               className={`relative tracking-[0.08em] transition-colors ${locale === "en" || locale === "vi" ? "uppercase" : ""} ${isActive(link) ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
-              style={{ fontFamily: locale === "en" || locale === "vi" ? '"Palatino Linotype", Palatino, Georgia, serif' : link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "en" || locale === "vi" ? "1.15rem" : (link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem"), fontWeight: 500, color: isActive(link) ? "var(--accent)" : link.textColor === "inherit" ? undefined : link.textColor }}
+              style={{ fontFamily: locale === "ko" ? '"Spoqa Han Sans Neo", "Noto Sans KR", sans-serif' : locale === "en" || locale === "vi" ? '"Palatino Linotype", Palatino, Georgia, serif' : link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "en" || locale === "vi" || locale === "ko" ? "1.15rem" : (link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem"), fontWeight: locale === "ko" ? 600 : 500, color: isActive(link) ? "var(--accent)" : link.textColor === "inherit" ? undefined : link.textColor }}
             >
               {link.label}
             </a>
