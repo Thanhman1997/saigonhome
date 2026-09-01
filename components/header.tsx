@@ -41,8 +41,9 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
       if (target) {
         const headerOffset = 96
         const top = target.getBoundingClientRect().top + window.scrollY - headerOffset
-        window.scrollTo({ top, behavior: "smooth" })
+        window.scrollTo({ top, behavior: "auto" })
       }
+      setOpen(false)
       setActiveSection(href === "#top" ? "home" : href.slice(1))
       return
     }
