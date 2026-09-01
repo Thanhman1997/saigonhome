@@ -16,7 +16,7 @@ export const dictionary = {
       subtitle: "Professional mobile massage brought straight to your hotel room, apartment, or residence — quietly, safely, and beautifully.",
       cta: "BOOKING",
       ctaSecondary: "Explore services",
-      hours: "Booking Hours 7am–11pm",
+      hours: "Booking Hours 9am–1am",
     },
     about: {
       kicker: "OUR GUIDING VALUES",
@@ -169,7 +169,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       subtitle: "전문 방문 마사지를 호텔 객실, 아파트, 숙소로 직접 보내드립니다 — 조용하고, 안전하고, 아름답게.",
       cta: "예약하기",
       ctaSecondary: "서비스 보기",
-      hours: "예약 가능 시간: 오전 7시–오후 11시",
+      hours: "예약 가능 시간: 오전 9시–오전 1시",
     },
     about: {
       kicker: "우리의 핵심 가치",
@@ -178,7 +178,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
         "Lotus Wellness는 진정한 휴식이 완전한 편���함에서 시작된다고 믿습니다.",
         "저희는 고객이 원하는 공간으로 전문 마사지 서비스를 제공하며, 숙련된 기술과 세심하고 개인화된 케어를 결합하여 프라이빗하고 편안한 웰니스 경험을 선사합니다.",
         "탁월함, 편리함, 합리적인 가격, 프라이버시라는 네 가지 핵심 가치를 바탕으로, 모든 경험이 매끄럽고 회복적이며 고객님의 필요에 맞춰지도록 최선을 다하고 있습니다.",
-        "저희가 신중하게 선별한 테라피스트들은 다양한 마사지 기법에 능숙하며 기본적인 영어 소통 능력을 갖추고 있어, 전 세계에서 오시는 고객님들을 따뜻하게 맞이할 수 있습니다.",
+        "저희가 신중하게 선별한 테라피스트들은 다양한 마사지 기법에 능숙하��� 기본적인 영어 소통 능력을 갖추고 있어, 전 세계에서 오시는 고객님들을 따뜻하게 맞이할 수 있습니다.",
       ],
       values: ["전문성", "세심한 케어", "유연함", "프라이버시"],
     },
@@ -292,7 +292,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       subtitle: "Dịch vụ massage chuyên nghiệp tận nơi, đến thẳng phòng khách sạn, căn hộ hoặc nơi lưu trú của bạn — nhẹ nhàng, an toàn và tuyệt vời.",
       cta: "Đặt lịch ngay",
       ctaSecondary: "Khám phá dịch vụ",
-      hours: "Giờ nhận đặt lịch: 7h sáng–11h tối",
+      hours: "Giờ nhận đặt lịch: 9h sáng–1h sáng",
     },
     about: {
       kicker: "GIÁ TRỊ CỐT LÕI CỦA CHÚNG TÔI",
@@ -300,7 +300,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       body: [
         "Tại Lotus Wellness, chúng tôi tin rằng sự thư giãn thực sự bắt đầu từ cảm giác hoàn toàn thoải mái.",
         "Chúng tôi mang liệu trình massage chuyên nghiệp đến không gian bạn yêu thích, kết hợp kỹ thuật thành thục với sự chăm sóc tận tâm, cá nhân hóa để tạo nên trải nghiệm chăm sóc sức khỏe riêng tư và thoải mái.",
-        "Đư���c định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Tiện lợi, Hợp lý và Riêng tư — chúng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
+        "Đư���c định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Ti���n lợi, Hợp lý và Riêng tư — chúng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
         "Các chuyên viên được chúng tôi lựa chọn kỹ càng đều có kinh nghiệm với nhiều kỹ thuật massage khác nhau và có khả năng giao tiếp tiếng Anh cơ bản, giúp chúng tôi chào đón nồng nhiệt khách hàng từ khắp nơi trên thế giới.",
       ],
       values: ["CHUYÊN NGHIỆP", "TẬN TÂM", "LINH HOẠT", "RIÊNG TƯ"],
