@@ -24,7 +24,7 @@ export function HeroSection({ hero }: { hero: Hero }) {
 
   return (
     <section id="top" className="overflow-hidden bg-card text-foreground">
-      <div className="mx-auto grid max-w-7xl lg:grid-cols-[1.05fr_.95fr]">
+      <div className="mx-auto grid max-w-7xl lg:grid-cols-[1fr_1fr]">
         <div className="flex flex-col justify-center px-5 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
           {content.visible && <>
             <div className="reveal-up mb-5 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.22em] text-accent"><ShieldCheck className="size-4" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
@@ -33,7 +33,7 @@ export function HeroSection({ hero }: { hero: Hero }) {
             <div className="reveal-up reveal-delay-3 mt-8 flex flex-wrap items-center gap-4"><Button onClick={() => openBooking()} className="h-12 rounded-full bg-accent px-7 text-base font-semibold text-accent-foreground hover:bg-accent/90">{localized(content.ctaEn, content.ctaKo, content.ctaVi)}</Button><a href="#about" className="flex items-center gap-2 text-sm font-medium text-foreground"><ArrowDown className="size-4" />{t.hero.hours}</a></div>
           </>}
         </div>
-        <div className="relative min-h-[24rem] overflow-hidden lg:min-h-[45rem]"><Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private home" fill priority sizes="(min-width: 1024px) 48vw, 100vw" className="object-cover object-center saturate-110 transition-transform duration-700 hover:scale-[1.03]" /><div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent" /><div className="absolute bottom-5 left-5 rounded-full border border-card/40 bg-card/80 px-4 py-2 text-xs uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">{t.hero.hours}</div></div>
+        <div className="relative min-h-[24rem] overflow-hidden lg:min-h-[42rem]"><Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private home" fill priority sizes="(min-width: 1024px) 48vw, 100vw" className="object-cover object-center saturate-110 transition-transform duration-700 hover:scale-[1.03]" /><div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent" /><div className="absolute bottom-5 left-5 rounded-full border border-card/40 bg-card/80 px-4 py-2 text-xs uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">{t.hero.hours}</div></div>
       </div>
     </section>
   )
