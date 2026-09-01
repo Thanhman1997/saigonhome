@@ -161,7 +161,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     },
   },
   ko: {
-    nav: { home: "홈", services: "서비스", experts: "KTV", reviews: "후기", faq: "FAQ", contact: "문의", book: "예약하기" },
+    nav: { home: "홈", services: "서비스", experts: "마사지사", reviews: "후기", faq: "FAQ", contact: "문의", book: "예약하기" },
     hero: {
       kicker: "탁월함 · 편리함 · 합리적인 가격 · 프라이버시",
       titleLine1: "웰니스를,",
