@@ -17,6 +17,7 @@ const ICON_MAP: Record<string, typeof Sparkles> = {
   leaf: Leaf,
 }
 const fallbackIcons = [Sparkles, Home, Wallet, Lock]
+const valueImages = ["/images/spa-massage.png", "/images/spa-therapist.png", "/images/spa-oils.png", "/images/spa-couples.png"]
 
 type About = Awaited<ReturnType<typeof getAboutContent>>
 type LotusValue = Awaited<ReturnType<typeof getLotusValues>>[number]
@@ -40,24 +41,24 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
         </div>
         <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.15fr_.85fr]">
           <div className="relative min-h-64 overflow-hidden rounded-2xl sm:row-span-2 lg:min-h-full"><Image src="/images/spa-massage.png" alt="Therapist delivering a calming massage at home" fill loading="lazy" className="object-cover transition-transform duration-700 hover:scale-105" /><div className="absolute inset-x-4 bottom-4 rounded-xl bg-card/85 px-4 py-3 text-sm text-foreground backdrop-blur-sm">Personal care, brought to your own space.</div></div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1">
           {values.length > 0
             ? values.map((value) => {
                 const Icon = ICON_MAP[value.icon] ?? Sparkles
                 const text = pickLocalized({ en: value.textEn, ko: value.textKo, vi: value.textVi }, locale)
                 return (
-                  <article key={value.id} className="group flex items-center gap-4 rounded-2xl border border-border/60 bg-card/70 p-4 transition-all duration-500 hover:-translate-y-1 hover:border-accent/50 hover:shadow-lg">
-                    <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent ring-1 ring-accent/25 transition-transform duration-500 group-hover:scale-105"><Icon className="size-6" aria-hidden="true" /></span>
-                    <h3 className="font-serif text-xl leading-tight text-foreground">{text}</h3>
+                  <article key={value.id} className="group flex items-center gap-4 rounded-2xl bg-accent/10 p-3 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15">
+                    <div className="relative size-16 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[values.indexOf(value) % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div>
+                    <div className="flex min-w-0 items-center gap-2"><Icon className="size-4 shrink-0 text-accent" aria-hidden="true" /><h3 className="font-serif text-xl leading-tight text-foreground">{text}</h3></div>
                   </article>
                 )
               })
             : t.about.values.map((value, idx) => {
                 const Icon = fallbackIcons[idx]
                 return (
-                  <article key={value} className="group flex items-center gap-4 rounded-2xl border border-border/60 bg-card/70 p-4 transition-all duration-500 hover:-translate-y-1 hover:border-accent/50 hover:shadow-lg">
-                    <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent ring-1 ring-accent/25 transition-transform duration-500 group-hover:scale-105"><Icon className="size-6" aria-hidden="true" /></span>
-                    <h3 className="font-serif text-xl leading-tight text-foreground">{value}</h3>
+                  <article key={value} className="group flex items-center gap-4 rounded-2xl bg-accent/10 p-3 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15">
+                    <div className="relative size-16 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[idx % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div>
+                    <div className="flex min-w-0 items-center gap-2"><Icon className="size-4 shrink-0 text-accent" aria-hidden="true" /><h3 className="font-serif text-xl leading-tight text-foreground">{value}</h3></div>
                   </article>
                 )
               })}
