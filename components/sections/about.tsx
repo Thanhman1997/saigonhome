@@ -46,18 +46,18 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
                 const Icon = ICON_MAP[value.icon] ?? Sparkles
                 const text = pickLocalized({ en: value.textEn, ko: value.textKo, vi: value.textVi }, locale)
                 return (
-                  <article key={value.id} className="rounded-2xl bg-muted p-6">
-                    <Icon className="size-7 text-accent" />
-                    <h3 className="mt-5 font-serif text-2xl">{text}</h3>
+                  <article key={value.id} className="group flex items-center gap-4 rounded-2xl border border-border/60 bg-card/70 p-4 transition-all duration-500 hover:-translate-y-1 hover:border-accent/50 hover:shadow-lg">
+                    <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent ring-1 ring-accent/25 transition-transform duration-500 group-hover:scale-105"><Icon className="size-6" aria-hidden="true" /></span>
+                    <h3 className="font-serif text-xl leading-tight text-foreground">{text}</h3>
                   </article>
                 )
               })
             : t.about.values.map((value, idx) => {
                 const Icon = fallbackIcons[idx]
                 return (
-                  <article key={value} className="rounded-2xl bg-muted p-6">
-                    <Icon className="size-7 text-accent" />
-                    <h3 className="mt-5 font-serif text-2xl">{value}</h3>
+                  <article key={value} className="group flex items-center gap-4 rounded-2xl border border-border/60 bg-card/70 p-4 transition-all duration-500 hover:-translate-y-1 hover:border-accent/50 hover:shadow-lg">
+                    <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent ring-1 ring-accent/25 transition-transform duration-500 group-hover:scale-105"><Icon className="size-6" aria-hidden="true" /></span>
+                    <h3 className="font-serif text-xl leading-tight text-foreground">{value}</h3>
                   </article>
                 )
               })}
