@@ -39,7 +39,7 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
             {body.map((paragraph, idx) => <p key={idx} className="text-pretty text-base leading-relaxed text-muted-foreground first:text-lg first:text-foreground">{paragraph}</p>)}
           </div>
         </div>
-        <div className="mt-16 grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-[1.35fr_.65fr]">
+        <div className="mt-16 grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-[1.45fr_.55fr]">
           <div className="relative min-h-80 overflow-hidden rounded-2xl sm:row-span-2 lg:min-h-[36rem]"><Image src="/images/spa-massage.png" alt="Therapist delivering a calming massage at home" fill loading="lazy" className="object-cover transition-transform duration-700 hover:scale-105" /></div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
           {values.length > 0
@@ -47,8 +47,8 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
                 const Icon = ICON_MAP[value.icon] ?? Sparkles
                 const text = pickLocalized({ en: value.textEn, ko: value.textKo, vi: value.textVi }, locale)
                 return (
-                  <article key={value.id} className="group flex items-center gap-3 rounded-2xl bg-accent/10 px-3 py-1 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15">
-                    <div className="relative size-12 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[values.indexOf(value) % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div>
+                  <article key={value.id} className="group flex min-h-36 items-center gap-3 rounded-2xl bg-accent/10 px-3 py-8 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15">
+                    <div className="relative size-20 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[values.indexOf(value) % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div>
                     <div className="flex min-w-0 items-center gap-2"><Icon className="size-4 shrink-0 text-accent" aria-hidden="true" /><h3 className="font-serif text-xl leading-tight text-foreground">{text}</h3></div>
                   </article>
                 )
@@ -56,8 +56,8 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
             : t.about.values.map((value, idx) => {
                 const Icon = fallbackIcons[idx]
                 return (
-                  <article key={value} className="group flex items-center gap-3 rounded-2xl bg-accent/10 px-3 py-1 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15">
-                    <div className="relative size-12 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[idx % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div>
+                  <article key={value} className="group flex min-h-36 items-center gap-3 rounded-2xl bg-accent/10 px-3 py-8 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15">
+                    <div className="relative size-20 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[idx % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div>
                     <div className="flex min-w-0 items-center gap-2"><Icon className="size-4 shrink-0 text-accent" aria-hidden="true" /><h3 className="font-serif text-xl leading-tight text-foreground">{value}</h3></div>
                   </article>
                 )
