@@ -27,7 +27,7 @@ export const dictionary = {
         "Guided by our four core values — Excellence, Convenience, Affordability, and Privacy — we are committed to making every experience seamless, restorative, and tailored to your needs.",
         "Our carefully selected therapists are experienced in a range of massage techniques and have basic English communication skills, allowing us to warmly welcome guests from around the world.",
       ],
-      values: ["PROFESSIONALISM", "CARE", "FLEXIBILITY", "PRIVACY"],
+      values: ["CONVENIENCE", "PRIVACY", "HEALING", "PROFESSIONALISM"],
     },
     services: {
       travelerRecover: "Traveler Recover Massage",
@@ -180,7 +180,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
         "탁월함, 편리함, 합리적인 가격, 프라이버시라는 네 가지 핵심 가치를 바탕으로, 모든 경험이 매끄럽고 회복적이며 고객님의 필요에 맞춰지도록 최선을 다하고 있습니다.",
         "저희가 신중하게 선별한 테라피스트들은 다양한 마사지 기법에 능숙하��� 기본적인 영어 소통 능력을 갖추고 있어, 전 세계에서 오시는 고객님들을 따뜻하게 맞이할 수 있습니다.",
       ],
-      values: ["전문성", "세심한 케어", "유연함", "프라이버시"],
+      values: ["편리함", "프라이버시", "치유", "전문성"],
     },
     services: {
       travelerRecover: "Traveler Recover 마사지",
@@ -303,7 +303,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
         "Đư���c định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Ti���n lợi, Hợp lý và Riêng tư — chúng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
         "Các chuyên viên được chúng tôi lựa chọn kỹ càng đều có kinh nghiệm với nhiều kỹ thuật massage khác nhau và có khả năng giao tiếp tiếng Anh cơ bản, giúp chúng tôi chào đón nồng nhiệt khách hàng từ khắp nơi trên thế giới.",
       ],
-      values: ["CHUYÊN NGHIỆP", "TẬN TÂM", "LINH HOẠT", "RIÊNG TƯ"],
+      values: ["TIỆN LỢI", "RIÊNG TƯ", "CHỮA LÀNH", "CHUYÊN NGHIỆP"],
     },
     services: {
       travelerRecover: "Traveler Recover Massage",
