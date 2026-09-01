@@ -37,7 +37,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         aria-expanded={open}
         aria-label={`Language: ${active.label}`}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex min-h-7 max-w-full items-center gap-1 rounded-md border border-border bg-background px-1.5 text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:bg-background hover:shadow-md lg:translate-x-16"
+        className="inline-flex min-h-7 max-w-[28vw] items-center gap-1 rounded-md border border-border bg-background px-1.5 text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:bg-background hover:shadow-md lg:max-w-full lg:translate-x-16"
       >
         <img
           src={`https://flagcdn.com/w40/${countryFlags[active.code]}.png`}

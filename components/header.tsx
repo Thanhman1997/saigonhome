@@ -83,8 +83,11 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
             </a>
           ))}
         </nav>
+        <div className="flex min-w-0 items-center lg:hidden">
+          <LanguageSwitcher />
+        </div>
         <button
-          className="flex size-11 items-center justify-center lg:hidden"
+          className="flex size-11 shrink-0 items-center justify-center lg:hidden"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls="mobile-menu"
@@ -104,9 +107,6 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
                 {link.label}
               </a>
             ))}
-            <div className="mt-1">
-              <LanguageSwitcher />
-            </div>
           </div>
         </nav>
       )}
