@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { dictionary, type Locale, type Dictionary } from "./dictionary"
 
 type LanguageContextValue = {
@@ -20,11 +20,14 @@ export function LanguageProvider({
   children: ReactNode
   defaultLocale?: Locale
 }) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window === "undefined") return defaultLocale
+  const [locale, setLocaleState] = useState<Locale>(defaultLocale)
+
+  useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY) as Locale | null
-    return stored && Object.prototype.hasOwnProperty.call(dictionary, stored) ? stored : defaultLocale
-  })
+    if (stored && Object.prototype.hasOwnProperty.call(dictionary, stored)) {
+      setLocaleState(stored)
+    }
+  }, [])
 
   function setLocale(next: Locale) {
     setLocaleState(next)
