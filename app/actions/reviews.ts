@@ -1,25 +1,20 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { bookings, reviews } from "@/lib/db/schema"
-import { and, eq } from "drizzle-orm"
+import { reviews } from "@/lib/db/schema"
 import { revalidatePath } from "next/cache"
+import { translateReview, type ReviewLanguage } from "@/lib/translate-review"
 
 export async function submitReview(formData: FormData) {
-  const reference = String(formData.get("reference") ?? "").trim().toUpperCase()
-  const email = String(formData.get("email") ?? "").trim().toLowerCase()
   const customerName = String(formData.get("customerName") ?? "").trim()
-  const commentEn = String(formData.get("commentEn") ?? "").trim()
-  const commentKo = String(formData.get("commentKo") ?? "").trim()
-  const commentVi = String(formData.get("commentVi") ?? "").trim()
-  const comment = String(formData.get("comment") ?? "").trim() || commentVi || commentEn || commentKo
+  const sourceLanguage = String(formData.get("sourceLanguage") ?? "vi") as ReviewLanguage
+  const reviewText = String(formData.get("reviewText") ?? "").trim()
   const rating = Number(formData.get("rating"))
-  if (!reference || !email || !customerName || !comment || !Number.isInteger(rating) || rating < 1 || rating > 5) throw new Error("Please complete all review fields.")
-  const booking = await db.select({ id: bookings.id, therapistId: bookings.therapistId, customerName: bookings.customerName, date: bookings.date, status: bookings.status }).from(bookings).where(and(eq(bookings.reference, reference), eq(bookings.email, email))).limit(1)
-  if (!booking[0] || booking[0].status !== "completed") throw new Error("Only completed bookings can leave a review.")
-  const existing = await db.select({ id: reviews.id }).from(reviews).where(eq(reviews.bookingId, booking[0].id)).limit(1)
-  if (existing[0]) throw new Error("This booking already has a review.")
-  await db.insert(reviews).values({ bookingId: booking[0].id, therapistId: booking[0].therapistId, customerName, rating, comment, commentEn: commentEn || null, commentKo: commentKo || null, commentVi: commentVi || comment, reviewDate: booking[0].date, approved: false })
+  if (!customerName || !reviewText || reviewText.length < 10 || !["en", "vi", "ko"].includes(sourceLanguage) || !Number.isInteger(rating) || rating < 1 || rating > 5) throw new Error("Please complete your name, review, and rating.")
+
+  let translations = { en: reviewText, vi: reviewText, ko: reviewText }
+  try { translations = await translateReview(reviewText, sourceLanguage) } catch { /* keep the original review available for admin translation */ }
+  await db.insert(reviews).values({ bookingId: null, therapistId: null, customerName, rating, comment: reviewText, commentEn: translations.en, commentKo: translations.ko, commentVi: translations.vi, reviewDate: new Date().toISOString().slice(0, 10), approved: false })
   revalidatePath("/reviews")
   revalidatePath("/admin/reviews")
   return { ok: true }
