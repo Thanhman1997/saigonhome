@@ -14,6 +14,7 @@ import {
   designSettings,
   bookingSettings,
   siteContent,
+  sectionStyles,
 } from "@/lib/db/schema"
 import { asc, eq, desc, sql } from "drizzle-orm"
 
@@ -82,6 +83,10 @@ export async function getAboutContent() {
 
 export async function getLotusValues() {
   return db.select().from(lotusValues).where(eq(lotusValues.active, true)).orderBy(asc(lotusValues.sortOrder))
+}
+
+export async function getSectionStyles() {
+  return db.select().from(sectionStyles)
 }
 
 export async function getDesignSettings() {
