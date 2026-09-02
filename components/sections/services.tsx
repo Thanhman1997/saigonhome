@@ -33,8 +33,8 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className={locale === "ko" ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
           {t.services.kicker ? <p className="text-lg font-semibold uppercase tracking-[0.24em] text-accent">{t.services.kicker}</p> : null}
-          <h2 className={locale === "ko" ? "mt-4 text-balance font-korean-sans font-bold leading-tight tracking-tight text-accent" : "mt-4 text-balance font-sans font-bold leading-tight tracking-tight text-accent"} style={{ fontSize: "clamp(2rem, 4vw, 4rem)" }}>{t.services.title}</h2>
-          <p className={locale === "ko" ? "mt-6 text-pretty text-xl leading-relaxed text-muted-foreground" : "mt-6 text-pretty text-lg leading-relaxed text-muted-foreground"}>{t.services.subtitle}</p>
+          <h2 className="mt-4 text-center font-sans text-[clamp(2rem,4vw,4rem)] font-semibold leading-[1.2] tracking-[-0.02em] text-accent">{t.services.title}</h2>
+          <p className="mx-auto mt-6 max-w-xl text-center font-sans text-lg font-normal leading-relaxed text-muted-foreground">{t.services.subtitle}</p>
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -59,7 +59,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                     </div>
                   </div>
                 </div>
-                <Button onClick={() => openBooking({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null })} className={`h-14 min-h-14 w-1/2 self-center rounded-full px-4 font-bold bg-lotus-pink text-lotus-pink-foreground hover:bg-lotus-pink/90 ${locale === "ko" ? "text-2xl" : "text-lg"}`}>{t.services.book}</Button>
+                <Button onClick={() => openBooking({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null })} className="h-14 min-h-14 w-1/2 self-center rounded-full bg-lotus-pink px-4 font-sans text-lg font-semibold leading-none text-lotus-pink-foreground hover:bg-lotus-pink/90">{t.services.book}</Button>
               </article>
             )
           })}
