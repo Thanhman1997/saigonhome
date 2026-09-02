@@ -22,7 +22,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-lg font-semibold uppercase tracking-widest text-accent">{t.experts.kicker}</p>
-          <h2 className="mt-4 text-balance font-sans font-bold leading-tight tracking-tight text-accent" style={{ fontSize: "clamp(2.5rem, 5vw, 5rem)" }}>{t.experts.title}</h2>
+          <h2 className="mt-4 text-balance font-sans font-bold leading-tight tracking-tight text-accent" style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)" }}>{t.experts.title}</h2>
           <p className="mt-6 text-pretty text-lg leading-relaxed text-muted-foreground">{t.experts.subtitle}</p>
         </div>
 
