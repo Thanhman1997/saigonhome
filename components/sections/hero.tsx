@@ -33,7 +33,7 @@ export function HeroSection({ hero }: { hero: Hero }) {
             <div className="reveal-up reveal-delay-3 mt-8 flex flex-wrap items-center gap-4"><Button onClick={() => openBooking()} className={`h-12 w-28 shrink-0 rounded-full bg-accent px-4 text-xl font-semibold text-accent-foreground hover:bg-accent/90 ${locale === "ko" ? "font-korean-sans" : ""}`}>{localized(content.ctaEn, content.ctaKo, content.ctaVi)}</Button><a href="#about" className="flex items-center gap-2 text-sm font-medium text-foreground"><ArrowDown className="size-4" />{t.hero.hours}</a></div>
           </>}
         </div>
-        <div className="relative min-h-[24rem] overflow-hidden lg:min-h-[42rem]"><Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private home" fill priority sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-center saturate-110 transition-transform duration-700 hover:scale-[1.03]" /><div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent" /></div>
+        <div className="relative min-h-[16rem] overflow-hidden lg:min-h-[28rem]"><Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private home" fill priority sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-center saturate-110 transition-transform duration-700 hover:scale-[1.03]" /><div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent" /></div>
       </div>
     </section>
   )
