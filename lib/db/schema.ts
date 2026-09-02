@@ -25,6 +25,20 @@ export const services = pgTable("services", {
   sortOrder: integer("sort_order").notNull().default(0),
 })
 
+export const servicesContent = pgTable("services_content", {
+  id: serial("id").primaryKey(),
+  kickerEn: text("kicker_en").notNull().default("Our Services"),
+  kickerKo: text("kicker_ko").notNull().default("모든 니즈를 위한 테라피"),
+  kickerVi: text("kicker_vi").notNull().default("Liệu trình cho mọi nhu cầu"),
+  titleEn: text("title_en").notNull().default("Therapies for every need"),
+  titleKo: text("title_ko").notNull().default("모든 니즈를 위한 테라피"),
+  titleVi: text("title_vi").notNull().default("Liệu trình cho mọi nhu cầu"),
+  subtitleEn: text("subtitle_en").notNull().default("Nine signature treatments, each tailored to how you want to feel."),
+  subtitleKo: text("subtitle_ko").notNull().default("원하는 느낌에 맞춘 9가지 시그니처 트리트먼트."),
+  subtitleVi: text("subtitle_vi").notNull().default("Chín liệu trình đặc trưng, được thiết kế theo cảm nhận bạn mong muốn."),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const serviceDurations = pgTable("service_durations", {
   id: serial("id").primaryKey(),
   serviceId: integer("service_id").notNull(),

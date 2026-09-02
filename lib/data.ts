@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import {
   services,
+  servicesContent,
   serviceDurations,
   therapists,
   reviews,
@@ -17,6 +18,11 @@ import {
   sectionStyles,
 } from "@/lib/db/schema"
 import { asc, eq, desc, sql } from "drizzle-orm"
+
+export async function getServicesContent() {
+  const rows = await db.select().from(servicesContent).limit(1)
+  return rows[0] ?? null
+}
 
 export async function getServicesWithDurations() {
   const allServices = await db.select().from(services).where(eq(services.active, true)).orderBy(asc(services.sortOrder))

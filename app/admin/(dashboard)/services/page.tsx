@@ -3,6 +3,8 @@ import { getAllServicesAdmin } from "@/lib/admin-data"
 import { ServiceFormDialog } from "@/components/admin/service-form-dialog"
 import { ServiceRowControls } from "@/components/admin/service-row-controls"
 import { formatVnd } from "@/lib/pricing"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
 export const metadata = { title: "Services" }
 
@@ -18,7 +20,7 @@ export default async function AdminServicesPage() {
             {services.length} service{services.length === 1 ? "" : "s"} · multilingual copy, imagery, durations, and pricing
           </p>
         </div>
-        <ServiceFormDialog />
+        <div className="flex flex-wrap gap-2"><Button asChild variant="outline"><Link href="/admin/services/content">Edit section content</Link></Button><ServiceFormDialog /></div>
       </div>
 
       <div className="flex flex-col gap-3">

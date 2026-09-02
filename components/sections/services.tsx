@@ -23,18 +23,22 @@ function imageForService(service: ServiceWithDurations) {
   return fallbackImages[service.slug] ?? { src: "/images/service-thai.png", flag: "LW" }
 }
 
-export function ServicesSection({ services, featured = services.slice(0, 3), fullPage = false }: { services: ServiceWithDurations[]; featured?: ServiceWithDurations[]; fullPage?: boolean }) {
+type ServicesContent = { kickerEn: string; kickerKo: string; kickerVi: string; titleEn: string; titleKo: string; titleVi: string; subtitleEn: string; subtitleKo: string; subtitleVi: string }
+
+export function ServicesSection({ services, featured = services.slice(0, 3), fullPage = false, content }: { services: ServiceWithDurations[]; featured?: ServiceWithDurations[]; fullPage?: boolean; content?: ServicesContent | null }) {
   const { t, locale } = useLanguage()
   const displayedServices = fullPage ? services : featured
   const { openBooking } = useBooking()
+  const servicesContent = content ?? { kickerEn: t.services.kicker, kickerKo: t.services.kicker, kickerVi: t.services.kicker, titleEn: t.services.title, titleKo: t.services.title, titleVi: t.services.title, subtitleEn: t.services.subtitle, subtitleKo: t.services.subtitle, subtitleVi: t.services.subtitle }
+  const localizedContent = (en: string, ko: string, vi: string) => pickLocalized({ en, ko, vi }, locale)
 
   return (
     <section id="services" className="bg-muted py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className={locale === "ko" ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
-          {t.services.kicker ? <p className="text-lg font-semibold uppercase tracking-[0.24em] text-accent">{t.services.kicker}</p> : null}
-          <h2 className="mt-4 text-center font-sans text-[clamp(2rem,4vw,4rem)] font-semibold leading-[1.2] tracking-[-0.02em] text-accent">{t.services.title}</h2>
-          <p className="mx-auto mt-6 max-w-xl text-center font-sans text-lg font-normal leading-relaxed text-muted-foreground">{t.services.subtitle}</p>
+          {t.services.kicker ? <p className="text-lg font-semibold uppercase tracking-[0.24em] text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
+          <h2 className="mt-4 text-center font-sans text-[clamp(2rem,4vw,4rem)] font-semibold leading-[1.2] tracking-[-0.02em] text-accent">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
+          <p className="mx-auto mt-6 max-w-xl text-center font-sans text-lg font-normal leading-relaxed text-muted-foreground">{localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi)}</p>
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
