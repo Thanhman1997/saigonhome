@@ -39,11 +39,11 @@ export async function POST(request: NextRequest) {
     }
 
     const blob = await put(`lotus-wellness/${Date.now()}-${file.name}`, file, {
-      access: "public",
+      access: "private",
       addRandomSuffix: true,
     })
 
-    return NextResponse.json({ url: blob.url })
+    return NextResponse.json({ url: `/api/media?pathname=${encodeURIComponent(blob.pathname)}` })
   } catch (error) {
     console.error("[v0] Upload error:", error)
     return NextResponse.json({ error: "Upload failed" }, { status: 500 })
