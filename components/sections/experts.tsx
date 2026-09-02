@@ -88,7 +88,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
                     size="lg"
                     disabled={!therapist.available}
                     onClick={() => openBooking({ therapistId: therapist.id })}
-                    className="mt-auto h-14 w-full text-lg font-bold bg-lotus-pink text-lotus-pink-foreground hover:bg-lotus-pink/90 disabled:bg-muted disabled:text-muted-foreground"
+                    className="mt-auto h-14 w-1/2 self-center text-xl font-bold bg-lotus-pink text-lotus-pink-foreground hover:bg-lotus-pink/90 disabled:bg-muted disabled:text-muted-foreground"
                   >
                     {t.experts.book}
                   </Button>
