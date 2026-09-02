@@ -33,7 +33,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className={locale === "ko" ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
           {t.services.kicker ? <p className="text-lg font-semibold uppercase tracking-[0.24em] text-accent">{t.services.kicker}</p> : null}
-          <h2 className={locale === "ko" ? "mt-4 text-balance font-korean-sans font-bold leading-tight tracking-tight text-accent" : "mt-4 text-balance font-sans font-bold leading-tight tracking-tight text-accent"} style={{ fontSize: "clamp(4rem, 8vw, 8rem)" }}>{t.services.title}</h2>
+          <h2 className={locale === "ko" ? "mt-4 text-balance font-korean-sans font-bold leading-tight tracking-tight text-accent" : "mt-4 text-balance font-sans font-bold leading-tight tracking-tight text-accent"} style={{ fontSize: "clamp(2rem, 4vw, 4rem)" }}>{t.services.title}</h2>
           <p className={locale === "ko" ? "mt-6 text-pretty text-xl leading-relaxed text-muted-foreground" : "mt-6 text-pretty text-lg leading-relaxed text-muted-foreground"}>{t.services.subtitle}</p>
         </div>
 
