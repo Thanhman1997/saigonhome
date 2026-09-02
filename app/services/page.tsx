@@ -20,7 +20,6 @@ export default async function ServicesPage() {
     <BookingProvider services={services} therapists={therapists}>
       <main className="min-h-screen bg-background">
         <Header navigationSettings={navigationSettings} />
-        <div className="mx-auto w-full max-w-6xl px-5 pt-8 lg:px-8"><a href="/" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">← Quay lại trang chủ</a></div>
         <ServicesSection services={services} fullPage />
         <Footer contactInfo={contactInfo} />
       </main>
