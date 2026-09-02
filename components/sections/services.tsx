@@ -52,7 +52,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                     {image ? <Image src={image} alt={name} fill loading="lazy" className="object-cover" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{service.icon}</span>}
                   </div>
                   <div className="px-1">
-                    <h3 className="font-serif text-2xl leading-tight">{name}</h3>
+                    <h3 className={`font-sans leading-tight ${locale === "en" || locale === "vi" ? "text-3xl font-semibold" : "text-2xl font-medium"}`}>{name}</h3>
                     <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{desc}</p>
                     <div className="mt-5 flex flex-col gap-1.5 border-t border-border pt-4">
                       {service.durations.map((d) => <div key={d.id} className="flex items-center justify-between text-sm"><span className="text-muted-foreground">{d.minutes} {t.services.minutes}</span><span className="font-medium">{formatVnd(d.priceVnd)}</span></div>)}
