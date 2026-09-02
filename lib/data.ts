@@ -2,7 +2,6 @@ import { db } from "@/lib/db"
 import {
   services,
   serviceDurations,
-  bookings,
   therapists,
   reviews,
   events,
@@ -32,15 +31,7 @@ export async function getServicesWithDurations() {
 
 export async function getFeaturedServices() {
   const serviceList = await getServicesWithDurations()
-  const since = new Date()
-  since.setMonth(since.getMonth() - 1)
-  const counts = await db
-    .select({ serviceId: bookings.serviceId, bookingCount: sql<number>`count(*)` })
-    .from(bookings)
-    .where(sql`${bookings.createdAt} >= ${since} AND ${bookings.status} IN ('confirmed', 'completed')`)
-    .groupBy(bookings.serviceId)
-  const countMap = new Map(counts.map((row) => [row.serviceId, Number(row.bookingCount)]))
-  return [...serviceList].sort((a, b) => (countMap.get(b.id) ?? 0) - (countMap.get(a.id) ?? 0) || a.sortOrder - b.sortOrder).slice(0, 3)
+  return serviceList.slice(0, 3)
 }
 
 export async function getTherapists() {
