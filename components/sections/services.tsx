@@ -33,7 +33,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">{t.services.kicker}</p>
-          <h2 className="mt-4 text-balance font-sans text-6xl font-bold leading-tight tracking-tight sm:text-7xl">{t.services.title}</h2>
+          <h2 className="mt-4 text-balance font-sans text-7xl font-bold leading-tight tracking-tight sm:text-8xl">{t.services.title}</h2>
           <p className="mt-6 text-pretty text-lg leading-relaxed text-muted-foreground">{t.services.subtitle}</p>
         </div>
 
