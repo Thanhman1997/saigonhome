@@ -110,6 +110,19 @@ export const bookings = pgTable("bookings", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+export const vietnamHolidays = pgTable("vietnam_holidays", {
+  id: serial("id").primaryKey(),
+  year: integer("year").notNull(),
+  date: date("date").notNull(),
+  localName: text("local_name").notNull(),
+  englishName: text("english_name").notNull(),
+  fixedDate: boolean("fixed_date").notNull().default(false),
+  source: text("source").notNull().default("nager.date"),
+  verified: boolean("verified").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const events = pgTable("events", {
   id: serial("id").primaryKey(),
   nameEn: text("name_en").notNull(),
