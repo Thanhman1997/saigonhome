@@ -300,7 +300,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       body: [
         "Tại Lotus Wellness, chúng tôi tin rằng sự thư giãn thực sự bắt đầu từ cảm giác hoàn toàn thoải mái.",
         "Chúng tôi mang liệu trình massage chuyên nghiệp đến không gian bạn yêu thích, kết hợp kỹ thuật thành thục với sự chăm sóc tận tâm, cá nhân hóa để tạo nên trải nghiệm chăm sóc sức khỏe riêng tư và thoải mái.",
-        "Đư���c định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Ti���n l������i, Hợp lý và Riêng tư — chúng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
+        "Đư���c định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Ti�����n l������i, Hợp lý và Riêng tư — chúng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
         "Các chuyên viên được chúng tôi lựa chọn kỹ càng đều có kinh nghiệm với nhiều kỹ thuật massage khác nhau và có khả năng giao tiếp tiếng Anh cơ bản, giúp chúng tôi chào đón nồng nhiệt khách hàng từ khắp nơi trên thế giới.",
       ],
       values: ["TIỆN LỢI", "RIÊNG TƯ", "CHỮA LÀNH", "CHUYÊN NGHIỆP"],
@@ -354,7 +354,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
         { q: "Chính sách hủy lịch như thế nào?", a: "Đối với các đặt lịch thanh toán qua chuyển khoản ngân hàng: bạn có thể hủy lịch trước giờ hẹn 1 giờ để được hoàn tiền toàn bộ. Hủy lịch trong vòng 1 giờ trước giờ hẹn sẽ được hoàn lại 70% giá trị đặt lịch." },
       ],
     },
-    reviews: { kicker: "TRẢI NGHIỆM KHÁCH HÀNG", title: "Sự chăm sóc còn đọng lại.", link: "Xem tất cả đánh giá" },
+    reviews: { kicker: "Trải nghiệm khách hàng", title: "Sự chăm sóc còn đọng lại.", link: "Xem tất cả đánh giá" },
     contact: { kicker: "LIÊN HỆ", title: "Nếu quý khách có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi để được giải đáp chi tiết hơn!", subtitle: "" },
     booking: {
       title: "Đặt lịch của bạn",
