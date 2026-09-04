@@ -37,8 +37,8 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           {t.services.kicker ? <p className="text-[clamp(3.2rem,5.5vw,6rem)] font-black leading-[1.08] tracking-[-0.03em] text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
-          <h2 className="mt-4 text-center font-sans text-[clamp(2rem,3.5vw,4rem)] font-bold leading-[1.2] tracking-[-0.02em] text-accent">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
-          <p className="mx-auto mt-4 max-w-3xl text-center font-sans text-xl font-normal leading-relaxed text-muted-foreground">{localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi)}</p>
+          <h2 className="mt-4 text-center font-sans text-[clamp(3.2rem,5vw,5.5rem)] font-black leading-[1.08] tracking-[-0.03em] text-accent">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
+          <p className="mx-auto mt-4 max-w-4xl text-center font-sans text-xl font-normal leading-relaxed text-muted-foreground">{localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi)}</p>
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
