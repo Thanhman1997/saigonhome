@@ -5,7 +5,7 @@ import Link from "next/link"
 export const metadata = { title: "Services Content" }
 
 const defaults = {
-  kickerEn: "Our Services", kickerKo: "우리서비스", kickerVi: "Dịch vụ của chúng tôi",
+  kickerEn: "Our Services", kickerKo: "우리서비스", kickerVi: "Các liệu trình trị liệu",
   titleEn: "Therapies for every need", titleKo: "모든 니즈를 위한 테라피", titleVi: "Liệu trình cho mọi nhu cầu",
   subtitleEn: "Nine signature treatments, each tailored to how you want to feel.", subtitleKo: "원하는 느낌에 맞춘 9가지 시그니처 트리트먼트.", subtitleVi: "Chín liệu trình đặc trưng, được thiết kế theo cảm nhận bạn mong muốn.",
 }
