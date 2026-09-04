@@ -28,7 +28,7 @@ export const services = pgTable("services", {
 export const servicesContent = pgTable("services_content", {
   id: serial("id").primaryKey(),
   kickerEn: text("kicker_en").notNull().default("Our Services"),
-  kickerKo: text("kicker_ko").notNull().default("모든 니즈를 위한 테라피"),
+  kickerKo: text("kicker_ko").notNull().default("우리서비스"),
   kickerVi: text("kicker_vi").notNull().default("Liệu trình cho mọi nhu cầu"),
   titleEn: text("title_en").notNull().default("Therapies for every need"),
   titleKo: text("title_ko").notNull().default("모든 니즈를 위한 테라피"),

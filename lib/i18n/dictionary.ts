@@ -184,7 +184,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     },
     services: {
       travelerRecover: "Traveler Recover 마사지",
-      kicker: "",
+      kicker: "우리서비스",
       title: "모든 니즈를 위한 테라피",
       subtitle: "원하는 느낌에 맞춘 9가지 시그니처 트리트먼트.",
       from: "부터",
@@ -300,7 +300,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       body: [
         "Tại Lotus Wellness, chúng tôi tin rằng sự thư giãn thực sự bắt đầu từ cảm giác hoàn toàn thoải mái.",
         "Chúng tôi mang liệu trình massage chuyên nghiệp đến không gian bạn yêu thích, kết hợp kỹ thuật thành thục với sự chăm sóc tận tâm, cá nhân hóa để tạo nên trải nghiệm chăm sóc sức khỏe riêng tư và thoải mái.",
-        "Đư���c định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Ti���n l����i, Hợp lý và Riêng tư — chúng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
+        "Đư���c định hướng bởi bốn giá trị cốt lõi — Xuất sắc, Ti���n l������i, Hợp lý và Riêng tư — chúng tôi luôn cam kết mang đến trải nghiệm liền mạch, phục hồi và phù hợp với nhu cầu của bạn.",
         "Các chuyên viên được chúng tôi lựa chọn kỹ càng đều có kinh nghiệm với nhiều kỹ thuật massage khác nhau và có khả năng giao tiếp tiếng Anh cơ bản, giúp chúng tôi chào đón nồng nhiệt khách hàng từ khắp nơi trên thế giới.",
       ],
       values: ["TIỆN LỢI", "RIÊNG TƯ", "CHỮA LÀNH", "CHUYÊN NGHIỆP"],
