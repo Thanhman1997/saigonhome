@@ -53,12 +53,6 @@ function vietnamLocalToUtcMs(date: string, time: string): number {
   return Date.UTC(year, month - 1, day, hour + 7, minute)
 }
 
-function addDays(date: string, days: number): string {
-  const [year, month, day] = date.split("-").map(Number)
-  const result = new Date(Date.UTC(year, month - 1, day + days))
-  return [result.getUTCFullYear(), String(result.getUTCMonth() + 1).padStart(2, "0"), String(result.getUTCDate()).padStart(2, "0")].join("-")
-}
-
 export async function createBooking(input: CreateBookingInput): Promise<CreateBookingResult> {
   try {
     if (!input.customerName?.trim()) return { success: false, error: "Name is required" }
@@ -226,37 +220,6 @@ type BookingEmailDetails = {
   discountVnd: number
   totalVnd: number
   discountLabel: string | null
-}
-
-async function sendCustomerConfirmation(details: BookingEmailDetails) {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) return
-
-  try {
-    const resend = new Resend(apiKey)
-    const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + "đ"
-    await resend.emails.send({
-      from: "Lotus Wellness <onboarding@resend.dev>",
-      to: details.email,
-      subject: `Booking confirmed — ${details.reference}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; color: #24312d;">
-          <h2>Booking confirmed</h2>
-          <p>Dear ${escapeHtml(details.customerName)}, your Lotus Wellness booking has been received.</p>
-          <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
-            <tr><td style="padding: 6px 0; color: #666;">Reference</td><td style="padding: 6px 0;"><strong>${escapeHtml(details.reference)}</strong></td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Service</td><td style="padding: 6px 0;">${escapeHtml(details.serviceName)} (${details.durationMinutes} min)</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Date &amp; time</td><td style="padding: 6px 0;">${escapeHtml(details.date)} at ${escapeHtml(details.time)} (Vietnam time)</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Guests</td><td style="padding: 6px 0;">${details.guests}</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Total</td><td style="padding: 6px 0; font-weight: bold;">${fmt(details.totalVnd)}</td></tr>
-          </table>
-          <p style="margin-top: 24px; color: #666;">Please keep your reference number for future changes.</p>
-        </div>
-      `,
-    })
-  } catch (error) {
-    console.error("[v0] Failed to send customer confirmation email:", error)
-  }
 }
 
 async function sendAdminNotification(details: BookingEmailDetails) {

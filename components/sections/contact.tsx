@@ -17,7 +17,7 @@ export function ContactSection({ contactInfo }: { contactInfo: ContactInfoRow })
     contactInfo?.lineUrl && { label: "LINE", href: contactInfo.lineUrl, icon: <Image src="/images/contact-line.png" alt="" width={28} height={28} className="size-9 rounded-md object-cover" /> },
     contactInfo?.kakaoUrl && { label: "KakaoTalk", href: contactInfo.kakaoUrl, icon: <SiKakaotalk className="size-8 text-kakaotalk" aria-hidden="true" /> },
     contactInfo?.messengerUrl && { label: "Messenger", href: contactInfo.messengerUrl, icon: <Image src="/images/contact-messenger.png" alt="" width={28} height={28} className="size-9 rounded-md object-cover" /> },
-    contactInfo?.instagramUrl && { label: "Instagram", href: contactInfo.instagramUrl, icon: <img src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/instagram/default.svg" alt="" width={32} height={32} className="size-8 object-contain" /> },
+    contactInfo?.instagramUrl && { label: "Instagram", href: contactInfo.instagramUrl, icon: <Image src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/instagram/default.svg" alt="" width={32} height={32} unoptimized className="size-8 object-contain" /> },
     { label: CONTACT_PHONE, href: `tel:${CONTACT_PHONE}`, icon: <Phone className="size-8 text-blue-300" aria-hidden="true" /> },
   ].filter(Boolean) as { label: string; href: string; icon: React.ReactNode }[]
 

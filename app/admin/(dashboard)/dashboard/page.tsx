@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { AlertTriangle, ArrowUpRight, CalendarDays, ClipboardList, FileText, MessageSquare, Star, Tag } from "lucide-react"
+import { AlertTriangle, ArrowUpRight, CalendarDays, FileText, MessageSquare, Star, Tag } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getAllBookingsWithRelations, getAllEventsAdmin, getAllFaqsAdmin, getAllQuestions, getAllReviewsWithRelations, getAllServicesAdmin, getAboutContentAdmin, getHeroContentAdmin } from "@/lib/admin-data"

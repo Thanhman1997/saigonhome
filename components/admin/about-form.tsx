@@ -71,6 +71,7 @@ export function AboutForm({ about }: { about: About }) {
       </div>
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+      {autosaveStatus !== "idle" && <p className="text-sm text-muted-foreground">{autosaveStatus === "saving" ? "Draft saving…" : autosaveStatus === "saved" ? "Draft saved" : "Draft could not be saved"}</p>}
       <Button type="submit" disabled={pending} className="self-start">
         {pending ? "Saving…" : "Save about content"}
       </Button>

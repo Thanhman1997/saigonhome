@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { useState } from "react"
 import { BarChart3, BookOpen, CalendarDays, ChevronRight, ClipboardList, Eye, FileText, ImageIcon, Languages, LayoutDashboard, Menu, Palette, PanelsTopLeft, Settings2, Sparkles, Users, X } from "lucide-react"
-import { AdminNavLink } from "@/components/admin/nav-link"
 import { AdminLogoutButton } from "@/components/admin/logout-button"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"

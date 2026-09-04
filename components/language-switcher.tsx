@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { ChevronDown, Check } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/language-provider"
 import { locales, type Locale } from "@/lib/i18n/dictionary"
@@ -39,8 +40,9 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         onClick={() => setOpen((value) => !value)}
         className="inline-flex min-h-7 max-w-[28vw] items-center gap-1 rounded-md border border-border bg-background px-1.5 text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:bg-background hover:shadow-md lg:max-w-full lg:translate-x-16"
       >
-        <img
+        <Image
           src={`https://flagcdn.com/w40/${countryFlags[active.code]}.png`}
+          unoptimized
           alt={`${active.label} country flag`}
           width={20}
           height={15}
@@ -62,8 +64,9 @@ export function LanguageSwitcher({ className }: { className?: string }) {
               onClick={() => choose(item.code)}
               className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium tracking-normal text-foreground transition-all hover:bg-muted hover:pl-2.5"
             >
-              <img
+              <Image
                 src={`https://flagcdn.com/w40/${countryFlags[item.code]}.png`}
+                unoptimized
                 alt={`${item.label} country flag`}
                 width={20}
                 height={15}

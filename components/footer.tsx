@@ -7,6 +7,7 @@ import { getContactInfo } from "@/lib/data"
 type ContactInfo = Awaited<ReturnType<typeof getContactInfo>>
 
 export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
+  void contactInfo
   const { locale } = useLanguage()
   const footerCopy = {
     en: { services: "SERVICES", about: "ABOUT", working: "WORKING HOURS", open: "Open daily", last: "Last booking", note: "We are always ready to\ncare for you.", serviceLinks: ["Massage", "Aroma Massage", "Deep Tissue", "Couple Massage", "Foot Massage"], aboutLinks: ["About Us", "Our Space", "Therapists", "Reviews", "FAQ"] },
