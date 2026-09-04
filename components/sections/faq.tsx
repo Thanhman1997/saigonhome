@@ -14,7 +14,7 @@ export function Faq({ faqs }: { faqs: FaqRow[] }) {
     <section id="faq" className="bg-secondary py-20 md:py-28">
       <div className="mx-auto max-w-3xl px-6">
         <div>
-          <p className="text-xl font-bold uppercase tracking-widest text-primary">{t.kicker}</p>
+          <p className="text-2xl font-extrabold uppercase tracking-widest text-primary">{t.kicker}</p>
           <h2 className="mt-3 text-balance font-sans text-7xl font-bold leading-tight tracking-tight text-foreground md:text-8xl">
             {t.title}
           </h2>
@@ -27,10 +27,10 @@ export function Faq({ faqs }: { faqs: FaqRow[] }) {
               const answer = pickLocalized({ en: faq.answerEn, ko: faq.answerKo, vi: faq.answerVi }, locale)
               return (
                 <AccordionItem key={faq.id} value={`item-${faq.id}`} className="border-border">
-                  <AccordionTrigger className="font-serif text-lg text-foreground hover:no-underline [&>svg]:text-primary">
+                  <AccordionTrigger className="font-serif text-xl font-semibold text-foreground hover:no-underline [&>svg]:text-primary">
                     {question}
                   </AccordionTrigger>
-                  <AccordionContent className="leading-relaxed text-muted-foreground">{answer}</AccordionContent>
+                  <AccordionContent className="text-lg leading-relaxed text-muted-foreground">{answer}</AccordionContent>
                 </AccordionItem>
               )
             })}
