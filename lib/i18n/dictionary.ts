@@ -196,7 +196,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     experts: {
       kicker: "마사지 전문가",
       title: "테라피스트 소개",
-      subtitle: "신원 확인을 마친 40명의 전문 테라피스트가 방문합니다.",
+      subtitle: "신원 확인을 마�� 40명의 전문 테라피스트가 방문합니다.",
       years: "년 경력",
       book: "예약",
       viewProfile: "프로필 보기",
@@ -307,7 +307,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     },
     services: {
       travelerRecover: "Traveler Recover Massage",
-      kicker: "Các liệu trình trị liệu",
+      kicker: "Các Liệu Trình Trị Liệu",
       title: "Liệu trình cho mọi nhu cầu",
       subtitle: "Chín liệu trình đặc trưng, phù hợp với cảm giác bạn mong muốn.",
       from: "Từ",
