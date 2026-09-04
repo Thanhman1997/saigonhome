@@ -178,7 +178,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
         "Lotus Wellness는 진정한 휴식이 완전한 편���함에서 시작된다고 믿습니다.",
         "저희는 고객이 원하는 공간으로 전문 마사지 서비스를 제공하며, 숙련된 기술과 세심하고 개인화된 케어를 결합하여 프라이빗하고 편안한 웰니스 경험을 선사합니다.",
         "탁월함, 편리함, 합리적인 가격, 프라이버시라는 네 가지 핵심 가치를 바탕으로, 모든 경험이 매끄럽고 회복적이며 고객님의 필요에 맞춰지도록 최선을 다하고 있습니다.",
-        "저희가 신중하게 선별한 테라피스트들은 다양한 마사지 기법에 능숙하��� 기본적인 영어 소통 능력을 갖추고 있어, 전 세계에서 오시는 고객님들을 따뜻하게 맞이할 수 있습니다.",
+        "저희가 신중하게 선별한 테라��스트들은 다양한 마사지 기법에 능숙하��� 기본적인 영어 소통 능력을 갖추고 있어, 전 세계에서 오시는 고객님들을 따뜻하게 맞이할 수 있습니다.",
       ],
       values: ["편리함", "프라이버시", "치유", "전문성"],
     },
@@ -318,7 +318,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     },
     experts: {
       kicker: "Chuyên gia massage",
-      title: "Các kỹ thuật viên",
+      title: "Các Kỹ Thuật Viên",
       subtitle: "40 chuyên viên chuyên nghiệp, đã được kiểm tra lý lịch, sẵn sàng đến với bạn.",
       years: "năm kinh nghiệm",
       book: "ĐẶT LỊCH",
