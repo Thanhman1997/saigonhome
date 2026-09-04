@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import { BarChart3, BookOpen, CalendarDays, ChevronRight, ClipboardList, Eye, FileText, ImageIcon, Languages, LayoutDashboard, Menu, Palette, PanelsTopLeft, Settings2, Sparkles, Users, X } from "lucide-react"
 import { AdminLogoutButton } from "@/components/admin/logout-button"
 import { Button } from "@/components/ui/button"
@@ -15,10 +16,11 @@ const groups = [
 ]
 
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = usePathname()
   return <nav aria-label="Admin navigation" className="flex flex-col gap-6">
     {groups.map((group) => <div key={group.label} className="flex flex-col gap-2">
       <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{group.label}</p>
-      <div className="flex flex-col gap-1">{group.items.map(({ href, label, icon: Icon }) => <Link key={href} href={href} onClick={onNavigate} className="group flex items-center justify-between rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"><span className="flex items-center gap-3"><Icon className="size-4" aria-hidden="true" />{label}</span><ChevronRight className="size-3 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" /></Link>)}</div>
+      <div className="flex flex-col gap-1">{group.items.map(({ href, label, icon: Icon }) => { const active = pathname === href || (href !== "/admin/dashboard" && pathname.startsWith(`${href}/`)); return <Link key={href} href={href} onClick={onNavigate} aria-current={active ? "page" : undefined} className={`group flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors ${active ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}><span className="flex items-center gap-3"><Icon className="size-4" aria-hidden="true" />{label}</span><ChevronRight className={`size-3 transition-opacity ${active ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true" /></Link> })}</div>
     </div>)}
   </nav>
 }
