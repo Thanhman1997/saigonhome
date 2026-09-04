@@ -14,8 +14,8 @@ export function Faq({ faqs }: { faqs: FaqRow[] }) {
     <section id="faq" className="bg-secondary py-20 md:py-28">
       <div className="mx-auto max-w-3xl px-6">
         <div>
-          <p className="text-2xl font-extrabold uppercase tracking-widest text-primary">{t.kicker}</p>
-          <h2 className="mt-3 text-balance font-sans text-7xl font-bold leading-tight tracking-tight text-foreground md:text-8xl">
+          <p className="text-lg font-bold uppercase tracking-widest text-primary">{t.kicker}</p>
+          <h2 className="mt-3 text-balance font-sans text-4xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
             {t.title}
           </h2>
         </div>
