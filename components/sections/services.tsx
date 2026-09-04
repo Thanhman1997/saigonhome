@@ -36,8 +36,8 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
     <section id="services" className="bg-muted py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          {t.services.kicker ? <p className="text-[clamp(3.2rem,5.5vw,6rem)] font-black leading-[1.08] tracking-[-0.03em] text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
-          <h2 className="mt-4 text-center font-sans text-[clamp(3.2rem,5vw,5.5rem)] font-black leading-[1.08] tracking-[-0.03em] text-accent">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
+          {t.services.kicker ? <p className="text-center font-sans text-[clamp(4rem,7vw,7.5rem)] font-black leading-[1.05] tracking-[-0.03em] text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
+          <h2 className="mt-4 text-center font-sans text-[clamp(2.5rem,4vw,4.5rem)] font-bold leading-[1.15] tracking-[-0.02em] text-accent">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
           <p className="mx-auto mt-4 max-w-4xl text-center font-sans text-xl font-normal leading-relaxed text-muted-foreground">{localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi)}</p>
         </div>
 
