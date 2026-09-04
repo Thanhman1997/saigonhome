@@ -36,9 +36,9 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
     <section id="services" className="bg-muted py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          {t.services.kicker ? <p className="text-xl font-bold uppercase tracking-[0.24em] text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
-          <h2 className="mt-4 text-center font-sans text-[clamp(2.8rem,5.5vw,5.5rem)] font-bold leading-[1.12] tracking-[-0.02em] text-accent">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
-          <p className="mx-auto mt-5 max-w-2xl text-center font-sans text-xl font-medium leading-relaxed text-muted-foreground">{localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi)}</p>
+          {t.services.kicker ? <p className="text-2xl font-extrabold uppercase tracking-[0.2em] text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
+          <h2 className="mt-4 text-center font-sans text-[clamp(3.2rem,6vw,6rem)] font-black leading-[1.1] tracking-[-0.025em] text-accent">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
+          <p className="mx-auto mt-5 max-w-3xl text-center font-sans text-2xl font-semibold leading-relaxed text-muted-foreground">{localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi)}</p>
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
