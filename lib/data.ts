@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { dictionary } from "@/lib/i18n/dictionary"
 import {
   services,
   servicesContent,
@@ -21,7 +22,16 @@ import { asc, eq, desc, sql } from "drizzle-orm"
 
 export async function getServicesContent() {
   const rows = await db.select().from(servicesContent).limit(1)
-  return rows[0] ?? null
+  const row = rows[0]
+  if (!row) return null
+
+  // Keep legacy database rows from overwriting the canonical multilingual dictionary.
+  return {
+    ...row,
+    kickerEn: row.kickerEn === "Therapies for every need" ? dictionary.en.services.kicker : row.kickerEn,
+    kickerKo: row.kickerKo === "모든 니즈를 위한 테라피" ? dictionary.ko.services.kicker : row.kickerKo,
+    kickerVi: row.kickerVi === "Liệu trình cho mọi nhu cầu" ? dictionary.vi.services.kicker : row.kickerVi,
+  }
 }
 
 export async function getServicesWithDurations() {
