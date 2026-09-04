@@ -18,22 +18,22 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
     <footer className="border-t border-border bg-secondary px-5 py-10 font-sans text-sm text-foreground lg:px-8">
       <div className="mx-auto grid max-w-6xl gap-2 md:grid-cols-3 md:translate-x-[1.5cm]">
         <div>
-          <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">{footerCopy.services}</h2>
-          <nav className="mt-4 flex flex-col gap-2 text-base leading-6 text-muted-foreground" aria-label="Services navigation">
+          <h2 className="font-sans text-base font-bold uppercase tracking-[0.12em] text-guiding-pink">{footerCopy.services}</h2>
+          <nav className="mt-4 flex flex-col gap-2 text-lg font-medium leading-7 text-muted-foreground" aria-label="Services navigation">
             {footerCopy.serviceLinks.map((label) => <a key={label} href="#services" className="transition-colors hover:text-accent">{label}</a>)}
           </nav>
         </div>
         <div>
-          <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">{footerCopy.about}</h2>
-          <nav className="mt-4 flex flex-col gap-2 text-base leading-6 text-muted-foreground" aria-label="About navigation">
+          <h2 className="font-sans text-base font-bold uppercase tracking-[0.12em] text-guiding-pink">{footerCopy.about}</h2>
+          <nav className="mt-4 flex flex-col gap-2 text-lg font-medium leading-7 text-muted-foreground" aria-label="About navigation">
             {footerCopy.aboutLinks.map((label, index) => <a key={label} href={["#about", "#about", "#experts", "/reviews", "#faq"][index]} className="transition-colors hover:text-accent">{label}</a>)}
           </nav>
         </div>
         <div id="contact" className="text-foreground">
-          <h2 className="font-sans text-sm font-semibold uppercase tracking-[0.12em] text-guiding-pink">{footerCopy.working}</h2>
+          <h2 className="font-sans text-base font-bold uppercase tracking-[0.12em] text-guiding-pink">{footerCopy.working}</h2>
           <div className="mt-2 flex items-start gap-3">
             <Clock3 className="mt-1 size-6 shrink-0 text-accent" strokeWidth={1.6} aria-hidden="true" />
-            <div className="flex flex-col gap-1 text-base leading-5 text-muted-foreground">
+            <div className="flex flex-col gap-1 text-lg font-medium leading-7 text-muted-foreground">
               <div>
                 <p className="font-semibold text-foreground">{footerCopy.open}</p>
                 <p>7:00 AM – 11:00 PM</p>
@@ -46,7 +46,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           </div>
           <div className="mt-2 flex items-center gap-3">
             <span className="text-2xl leading-none text-guiding-pink" aria-hidden="true">♡</span>
-            <p className="text-base leading-6 text-muted-foreground">{footerCopy.note.split("\n").map((line) => <span key={line}>{line}<br /></span>)}</p>
+            <p className="text-lg font-medium leading-7 text-muted-foreground">{footerCopy.note.split("\n").map((line) => <span key={line}>{line}<br /></span>)}</p>
           </div>
         </div>
       </div>
