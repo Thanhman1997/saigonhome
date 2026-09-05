@@ -88,7 +88,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
             </a>
           ))}
         </nav>
-        <div className="flex min-w-0 items-center lg:hidden">
+        <div className="flex min-w-0 -translate-x-1 items-center lg:hidden">
           <LanguageSwitcher />
         </div>
         <button
@@ -100,7 +100,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
-        <div className="hidden lg:flex">
+        <div className="hidden -translate-x-2 lg:flex">
           <LanguageSwitcher />
         </div>
       </div>
