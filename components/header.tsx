@@ -100,7 +100,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
-        <div className="hidden -translate-x-4 lg:flex">
+        <div className="hidden -translate-x-10 lg:flex">
           <LanguageSwitcher />
         </div>
       </div>
