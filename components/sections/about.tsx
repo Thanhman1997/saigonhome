@@ -39,7 +39,7 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
             {body.map((paragraph, idx) => <p key={idx} className="text-pretty text-base leading-relaxed text-muted-foreground first:text-lg first:text-foreground">{paragraph}</p>)}
           </div>
         </div>
-        <div className="mt-16 grid items-stretch gap-6 lg:grid-cols-[1.2fr_.8fr]">
+        <div className="mt-16 grid items-stretch gap-6 lg:grid-cols-[1.4fr_.6fr]">
           <div className="relative min-h-80 overflow-hidden rounded-2xl lg:min-h-[22rem]"><Image src="/images/spa-massage.png" alt="Therapist delivering a calming massage at home" fill loading="lazy" className="object-cover transition-transform duration-700 hover:scale-105" /></div>
           <div className="grid gap-3">
             {values.length > 0 ? values.map((value, index) => {
