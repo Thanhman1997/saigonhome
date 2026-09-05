@@ -9,19 +9,18 @@ import { formatVnd, getGroupDiscountRate } from "@/lib/pricing"
 import { createBooking } from "@/app/actions/booking"
 import { checkIsFirstTimeCustomer } from "@/app/actions/customer"
 import type { CustomerInfo } from "./step-details"
+import { PaymentButton } from "./payment-button"
 
 export function StepConfirm({
   customerInfo,
   onBack,
   bookingResult,
   setBookingResult,
-  onClose,
 }: {
   customerInfo: CustomerInfo
   onBack: () => void
   bookingResult: { reference: string; totalVnd: number; subtotalVnd: number; discountVnd: number } | null
   setBookingResult: (r: { reference: string; totalVnd: number; subtotalVnd: number; discountVnd: number } | null) => void
-  onClose: () => void
 }) {
   const { draft, services, therapists } = useBooking()
   const { t, locale } = useLanguage()
@@ -89,10 +88,8 @@ export function StepConfirm({
           <p className="text-xs uppercase tracking-wider text-muted-foreground">{t.booking.reference}</p>
           <p className="mt-1 font-mono text-lg">{bookingResult.reference}</p>
         </div>
-        <p className="font-serif text-2xl">{formatVnd(bookingResult.totalVnd)}</p>
-        <Button onClick={onClose} size="lg" className="mt-2">
-          {t.booking.bookAnother}
-        </Button>
+        <p className="font-sans text-2xl font-semibold tracking-tight">{formatVnd(bookingResult.totalVnd)}</p>
+        <PaymentButton reference={bookingResult.reference} />
       </div>
     )
   }
@@ -117,7 +114,7 @@ export function StepConfirm({
         <div className="mt-2 flex flex-col gap-2 border-t border-border pt-4">
           <Row label={t.booking.subtotal} value={formatVnd(subtotal)} />
           {estimatedDiscount > 0 && <Row label={t.booking.discount} value={`-${formatVnd(estimatedDiscount)}`} />}
-          <div className="flex items-center justify-between font-serif text-xl">
+          <div className="flex items-center justify-between font-sans text-xl font-semibold tracking-tight">
             <span>{t.booking.total}</span>
             <span>{formatVnd(estimatedTotal)}</span>
           </div>

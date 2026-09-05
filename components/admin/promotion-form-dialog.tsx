@@ -1,6 +1,7 @@
 "use client"
 
 import { useActionState, useEffect, useState } from "react"
+import { useAdminAutosave } from "@/hooks/use-admin-autosave"
 import { useFormStatus } from "react-dom"
 import { Plus, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -52,6 +53,8 @@ export function PromotionFormDialog({ promotion }: { promotion?: PromotionRow })
   const [state, formAction] = useActionState(action, undefined)
   const [type, setType] = useState(promotion?.type ?? "seasonal")
   const [imageUrl, setImageUrl] = useState<string | null>(promotion?.imageUrl ?? null)
+  const [draftValues, setDraftValues] = useState<Record<string, string>>({})
+  const autosaveStatus = useAdminAutosave("promotion", String(promotion?.id ?? "new"), draftValues)
 
   useEffect(() => {
     if (state && !state.error) {
@@ -79,7 +82,7 @@ export function PromotionFormDialog({ promotion }: { promotion?: PromotionRow })
           <DialogTitle>{promotion ? "Edit promotion" : "Create a new promotion"}</DialogTitle>
           <DialogDescription>First-time and combo offers are always shown; seasonal offers run between dates.</DialogDescription>
         </DialogHeader>
-        <form action={formAction} className="flex flex-col gap-4">
+        <form action={formAction} onChange={(event) => setDraftValues(Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string, string>)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="type">Promotion type</Label>
             <Select name="type" value={type} onValueChange={setType}>
@@ -161,7 +164,7 @@ export function PromotionFormDialog({ promotion }: { promotion?: PromotionRow })
           <ImageUpload label="Promotion image" name="imageUrl" value={imageUrl} onChange={setImageUrl} aspect="aspect-video" />
 
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-          <DialogFooter>
+          <DialogFooter><span className="text-sm text-muted-foreground" aria-live="polite">{autosaveStatus === "saving" ? "Saving..." : autosaveStatus === "saved" ? "Saved ✓" : autosaveStatus === "error" ? "Draft save failed" : ""}</span>
             <SubmitButton label={promotion ? "Save changes" : "Create promotion"} />
           </DialogFooter>
         </form>

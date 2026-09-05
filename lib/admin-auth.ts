@@ -31,12 +31,7 @@ async function sha256Hex(input: string) {
 
 async function hashesMatch(a: string, b: string) {
   const [hashA, hashB] = await Promise.all([sha256Hex(a), sha256Hex(b)])
-  const left = new TextEncoder().encode(hashA)
-  const right = new TextEncoder().encode(hashB)
-  if (left.length !== right.length) return false
-  let difference = 0
-  for (let index = 0; index < left.length; index += 1) difference |= left[index] ^ right[index]
-  return difference === 0
+  return hashA === hashB
 }
 
 /**
@@ -49,14 +44,6 @@ export async function getExpectedAdminSessionToken(): Promise<string | null> {
   const email = process.env.ADMIN_EMAIL
   if (!secret || !email) return null
   return sha256Hex(`lotus-wellness-admin-session:${secret}:${email.trim().toLowerCase()}`)
-}
-
-export async function isValidAdminSession(value: string | undefined): Promise<boolean> {
-  if (!value) return false
-  const parsed = (await import("@/lib/security")).splitExpiringSessionToken(value)
-  if (!parsed || Date.now() - parsed.issuedAt > (await import("@/lib/security")).ADMIN_SESSION_MAX_AGE_MS) return false
-  const expected = await getExpectedAdminSessionToken()
-  return Boolean(expected) && (await hashesMatch(parsed.token, expected ?? ""))
 }
 
 /**

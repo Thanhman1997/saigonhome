@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { ChevronDown, Check } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/language-provider"
 import { locales, type Locale } from "@/lib/i18n/dictionary"
@@ -11,6 +12,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const active = locales.find((item) => item.code === locale) ?? locales[0]
+  const countryFlags = { en: "us", ko: "kr", vi: "vn" } as const
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -36,22 +38,22 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         aria-expanded={open}
         aria-label={`Language: ${active.label}`}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border/80 bg-background/90 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-foreground shadow-sm backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:bg-muted hover:shadow-md"
+        className="inline-flex min-h-7 max-w-[28vw] items-center gap-1 rounded-md border border-border bg-background px-1.5 text-[0.55rem] font-semibold uppercase tracking-[0.12em] text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:bg-background hover:shadow-md lg:max-w-full lg:translate-x-16"
       >
-        <span
-          aria-hidden="true"
-          className="inline-flex aspect-[3/2] w-6 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-foreground/10 bg-muted text-[1.05rem] leading-none shadow-sm"
-          title={active.label}
-          style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}
-        >
-          {active.flag}
-        </span>
+        <Image
+          src={`https://flagcdn.com/w40/${countryFlags[active.code]}.png`}
+          unoptimized
+          alt={`${active.label} country flag`}
+          width={20}
+          height={15}
+          className="h-[15px] w-5 shrink-0 rounded-[2px] object-cover"
+        />
         <span>{active.short}</span>
         <ChevronDown aria-hidden="true" className={cn("size-3.5 transition-transform", open && "rotate-180")} />
       </button>
 
       {open && (
-        <div role="listbox" aria-label="Languages" className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-48 overflow-hidden rounded-xl border border-border/80 bg-background/95 p-2 shadow-xl backdrop-blur-md">
+        <div role="listbox" aria-label="Languages" className="absolute right-0 top-[calc(100%+0.35rem)] z-50 min-w-40 overflow-hidden rounded-lg border border-border/80 bg-background/95 p-1 shadow-xl backdrop-blur-md">
           {locales.map((item) => (
             <button
               key={item.code}
@@ -60,16 +62,16 @@ export function LanguageSwitcher({ className }: { className?: string }) {
               aria-selected={locale === item.code}
               aria-current={locale === item.code ? "true" : undefined}
               onClick={() => choose(item.code)}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium tracking-normal text-foreground transition-all hover:bg-muted hover:pl-3.5"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium tracking-normal text-foreground transition-all hover:bg-muted hover:pl-2.5"
             >
-              <span
-                aria-hidden="true"
-                className="inline-flex aspect-[3/2] w-6 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-foreground/10 bg-muted text-[1.05rem] leading-none shadow-sm"
-                title={item.label}
-                style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}
-              >
-                {item.flag}
-              </span>
+              <Image
+                src={`https://flagcdn.com/w40/${countryFlags[item.code]}.png`}
+                unoptimized
+                alt={`${item.label} country flag`}
+                width={20}
+                height={15}
+className="h-3 w-4 shrink-0 rounded-[2px] object-cover"
+              />
               <span className="flex-1">{item.label}</span>
               {locale === item.code && <Check aria-hidden="true" className="size-3.5" />}
             </button>

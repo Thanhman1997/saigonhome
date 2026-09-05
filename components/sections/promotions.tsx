@@ -29,11 +29,11 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
     <section id="promotions" className="bg-secondary py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-6">
         <div className="max-w-2xl">
-          <p className="text-sm font-medium uppercase tracking-widest text-primary">{t.kicker}</p>
-          <h2 className="mt-3 text-balance font-sans text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
+          <p className="text-[clamp(1.75rem,3.2vw,3.5rem)] font-bold leading-tight tracking-[-0.02em] text-primary">{t.kicker}</p>
+          <h2 className="mt-3 text-balance font-sans text-4xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
             {t.title}
           </h2>
-          <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">{t.subtitle}</p>
+          <p className="mt-3 max-w-xl text-pretty text-lg font-normal leading-relaxed text-muted-foreground">{t.subtitle}</p>
         </div>
 
         {promotions.length > 0 ? (
@@ -51,7 +51,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
                 >
                   {promo.imageUrl && (
                     <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-                      <Image src={promo.imageUrl} alt={name} fill className="object-cover" />
+                      <Image src={promo.imageUrl} alt={name} fill loading="lazy" sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
                     </div>
                   )}
                   <div className="flex flex-1 flex-col justify-between p-8">

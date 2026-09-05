@@ -1,5 +1,4 @@
-import { getAllBookingsWithRelations, getAllTherapistsAdmin } from "@/lib/admin-data"
-import { BookingFilters } from "@/components/admin/booking-filters"
+import { getAllBookingsWithRelations } from "@/lib/admin-data"
 import { formatVnd } from "@/lib/pricing"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { BookingStatusSelect } from "@/components/admin/booking-status-select"
@@ -12,14 +11,8 @@ function formatDateTime(date: string, time: string) {
   return `${dateStr} · ${time}`
 }
 
-export default async function AdminBookingsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const params = await searchParams
-  const get = (key: string) => typeof params[key] === "string" ? params[key] : undefined
-  const result = await getAllBookingsWithRelations({ search: get("search"), status: get("status"), therapistId: Number(get("therapistId")) || undefined, page: Number(get("page")) || 1 })
-  const bookings = result.rows
-  const therapists = await getAllTherapistsAdmin()
-  const query = new URLSearchParams(Object.entries(params).flatMap(([key, value]) => value ? [[key, String(value)]] : []))
-  const exportHref = `/admin/bookings/export?${query.toString()}`
+export default async function AdminBookingsPage() {
+  const bookings = await getAllBookingsWithRelations()
 
   return (
     <div className="flex flex-col gap-6">
@@ -30,15 +23,6 @@ export default async function AdminBookingsPage({ searchParams }: { searchParams
         </p>
       </div>
 
-      <BookingFilters therapists={therapists.map((therapist) => ({ id: therapist.id, code: therapist.code }))} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">Showing page {result.page}</p>
-        <div className="flex gap-2">
-          <a href={exportHref} className="rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted">Export CSV</a>
-          {result.page > 1 && <a href={`/admin/bookings?page=${result.page - 1}`} className="rounded-md border border-border px-3 py-2 text-sm">Previous</a>}
-          {result.hasNextPage && <a href={`/admin/bookings?page=${result.page + 1}`} className="rounded-md border border-border px-3 py-2 text-sm">Next</a>}
-        </div>
-      </div>
       <div className="rounded-lg border border-border bg-card">
         <Table>
           <TableHeader>

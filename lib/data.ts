@@ -1,6 +1,8 @@
 import { db } from "@/lib/db"
+import { dictionary } from "@/lib/i18n/dictionary"
 import {
   services,
+  servicesContent,
   serviceDurations,
   therapists,
   reviews,
@@ -14,8 +16,23 @@ import {
   designSettings,
   bookingSettings,
   siteContent,
+  sectionStyles,
 } from "@/lib/db/schema"
-import { and, asc, eq, desc } from "drizzle-orm"
+import { asc, eq, desc, sql } from "drizzle-orm"
+
+export async function getServicesContent() {
+  const rows = await db.select().from(servicesContent).limit(1)
+  const row = rows[0]
+  if (!row) return null
+
+  // Keep legacy database rows from overwriting the canonical multilingual dictionary.
+  return {
+    ...row,
+    kickerEn: row.kickerEn === "Therapies for every need" ? dictionary.en.services.kicker : row.kickerEn,
+    kickerKo: row.kickerKo === "모든 니즈를 위한 테라피" ? dictionary.ko.services.kicker : row.kickerKo,
+    kickerVi: row.kickerVi === "Liệu trình cho mọi nhu cầu" ? dictionary.vi.services.kicker : row.kickerVi,
+  }
+}
 
 export async function getServicesWithDurations() {
   const allServices = await db.select().from(services).where(eq(services.active, true)).orderBy(asc(services.sortOrder))
@@ -29,14 +46,17 @@ export async function getServicesWithDurations() {
   }))
 }
 
+export async function getFeaturedServices() {
+  const serviceList = await getServicesWithDurations()
+  return serviceList.slice(0, 3)
+}
+
 export async function getTherapists() {
-  return db.select().from(therapists).orderBy(asc(therapists.code))
+  return db.select().from(therapists).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getAvailableTherapists() {
-  return db.select().from(therapists)
-    .where(and(eq(therapists.available, true), eq(therapists.status, "active")))
-    .orderBy(asc(therapists.code))
+  return db.select().from(therapists).where(eq(therapists.available, true)).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getApprovedReviews() {
@@ -79,6 +99,10 @@ export async function getAboutContent() {
 
 export async function getLotusValues() {
   return db.select().from(lotusValues).where(eq(lotusValues.active, true)).orderBy(asc(lotusValues.sortOrder))
+}
+
+export async function getSectionStyles() {
+  return db.select().from(sectionStyles)
 }
 
 export async function getDesignSettings() {

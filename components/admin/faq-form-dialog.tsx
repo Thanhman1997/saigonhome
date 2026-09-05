@@ -1,6 +1,7 @@
 "use client"
 
 import { useActionState, useEffect, useState } from "react"
+import { useAdminAutosave } from "@/hooks/use-admin-autosave"
 import { useFormStatus } from "react-dom"
 import { Plus, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -41,6 +42,8 @@ export function FaqFormDialog({ faq }: { faq?: FaqRow }) {
   const [open, setOpen] = useState(false)
   const action = faq ? updateFaq.bind(null, faq.id) : createFaq
   const [state, formAction] = useActionState(action, undefined)
+  const [draftValues, setDraftValues] = useState<Record<string, string>>({})
+  const autosaveStatus = useAdminAutosave("faq", String(faq?.id ?? "new"), draftValues)
 
   useEffect(() => {
     if (state && !state.error) {
@@ -68,7 +71,7 @@ export function FaqFormDialog({ faq }: { faq?: FaqRow }) {
           <DialogTitle>{faq ? "Edit FAQ" : "Create a new FAQ"}</DialogTitle>
           <DialogDescription>Add a question and answer in all three languages.</DialogDescription>
         </DialogHeader>
-        <form action={formAction} className="flex flex-col gap-4">
+        <form action={formAction} onChange={(event) => setDraftValues(Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string, string>)} className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="questionEn">Question (English)</Label>
@@ -98,7 +101,7 @@ export function FaqFormDialog({ faq }: { faq?: FaqRow }) {
             </div>
           </div>
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-          <DialogFooter>
+          <DialogFooter><span className="text-sm text-muted-foreground" aria-live="polite">{autosaveStatus === "saving" ? "Saving..." : autosaveStatus === "saved" ? "Saved ✓" : autosaveStatus === "error" ? "Draft save failed" : ""}</span>
             <SubmitButton label={faq ? "Save changes" : "Create FAQ"} />
           </DialogFooter>
         </form>

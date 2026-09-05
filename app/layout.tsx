@@ -15,7 +15,7 @@ import {
 } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
-import { getDefaultLocale, getDesignSettings } from "@/lib/data"
+import { getDefaultLocale, getDesignSettings, getSectionStyles } from "@/lib/data"
 import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
 import "./globals.css"
 
@@ -68,25 +68,28 @@ export const metadata: Metadata = {
   generator: "v0.app",
 }
 
-export const viewport: Viewport = { themeColor: "#f5f0e7", width: "device-width", initialScale: 1, userScalable: true }
+export const viewport: Viewport = { themeColor: "#FCE2C1", width: "device-width", initialScale: 1, userScalable: true }
 
 // Locale and design tokens come from the database, so this root layout must
 // render at runtime instead of trying to connect during static generation.
 export const dynamic = "force-dynamic"
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [defaultLocale, designSettings] = await Promise.all([getDefaultLocale(), getDesignSettings()])
-  const activeDesign = designSettings ?? DESIGN_PRESETS[0].values
+  const [defaultLocale, designSettings, sectionStyles] = await Promise.all([getDefaultLocale(), getDesignSettings(), getSectionStyles()])
+  // Keep the public Lotus experience aligned with the approved reference preset.
+  // Legacy database rows may contain the previous muted palette and make the page appear broken.
+  const activeDesign = designSettings?.presetKey === "lotus-premium" ? DESIGN_PRESETS[0].values : (designSettings ?? DESIGN_PRESETS[0].values)
   const designTokenCss = buildDesignTokenCss(activeDesign)
+  const safe = (value: string | null) => value && /^[#(),.%\- a-zA-Z0-9]+$/.test(value) ? value : "inherit"
+  const sectionStyleCss = sectionStyles.map((style) => `#${style.sectionKey} h1,#${style.sectionKey} h2,#${style.sectionKey} h3{color:${safe(style.titleColor)};font-size:${safe(style.titleSize === "sm" ? "1.5rem" : style.titleSize === "lg" ? "3rem" : "2rem")};text-align:${style.sectionKey === "services" || style.sectionKey === "experts" ? "center" : "inherit"}}#${style.sectionKey} p{color:${safe(style.bodyColor)};font-size:${safe(style.bodySize === "sm" ? "0.875rem" : style.bodySize === "lg" ? "1.25rem" : "1rem")}}`).join("")
 
   return (
-    <html lang="en" className="bg-background">
-      <head>
-        <style id="design-tokens" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: designTokenCss }} />
-      </head>
+    <html lang="en" className="bg-background" suppressHydrationWarning>
       <body
         className={`${dmSans.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${notoSans.variable} ${notoSansKr.variable} ${notoSerifKr.variable} ${playfair.variable} ${dmSerifDisplay.variable} ${lora.variable} ${manrope.variable} ${inter.variable} font-sans antialiased`}
       >
+        <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
+        <style id="section-styles" dangerouslySetInnerHTML={{ __html: sectionStyleCss }} />
         <LanguageProvider defaultLocale={defaultLocale}>{children}</LanguageProvider>
         <Analytics />
       </body>

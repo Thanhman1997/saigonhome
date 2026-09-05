@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Card } from "@/components/ui/card"
 
 const pages = [
+  { name: "Section styles", description: "Edit section typography, custom sizes, colors, and alignment.", href: "/admin/content" },
   { name: "Homepage hero", description: "Kicker, title, subtitle, CTA, and hero image.", href: "/admin/hero" },
   { name: "About section", description: "Story, values, and supporting image.", href: "/admin/about" },
   { name: "Services", description: "Localized service names, descriptions, images, prices, and durations.", href: "/admin/services" },

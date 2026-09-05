@@ -8,7 +8,6 @@ import {
   date,
   numeric,
   timestamp,
-  index,
 } from "drizzle-orm/pg-core"
 
 export const services = pgTable("services", {
@@ -24,6 +23,20 @@ export const services = pgTable("services", {
   imageUrl: text("image_url"),
   active: boolean("active").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
+})
+
+export const servicesContent = pgTable("services_content", {
+  id: serial("id").primaryKey(),
+  kickerEn: text("kicker_en").notNull().default("Our Services"),
+  kickerKo: text("kicker_ko").notNull().default("우리서비스"),
+  kickerVi: text("kicker_vi").notNull().default("Các Liệu Trình Trị Liệu"),
+  titleEn: text("title_en").notNull().default("Therapies for every need"),
+  titleKo: text("title_ko").notNull().default("모든 니즈를 위한 테라피"),
+  titleVi: text("title_vi").notNull().default("Liệu trình cho mọi nhu cầu"),
+  subtitleEn: text("subtitle_en").notNull().default("Nine signature treatments, each tailored to how you want to feel."),
+  subtitleKo: text("subtitle_ko").notNull().default("원하는 느낌에 맞춘 9가지 시그니처 트리트먼트."),
+  subtitleVi: text("subtitle_vi").notNull().default("Chín liệu trình đặc trưng, được thiết kế theo cảm nhận bạn mong muốn."),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
 export const serviceDurations = pgTable("service_durations", {
@@ -49,47 +62,8 @@ export const therapists = pgTable("therapists", {
   bioVi: text("bio_vi"),
   photoUrl: text("photo_url"),
   available: boolean("available").notNull().default(true),
-  status: text("status").notNull().default("draft"),
-  maxBookingsPerDay: integer("max_bookings_per_day").notNull().default(4),
   sortOrder: integer("sort_order").notNull().default(0),
 })
-
-export const therapistWorkingHours = pgTable("therapist_working_hours", {
-  id: serial("id").primaryKey(),
-  therapistId: integer("therapist_id").notNull(),
-  weekday: integer("weekday").notNull(),
-  startTime: text("start_time").notNull(),
-  endTime: text("end_time").notNull(),
-  active: boolean("active").notNull().default(true),
-}, (table) => [index("idx_therapist_hours_lookup").on(table.therapistId, table.weekday)])
-
-export const therapistDaysOff = pgTable("therapist_days_off", {
-  id: serial("id").primaryKey(),
-  therapistId: integer("therapist_id").notNull(),
-  startDate: date("start_date").notNull(),
-  endDate: date("end_date").notNull(),
-  reason: text("reason"),
-}, (table) => [index("idx_therapist_days_off_lookup").on(table.therapistId, table.startDate, table.endDate)])
-
-export const serviceAreas = pgTable("service_areas", {
-  id: serial("id").primaryKey(),
-  nameEn: text("name_en").notNull(),
-  nameKo: text("name_ko").notNull(),
-  nameVi: text("name_vi").notNull(),
-  active: boolean("active").notNull().default(true),
-  defaultSurchargeVnd: bigint("default_surcharge_vnd", { mode: "number" }).notNull().default(0),
-  defaultTravelMinutes: integer("default_travel_minutes").notNull().default(0),
-})
-
-export const therapistServiceAreas = pgTable("therapist_service_areas", {
-  id: serial("id").primaryKey(),
-  therapistId: integer("therapist_id").notNull(),
-  serviceAreaId: integer("service_area_id").notNull(),
-  active: boolean("active").notNull().default(true),
-  surchargeVnd: bigint("surcharge_vnd", { mode: "number" }),
-  travelMinutes: integer("travel_minutes"),
-  isPrimary: boolean("is_primary").notNull().default(false),
-}, (table) => [index("idx_therapist_areas_lookup").on(table.therapistId, table.serviceAreaId)])
 
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
@@ -98,46 +72,16 @@ export const reviews = pgTable("reviews", {
   customerName: text("customer_name").notNull(),
   rating: integer("rating").notNull(),
   comment: text("comment").notNull(),
+  commentEn: text("comment_en"),
+  commentKo: text("comment_ko"),
+  commentVi: text("comment_vi"),
   reviewDate: date("review_date").notNull(),
   approved: boolean("approved").notNull().default(false),
 })
 
-export const bookingNotifications = pgTable("booking_notifications", {
-  id: serial("id").primaryKey(),
-  bookingId: integer("booking_id").notNull(),
-  event: text("event").notNull(),
-  recipient: text("recipient").notNull(),
-  idempotencyKey: text("idempotency_key").notNull().unique(),
-  status: text("status").notNull().default("pending"),
-  providerMessageId: text("provider_message_id"),
-  attemptCount: integer("attempt_count").notNull().default(0),
-  lastError: text("last_error"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  sentAt: timestamp("sent_at", { withTimezone: true }),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [
-  index("idx_booking_notifications_booking").on(table.bookingId),
-  index("idx_booking_notifications_failed").on(table.status),
-])
-
-export const customers = pgTable("customers", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  phone: text("phone").notNull(),
-  totalBookings: integer("total_bookings").notNull().default(0),
-  completedBookings: integer("completed_bookings").notNull().default(0),
-  cancelledBookings: integer("cancelled_bookings").notNull().default(0),
-  noShowBookings: integer("no_show_bookings").notNull().default(0),
-  totalSpentVnd: bigint("total_spent_vnd", { mode: "number" }).notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [index("idx_customers_email").on(table.email), index("idx_customers_phone").on(table.phone)])
-
 export const bookings = pgTable("bookings", {
   id: serial("id").primaryKey(),
   reference: text("reference").notNull().unique(),
-  customerId: integer("customer_id"),
   serviceId: integer("service_id").notNull(),
   durationMinutes: integer("duration_minutes").notNull(),
   therapistId: integer("therapist_id"),
@@ -149,22 +93,35 @@ export const bookings = pgTable("bookings", {
   phone: text("phone").notNull(),
   address: text("address").notNull(),
   detailedAddress: text("detailed_address"),
-  serviceAreaId: integer("service_area_id"),
-  serviceAreaName: text("service_area_name"),
-  travelSurchargeVnd: bigint("travel_surcharge_vnd", { mode: "number" }).notNull().default(0),
-  travelMinutes: integer("travel_minutes").notNull().default(0),
   notes: text("notes"),
   subtotalVnd: bigint("subtotal_vnd", { mode: "number" }).notNull(),
   discountVnd: bigint("discount_vnd", { mode: "number" }).notNull().default(0),
   totalVnd: bigint("total_vnd", { mode: "number" }).notNull(),
   discountLabel: text("discount_label"),
-  status: text("status").notNull().default("pending"),
+  status: text("status").notNull().default("confirmed"),
+  paymentStatus: text("payment_status").notNull().default("PENDING_PAYMENT"),
+  paymentOrderId: text("payment_order_id").unique(),
+  paymentTransactionId: text("payment_transaction_id"),
+  paymentProvider: text("payment_provider").default("stripe"),
+  startAt: timestamp("start_at").notNull(),
+  endAt: timestamp("end_at").notNull(),
+  confirmationEmailSentAt: timestamp("confirmation_email_sent_at", { withTimezone: true }),
+  reminderEmailSentAt: timestamp("reminder_email_sent_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const vietnamHolidays = pgTable("vietnam_holidays", {
+  id: serial("id").primaryKey(),
+  year: integer("year").notNull(),
+  date: date("date").notNull(),
+  localName: text("local_name").notNull(),
+  englishName: text("english_name").notNull(),
+  fixedDate: boolean("fixed_date").notNull().default(false),
+  source: text("source").notNull().default("nager.date"),
+  verified: boolean("verified").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [
-  index("idx_bookings_therapist_date").on(table.therapistId, table.date),
-  index("idx_bookings_status").on(table.status),
-])
+})
 
 export const events = pgTable("events", {
   id: serial("id").primaryKey(),
@@ -304,6 +261,23 @@ export const siteContent = pgTable("site_content", {
   valueEn: text("value_en").notNull().default(""),
   valueKo: text("value_ko").notNull().default(""),
   valueVi: text("value_vi").notNull().default(""),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const navigationSettings = pgTable("navigation_settings", {
+  id: serial("id").primaryKey(),
+  menuKey: text("menu_key").notNull().unique(),
+  labelEn: text("label_en").notNull().default(""),
+  labelVi: text("label_vi").notNull().default(""),
+  labelKo: text("label_ko").notNull().default(""),
+  href: text("href").notNull().default("#"),
+  visible: boolean("visible").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  fontFamily: text("font_family").notNull().default("inherit"),
+  fontSize: text("font_size").notNull().default("sm"),
+  fontWeight: text("font_weight").notNull().default("normal"),
+  textColor: text("text_color").notNull().default("inherit"),
+  hoverColor: text("hover_color").notNull().default("inherit"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 

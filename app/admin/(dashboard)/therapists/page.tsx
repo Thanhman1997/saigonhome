@@ -16,7 +16,7 @@ export default async function AdminTherapistsPage() {
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Therapists</h1>
           <p className="text-sm text-muted-foreground">
-            {therapists.length} therapist{therapists.length === 1 ? "" : "s"} · edit profile details, photo, and availability
+            {therapists.length} therapist{therapists.length === 1 ? "" : "s"} · edit profile details, photo, and website visibility
           </p>
         </div>
         <CreateTherapistForm />
@@ -37,9 +37,6 @@ export default async function AdminTherapistsPage() {
                 <span className="text-xs text-muted-foreground">
                   {therapist.experienceYears != null ? `${therapist.experienceYears} yrs experience` : "—"}
                   {therapist.locationEn ? ` · ${therapist.locationEn}` : ""}
-                </span>
-                <span className={`text-xs font-medium ${therapist.status === "active" ? "text-emerald-600" : therapist.status === "inactive" ? "text-destructive" : "text-amber-600"}`}>
-                  {therapist.status === "active" ? "Public" : therapist.status === "inactive" ? "Inactive" : "Draft"} · limit {therapist.maxBookingsPerDay}/day
                 </span>
               </div>
             </div>

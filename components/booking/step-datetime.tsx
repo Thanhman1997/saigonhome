@@ -8,10 +8,13 @@ import { useLanguage } from "@/lib/i18n/language-provider"
 import { Minus, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const TIME_SLOTS = [
-  "10:00", "11:00", "12:00", "13:00", "14:00", "15:00",
-  "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00",
-]
+// Booking is available from 09:00 through 24:00 in 15-minute intervals.
+const TIME_SLOTS = Array.from({ length: 61 }, (_, index) => {
+  const totalMinutes = 9 * 60 + index * 15
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+})
 
 export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { draft, updateDraft } = useBooking()
@@ -21,7 +24,6 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
   const selectedDate = draft.date ? new Date(draft.date + "T00:00:00") : undefined
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-
   function handleContinue() {
     if (!draft.date || !draft.time) {
       setError(true)
@@ -31,13 +33,14 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3">
       <h2 className="font-serif text-2xl">{t.booking.steps.datetime}</h2>
 
-      <div className="grid gap-6 sm:grid-cols-[auto_1fr]">
-        <div className="flex justify-center border border-border sm:justify-start">
+      <div className="flex flex-col gap-3">
+        <div className="mx-auto flex w-fit justify-center overflow-hidden border border-border sm:justify-center [&_.rdp-root]:p-0 [&_.rdp-root]:[--cell-size:1.75rem]">
           <Calendar
             mode="single"
+            showOutsideDays={false}
             selected={selectedDate}
             onSelect={(date) => {
               if (date) {
@@ -56,8 +59,8 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
 
         <div className="flex flex-col gap-6">
           <div>
-            <p className="mb-3 text-sm font-medium">{t.booking.selectTime}</p>
-            <div className="grid grid-cols-4 gap-2 sm:grid-cols-3">
+            <p className="mb-2 text-sm font-medium">{t.booking.selectTime}</p>
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-7">
               {TIME_SLOTS.map((time) => (
                 <button
                   key={time}
@@ -67,7 +70,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
                     updateDraft({ time })
                   }}
                   className={cn(
-                    "border px-2 py-2 text-xs font-medium transition-colors sm:text-sm",
+                    "flex h-9 w-14 items-center justify-center border p-0 font-sans text-sm font-medium leading-none tabular-nums transition-colors",
                     draft.time === time
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border hover:border-primary/50",
@@ -80,7 +83,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
           </div>
 
           <div>
-            <p className="mb-3 text-sm font-medium">{t.booking.guests}</p>
+            <p className="mb-2 text-sm font-medium">{t.booking.guests}</p>
             <div className="flex items-center gap-4">
               <button
                 type="button"
@@ -106,7 +109,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
 
       {error && <p className="text-sm text-destructive">{t.booking.selectDateTimeFirst}</p>}
 
-      <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
+      <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
         <Button variant="outline" onClick={onBack} size="lg">
           {t.booking.back}
         </Button>

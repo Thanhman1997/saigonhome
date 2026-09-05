@@ -1,29 +1,21 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { bookings, reviews } from "@/lib/db/schema"
+import { bookings, reviews, services, siteContent } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
-import { sendBookingNotification } from "@/lib/booking-notifications"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, isValidAdminSession } from "@/lib/admin-auth"
+import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
+import { Resend } from "resend"
 
-const BOOKING_STATUSES = ["pending", "confirmed", "in_progress", "completed", "cancelled", "no_show"] as const
- type BookingStatus = (typeof BOOKING_STATUSES)[number]
-
-const ALLOWED_TRANSITIONS: Record<BookingStatus, readonly BookingStatus[]> = {
-  pending: ["confirmed", "cancelled"],
-  confirmed: ["in_progress", "cancelled"],
-  in_progress: ["completed", "no_show", "cancelled"],
-  completed: [],
-  cancelled: [],
-  no_show: [],
-}
+const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled"] as const
+type BookingStatus = (typeof BOOKING_STATUSES)[number]
 
 async function assertAdmin() {
+  const expected = await getExpectedAdminSessionToken()
   const cookieStore = await cookies()
   const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!(await isValidAdminSession(token))) {
+  if (!expected || token !== expected) {
     throw new Error("Unauthorized")
   }
 }
@@ -31,18 +23,42 @@ async function assertAdmin() {
 export async function updateBookingStatus(id: number, status: BookingStatus) {
   await assertAdmin()
   if (!BOOKING_STATUSES.includes(status)) throw new Error("Invalid status")
-  const [booking] = await db.select({ status: bookings.status }).from(bookings).where(eq(bookings.id, id)).limit(1)
+  const [booking] = await db.select({ booking: bookings, service: services }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).where(eq(bookings.id, id)).limit(1)
   if (!booking) throw new Error("Booking not found")
-  const currentStatus = booking.status as BookingStatus
-  if (!BOOKING_STATUSES.includes(currentStatus) || !ALLOWED_TRANSITIONS[currentStatus].includes(status)) {
-    throw new Error(`Cannot change booking from ${currentStatus} to ${status}`)
-  }
-  await db.update(bookings).set({ status, updatedAt: new Date() }).where(eq(bookings.id, id))
-  if (status === "confirmed" || status === "cancelled" || status === "completed") {
-    void sendBookingNotification(id, status, "customer")
+  await db.update(bookings).set({ status }).where(eq(bookings.id, id))
+  if ((status === "confirmed" || status === "cancelled") && booking.booking.status !== status) {
+    const apiKey = process.env.RESEND_API_KEY
+    if (apiKey) {
+      const resend = new Resend(apiKey)
+      const confirmed = status === "confirmed"
+      const [template] = await db.select().from(siteContent).where(eq(siteContent.key, confirmed ? "booking_confirmed_email" : "booking_cancelled_email")).limit(1)
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+      const paymentUrl = `${siteUrl}/payment/result?reference=${encodeURIComponent(booking.booking.reference)}`
+      const defaultSubject = confirmed ? `Booking confirmed — ${booking.booking.reference}` : `Booking update — ${booking.booking.reference}`
+      const defaultBody = confirmed ? `Your booking has been confirmed.\n\nPayment options:\n1. Pay directly at the spa or by bank transfer.\n2. Pay by Visa or Mastercard: ${paymentUrl}` : "Unfortunately, we cannot confirm this booking. Please contact us to choose another time."
+      const replaceTokens = (value: string) => value.replaceAll("{{customerName}}", booking.booking.customerName).replaceAll("{{reference}}", booking.booking.reference).replaceAll("{{paymentUrl}}", paymentUrl).replaceAll("{{service}}", booking.service?.nameEn ?? "Massage").replaceAll("{{date}}", booking.booking.date).replaceAll("{{time}}", booking.booking.time).replaceAll("{{duration}}", String(booking.booking.durationMinutes))
+      const subject = replaceTokens(template?.valueEn?.split("\n")[0] || defaultSubject)
+      const body = replaceTokens(template?.valueEn?.split("\n").slice(1).join("\n") || defaultBody).replaceAll("\n", "<br />")
+      await resend.emails.send({
+        from: "Lotus Wellness <onboarding@resend.dev>",
+        to: booking.booking.email,
+        subject,
+        html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#24312d"><h2>${confirmed ? "Booking confirmed" : "Booking update"}</h2><p>Dear ${booking.booking.customerName},</p><p>${body}</p><p><strong>Reference:</strong> ${booking.booking.reference}</p><p><strong>Service:</strong> ${booking.service?.nameEn ?? "Massage"} (${booking.booking.durationMinutes} min)</p><p><strong>Date &amp; time:</strong> ${booking.booking.date} at ${booking.booking.time}</p></div>`,
+      })
+    }
   }
   revalidatePath("/admin/bookings")
-  revalidatePath("/admin")
+}
+
+export async function saveBookingEmailTemplate(formData: FormData) {
+  await assertAdmin()
+  const kind = formData.get("kind") === "cancelled" ? "cancelled" : "confirmed"
+  const subject = String(formData.get("subject") ?? "").trim()
+  const body = String(formData.get("body") ?? "").trim()
+  if (!subject || !body) throw new Error("Subject and body are required")
+  const valueEn = `${subject}\n${body}`
+  await db.insert(siteContent).values({ key: `booking_${kind}_email`, valueEn, valueKo: "", valueVi: "" }).onConflictDoUpdate({ target: siteContent.key, set: { valueEn, updatedAt: new Date() } })
+  revalidatePath("/admin/email-templates")
 }
 
 export async function toggleReviewApproval(id: number, approved: boolean) {

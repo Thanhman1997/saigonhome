@@ -13,16 +13,15 @@ const PAGE_SIZE = 8
 export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
   const { t, locale } = useLanguage()
   const { openBooking } = useBooking()
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [visibleCount, setVisibleCount] = useState(Math.min(4, PAGE_SIZE))
 
   const visible = therapists.slice(0, visibleCount)
 
   return (
     <section id="experts" className="bg-background py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
-        <div className="max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-accent">{t.experts.kicker}</p>
-          <h2 className="mt-4 text-balance font-sans text-6xl font-bold leading-tight tracking-tight sm:text-7xl">{t.experts.title}</h2>
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="mt-4 text-balance font-sans font-bold leading-tight tracking-tight text-accent" style={{ fontSize: "clamp(2.75rem, 4.8vw, 5.25rem)" }}>{t.experts.title}</h2>
           <p className="mt-6 text-pretty text-lg leading-relaxed text-muted-foreground">{t.experts.subtitle}</p>
         </div>
 
@@ -35,9 +34,9 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
             const bio = pickLocalized({ en: therapist.bioEn ?? "", ko: therapist.bioKo ?? "", vi: therapist.bioVi ?? "" }, locale)
 
             return (
-              <article key={therapist.id} className="flex flex-col border border-border bg-card">
+              <article key={therapist.id} className="flex flex-col overflow-hidden rounded-xl border border-border/70 bg-secondary shadow-[0_12px_40px_-30px_rgba(92,48,20,0.5)] transition-transform duration-300 hover:-translate-y-1">
                 <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
-                  <Image src={therapist.photoUrl || "/images/therapist-placeholder.png"} alt={`Therapist ${therapist.code}`} fill className="object-cover" />
+                  <Image src={therapist.photoUrl!} alt={`Therapist ${therapist.code}`} fill sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 92vw" loading="lazy" className="object-cover" />
                   <span
                     className={cn(
                       "absolute right-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider",
@@ -88,7 +87,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
                     size="lg"
                     disabled={!therapist.available}
                     onClick={() => openBooking({ therapistId: therapist.id })}
-                    className="mt-auto h-14 w-full text-lg font-bold bg-lotus-pink text-lotus-pink-foreground hover:bg-lotus-pink/90 disabled:bg-muted disabled:text-muted-foreground"
+                    className="mt-auto h-14 w-1/2 self-center bg-lotus-pink text-lg font-semibold text-lotus-pink-foreground hover:bg-lotus-pink/90 disabled:bg-muted disabled:text-muted-foreground"
                   >
                     {t.experts.book}
                   </Button>

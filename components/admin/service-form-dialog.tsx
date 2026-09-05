@@ -1,6 +1,7 @@
 "use client"
 
 import { useActionState, useEffect, useState } from "react"
+import { useAdminAutosave } from "@/hooks/use-admin-autosave"
 import { useFormStatus } from "react-dom"
 import { Plus, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -46,6 +47,8 @@ export function ServiceFormDialog({ service }: { service?: ServiceRow }) {
   const action = service ? updateService.bind(null, service.id) : createService
   const [state, formAction] = useActionState(action, undefined)
   const [imageUrl, setImageUrl] = useState<string | null>(service?.imageUrl ?? null)
+  const [draftValues, setDraftValues] = useState<Record<string, string>>({})
+  const autosaveStatus = useAdminAutosave("service", String(service?.id ?? "new"), draftValues)
 
   useEffect(() => {
     if (state && !state.error) {
@@ -75,7 +78,7 @@ export function ServiceFormDialog({ service }: { service?: ServiceRow }) {
           <DialogTitle>{service ? "Edit service" : "Create a service"}</DialogTitle>
           <DialogDescription>Multilingual copy, imagery, and duration/pricing options.</DialogDescription>
         </DialogHeader>
-        <form action={formAction} className="flex flex-col gap-4">
+        <form action={formAction} onChange={(event) => setDraftValues(Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string, string>)} className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="nameEn">Name (English)</Label>
@@ -120,7 +123,7 @@ export function ServiceFormDialog({ service }: { service?: ServiceRow }) {
           <ImageUpload label="Service image" name="imageUrl" value={imageUrl} onChange={setImageUrl} aspect="aspect-video" />
 
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-          <DialogFooter>
+          <DialogFooter><span className="text-sm text-muted-foreground" aria-live="polite">{autosaveStatus === "saving" ? "Saving..." : autosaveStatus === "saved" ? "Saved ✓" : autosaveStatus === "error" ? "Draft save failed" : ""}</span>
             <SubmitButton label={service ? "Save changes" : "Create service"} />
           </DialogFooter>
         </form>

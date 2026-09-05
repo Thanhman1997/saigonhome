@@ -36,7 +36,7 @@ export function LanguageProvider({
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t: dictionary[locale] }}>
-      {children}
+      <div className={locale === "vi" ? "locale-vi" : undefined}>{children}</div>
     </LanguageContext.Provider>
   )
 }

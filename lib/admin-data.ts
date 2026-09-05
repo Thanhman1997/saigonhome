@@ -16,65 +16,20 @@ import {
   bookingSettings,
   siteContent,
   questions,
+  navigationSettings,
 } from "@/lib/db/schema"
-import { and, asc, desc, eq, gte, ilike, lte, or, sql } from "drizzle-orm"
+import { asc, desc, eq, sql } from "drizzle-orm"
 
-export type BookingFilters = {
-  search?: string
-  status?: string
-  therapistId?: number
-  from?: string
-  to?: string
-  page?: number
-  pageSize?: number
-}
-
-export async function getAllBookingsWithRelations(filters: BookingFilters = {}) {
-  const page = Math.max(1, filters.page ?? 1)
-  const pageSize = Math.min(100, Math.max(1, filters.pageSize ?? 25))
-  const search = filters.search?.trim()
-  const conditions = [
-    search ? or(ilike(bookings.reference, `%${search}%`), ilike(bookings.customerName, `%${search}%`), ilike(bookings.email, `%${search}%`), ilike(bookings.phone, `%${search}%`)) : undefined,
-    filters.status ? eq(bookings.status, filters.status) : undefined,
-    filters.therapistId ? eq(bookings.therapistId, filters.therapistId) : undefined,
-    filters.from ? gte(bookings.date, filters.from) : undefined,
-    filters.to ? lte(bookings.date, filters.to) : undefined,
-  ].filter(Boolean)
-  const where = conditions.length ? and(...conditions) : undefined
-  const allBookings = await db.select().from(bookings).where(where).orderBy(desc(bookings.date), desc(bookings.time)).limit(pageSize).offset((page - 1) * pageSize)
+export async function getAllBookingsWithRelations() {
+  const allBookings = await db.select().from(bookings).orderBy(desc(bookings.createdAt))
   const allServices = await db.select().from(services)
   const allTherapists = await db.select().from(therapists)
 
-  return {
-    rows: allBookings.map((booking) => ({
-      ...booking,
-      service: allServices.find((s) => s.id === booking.serviceId) ?? null,
-      therapist: allTherapists.find((t) => t.id === booking.therapistId) ?? null,
-    })),
-    page,
-    pageSize,
-    hasNextPage: allBookings.length === pageSize,
-  }
-}
-
-export async function getAdminDashboardMetrics() {
-  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date())
-  const [todayRows, pendingRows, cancelledRows, revenueRows, therapistRows, questionRows] = await Promise.all([
-    db.select({ count: sql<number>`count(*)` }).from(bookings).where(eq(bookings.date, today)),
-    db.select({ count: sql<number>`count(*)` }).from(bookings).where(eq(bookings.status, "pending")),
-    db.select({ count: sql<number>`count(*)` }).from(bookings).where(eq(bookings.status, "cancelled")),
-    db.select({ total: sql<number>`coalesce(sum(${bookings.totalVnd}), 0)` }).from(bookings).where(sql`${bookings.status} not in ('cancelled', 'no_show')`),
-    db.select({ count: sql<number>`count(*)` }).from(therapists).where(and(eq(therapists.available, true), eq(therapists.status, "active"))),
-    db.select({ count: sql<number>`count(*)` }).from(questions).where(eq(questions.status, "pending")),
-  ])
-  return {
-    todayBookings: Number(todayRows[0]?.count ?? 0),
-    pendingBookings: Number(pendingRows[0]?.count ?? 0),
-    cancelledBookings: Number(cancelledRows[0]?.count ?? 0),
-    revenueVnd: Number(revenueRows[0]?.total ?? 0),
-    availableTherapists: Number(therapistRows[0]?.count ?? 0),
-    unansweredQuestions: Number(questionRows[0]?.count ?? 0),
-  }
+  return allBookings.map((booking) => ({
+    ...booking,
+    service: allServices.find((s) => s.id === booking.serviceId) ?? null,
+    therapist: allTherapists.find((t) => t.id === booking.therapistId) ?? null,
+  }))
 }
 
 export async function getAllReviewsWithRelations() {
@@ -111,7 +66,7 @@ export async function getContactInfoAdmin() {
 }
 
 export async function getAllTherapistsAdmin() {
-  return db.select().from(therapists).orderBy(asc(therapists.sortOrder), asc(therapists.code))
+  return db.select().from(therapists).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getHeroContentAdmin() {
@@ -130,6 +85,14 @@ export async function getAboutContentAdmin() {
 
 export async function getAllLotusValuesAdmin() {
   return db.select().from(lotusValues).orderBy(asc(lotusValues.sortOrder))
+}
+
+export async function getNavigationSettingsAdmin() {
+  return db.select().from(navigationSettings).orderBy(asc(navigationSettings.sortOrder))
+}
+
+export async function getNavigationSettings() {
+  return db.select().from(navigationSettings).where(eq(navigationSettings.visible, true)).orderBy(asc(navigationSettings.sortOrder))
 }
 
 export async function getDesignSettingsAdmin() {
