@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState, type MouseEvent } from "react"
-import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { Menu, X } from "lucide-react"
 import { LanguageSwitcher } from "@/components/language-switcher"
@@ -12,8 +11,15 @@ type NavigationSetting = { menuKey: string; labelEn: string; labelVi: string; la
 export function Header({ navigationSettings = [] }: { navigationSettings?: NavigationSetting[] }) {
   const [open, setOpen] = useState(false)
   const { locale, t } = useLanguage()
-  const pathname = usePathname()
-  const [activeSection, setActiveSection] = useState(pathname === "/" ? "home" : "")
+  const [pathname, setPathname] = useState("")
+  const [activeSection, setActiveSection] = useState("")
+
+  useEffect(() => {
+    const syncPathname = () => setPathname(window.location.pathname)
+    syncPathname()
+    window.addEventListener("popstate", syncPathname)
+    return () => window.removeEventListener("popstate", syncPathname)
+  }, [])
 
   useEffect(() => {
     if (pathname !== "/") return
