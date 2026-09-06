@@ -78,8 +78,8 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
           {links.map((link) => (
             <a
               key={link.href}
-              href={resolveHref(link.href, link.menuKey)}
-              onClick={(event) => handleHashNavigation(event, resolveHref(link.href, link.menuKey))}
+              href={resolveHref(link.href)}
+              onClick={(event) => handleHashNavigation(event, resolveHref(link.href))}
               className={`relative tracking-[0.08em] transition-colors ${locale === "en" || locale === "vi" ? "uppercase" : ""} ${isActive(link) ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
               style={{ fontFamily: locale === "ko" ? '"Spoqa Han Sans Neo", "Noto Sans KR", sans-serif' : locale === "en" || locale === "vi" ? '"Palatino Linotype", Palatino, Georgia, serif' : link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? "1.15rem" : locale === "en" ? "1.15rem" : locale === "ko" ? "1.5rem" : (link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem"), fontWeight: locale === "ko" ? 600 : 500, color: isActive(link) ? "var(--accent)" : link.textColor === "inherit" ? undefined : link.textColor }}
             >
@@ -107,7 +107,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         <nav id="mobile-menu" className="border-t border-border bg-background px-5 py-6 lg:hidden" aria-label="Mobile navigation">
           <div className="flex flex-col gap-5">
             {links.map((link) => (
-              <a key={link.href} href={resolveHref(link.href, link.menuKey)} onClick={(event) => { handleHashNavigation(event, resolveHref(link.href, link.menuKey)); if (!event.defaultPrevented) setOpen(false) }} className={`font-serif text-4xl font-bold ${locale === "en" ? "uppercase" : ""} ${isActive(link) ? "text-accent" : "text-foreground"}`} style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "2.2rem" : link.fontSize === "md" ? "1.9rem" : "1.6rem") : locale === "en" ? (link.fontSize === "lg" ? "2.7rem" : link.fontSize === "md" ? "2.25rem" : "1.8rem") : (link.fontSize === "lg" ? "3rem" : link.fontSize === "md" ? "2.5rem" : "2rem"), fontWeight: 800, color: isActive(link) || link.textColor === "inherit" ? undefined : link.textColor }}>
+              <a key={link.href} href={resolveHref(link.href)} onClick={(event) => { handleHashNavigation(event, resolveHref(link.href)); if (!event.defaultPrevented) setOpen(false) }} className={`font-serif text-4xl font-bold ${locale === "en" ? "uppercase" : ""} ${isActive(link) ? "text-accent" : "text-foreground"}`} style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "2.2rem" : link.fontSize === "md" ? "1.9rem" : "1.6rem") : locale === "en" ? (link.fontSize === "lg" ? "2.7rem" : link.fontSize === "md" ? "2.25rem" : "1.8rem") : (link.fontSize === "lg" ? "3rem" : link.fontSize === "md" ? "2.5rem" : "2rem"), fontWeight: 800, color: isActive(link) || link.textColor === "inherit" ? undefined : link.textColor }}>
                 {link.label}
               </a>
             ))}

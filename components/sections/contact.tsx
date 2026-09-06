@@ -21,10 +21,10 @@ export function ContactSection({ contactInfo }: { contactInfo: ContactInfoRow })
   const { t: dict } = useLanguage()
   const t = dict.contact
   const channels = [
-    contactInfo?.whatsappUrl && normalizeContactUrl(contactInfo.whatsappUrl) && { label: "WhatsApp", href: normalizeContactUrl(contactInfo.whatsappUrl)!, icon: <Image src="/images/contact-whatsapp.png" alt="WhatsApp" width={28} height={28} className="size-9 rounded-md object-contain" /> },
-    contactInfo?.lineUrl && normalizeContactUrl(contactInfo.lineUrl) && { label: "LINE", href: normalizeContactUrl(contactInfo.lineUrl)!, icon: <Image src="/images/contact-line.png" alt="LINE" width={28} height={28} className="size-9 rounded-md object-cover" /> },
+    contactInfo?.whatsappUrl && normalizeContactUrl(contactInfo.whatsappUrl) && { label: "WhatsApp", href: normalizeContactUrl(contactInfo.whatsappUrl)!, icon: <Image src="/images/contact-whatsapp.png" alt="" width={28} height={28} className="size-9 rounded-md object-contain" /> },
+    contactInfo?.lineUrl && normalizeContactUrl(contactInfo.lineUrl) && { label: "LINE", href: normalizeContactUrl(contactInfo.lineUrl)!, icon: <Image src="/images/contact-line.png" alt="" width={28} height={28} className="size-9 rounded-md object-cover" /> },
     contactInfo?.kakaoUrl && normalizeContactUrl(contactInfo.kakaoUrl) && { label: "KakaoTalk", href: normalizeContactUrl(contactInfo.kakaoUrl)!, icon: <SiKakaotalk className="size-8 text-kakaotalk" aria-hidden="true" /> },
-    contactInfo?.messengerUrl && normalizeContactUrl(contactInfo.messengerUrl) && { label: "Messenger", href: normalizeContactUrl(contactInfo.messengerUrl)!, icon: <Image src="/images/contact-messenger.png" alt="Messenger" width={28} height={28} className="size-9 rounded-md object-cover" /> },
+    contactInfo?.messengerUrl && normalizeContactUrl(contactInfo.messengerUrl) && { label: "Messenger", href: normalizeContactUrl(contactInfo.messengerUrl)!, icon: <Image src="/images/contact-messenger.png" alt="" width={28} height={28} className="size-9 rounded-md object-cover" /> },
     contactInfo?.instagramUrl && normalizeContactUrl(contactInfo.instagramUrl) && { label: "Instagram", href: normalizeContactUrl(contactInfo.instagramUrl)!, icon: <SiInstagram className="size-8 text-instagram" aria-hidden="true" /> },
     { label: CONTACT_PHONE, href: `tel:${CONTACT_PHONE}`, icon: <Phone className="size-8 text-blue-300" aria-hidden="true" /> },
   ].filter(Boolean) as { label: string; href: string; icon: React.ReactNode }[]
