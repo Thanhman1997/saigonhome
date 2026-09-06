@@ -15,8 +15,8 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
     ko: { services: "서비스", about: "소개", working: "운영 시간", open: "매일 운영", last: "마지막 예약", note: "언제나 고객님을\n돌볼 준비가 되어 있습니다.", serviceLinks: ["마사지", "아로마 마사지", "딥 티슈", "커플 마사지", "발 마사지"], aboutLinks: ["소개", "테라피스트", "후기", "FAQ"] },
   }[locale]
   return (
-    <footer className="border-t border-border bg-secondary px-5 py-8 font-sans text-sm text-foreground lg:px-8">
-      <div className="mx-auto grid w-full max-w-6xl gap-6 md:grid-cols-3">
+    <footer className="border-t border-border/70 bg-secondary px-5 py-12 font-sans text-sm text-foreground lg:px-10 lg:py-14">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 md:grid-cols-3 lg:gap-16">
         <div>
           <h2 className="font-sans text-base font-bold leading-tight tracking-[0.08em] text-guiding-pink">{footerCopy.services}</h2>
           <nav className="mt-3 flex flex-col gap-1.5 text-base font-normal leading-6 text-muted-foreground" aria-label="Services navigation">
@@ -50,7 +50,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
           </div>
         </div>
       </div>
-      <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-3 border-t border-border/70 pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto mt-12 flex max-w-6xl flex-col gap-3 border-t border-border/70 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <p>Lotus Wellness Massage · Professional care delivered to you</p>
         <div className="flex gap-5"><a href="/privacy" className="transition-colors hover:text-accent">Privacy Policy</a><a href="/terms" className="transition-colors hover:text-accent">Terms of Service</a></div>
       </div>

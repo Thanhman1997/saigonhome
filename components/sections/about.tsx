@@ -30,7 +30,7 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
   const body = about && about[bodyKey].length > 0 ? about[bodyKey] : t.about.body
 
   return (
-    <section id="about" className="bg-background py-20 lg:py-28">
+    <section id="about" className="bg-secondary/35 py-20 lg:py-28">
       <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
         <div className="mx-auto max-w-3xl text-center">
           <Image src="/images/lotus-philosophy-logo.png" alt="Lotus Wellness" width={720} height={420} className="mx-auto mb-3 h-auto w-48 object-contain sm:w-56 lg:w-64" loading="lazy" />
@@ -45,10 +45,10 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
             {values.length > 0 ? values.map((value, index) => {
               const Icon = ICON_MAP[value.icon] ?? Sparkles
               const text = pickLocalized({ en: value.textEn, ko: value.textKo, vi: value.textVi }, locale)
-              return <article key={value.id} className="group flex min-h-28 w-full max-w-xs justify-self-end items-center gap-3 rounded-2xl bg-accent/10 px-3 py-3 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15"><div className="relative size-24 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[index % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div><div className="flex min-w-0 items-center gap-2"><Icon className="size-5 shrink-0 text-accent" aria-hidden="true" /><h3 className="whitespace-nowrap font-serif text-3xl font-semibold leading-tight text-accent">{text}</h3></div></article>
+              return <article key={value.id} className="group flex min-h-28 w-full max-w-xs justify-self-end items-center gap-3 rounded-[1.25rem] border border-accent/15 bg-accent/10 px-3 py-3 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15"><div className="relative size-24 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[index % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div><div className="flex min-w-0 items-center gap-2"><Icon className="size-5 shrink-0 text-accent" aria-hidden="true" /><h3 className="whitespace-nowrap font-serif text-3xl font-semibold leading-tight text-accent">{text}</h3></div></article>
             }) : t.about.values.map((value, index) => {
               const Icon = fallbackIcons[index]
-              return <article key={value} className="group flex min-h-28 w-full max-w-xs justify-self-end items-center gap-3 rounded-2xl bg-accent/10 px-3 py-3 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15"><div className="relative size-24 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[index % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div><div className="flex min-w-0 items-center gap-2"><Icon className="size-4 shrink-0 text-accent" aria-hidden="true" /><h3 className="whitespace-nowrap font-serif text-3xl font-semibold leading-tight text-accent">{value}</h3></div></article>
+              return <article key={value} className="group flex min-h-28 w-full max-w-xs justify-self-end items-center gap-3 rounded-[1.25rem] border border-accent/15 bg-accent/10 px-3 py-3 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15"><div className="relative size-24 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[index % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div><div className="flex min-w-0 items-center gap-2"><Icon className="size-4 shrink-0 text-accent" aria-hidden="true" /><h3 className="whitespace-nowrap font-serif text-3xl font-semibold leading-tight text-accent">{value}</h3></div></article>
             })}
           </div>
         </div>
