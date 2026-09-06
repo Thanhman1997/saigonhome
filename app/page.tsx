@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer"
 import { HeroSection } from "@/components/sections/hero"
 import { AboutSection } from "@/components/sections/about"
 import { ServicesSection } from "@/components/sections/services"
+import { ExperienceVideo } from "@/components/sections/experience-video"
 import { ExpertsSection } from "@/components/sections/experts"
 import { Promotions } from "@/components/sections/promotions"
 import { Membership } from "@/components/sections/membership"
@@ -57,6 +58,7 @@ export default async function Home() {
         <Header navigationSettings={navigationSettings} />
         <HeroSection hero={hero} />
         <ServicesSection services={services} featured={featuredServices} content={servicesContent} />
+        <ExperienceVideo />
         <ExpertsSection therapists={allTherapists} />
         <Promotions promotions={promotions} />
         <AboutSection about={about} values={lotusValues} />
