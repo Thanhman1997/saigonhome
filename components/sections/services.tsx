@@ -45,8 +45,8 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
     <section id="services" className="bg-muted py-24 lg:py-32">
       <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
         <div className="mx-auto max-w-3xl text-center">
-          {t.services.kicker ? <p className="text-center font-sans text-[clamp(1.75rem,3.2vw,3.5rem)] font-bold leading-tight tracking-[-0.02em] text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
-          <h2 className="mt-4 text-center font-sans text-[clamp(2.75rem,4.8vw,5.25rem)] font-extrabold leading-[1.08] tracking-[-0.025em] text-accent">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
+          {t.services.kicker ? <p className="text-center font-sans text-sm font-semibold uppercase leading-tight tracking-[0.22em] text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
+          <h2 className="mt-4 text-center font-serif text-[clamp(2.4rem,4vw,4.25rem)] font-light leading-[1.06] tracking-[-0.02em] text-foreground">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
           <p className="mx-auto mt-4 max-w-3xl text-center font-sans text-lg font-normal leading-relaxed text-muted-foreground">{withServiceCount(localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi), services.length, locale)}</p>
         </div>
 
@@ -59,7 +59,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
             const image = service.imageUrl || fallback?.src
 
             return (
-              <article key={service.id} className="reveal-up flex flex-col justify-between gap-7 rounded-xl border border-border/70 bg-card p-4 shadow-[0_12px_40px_-30px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_48px_-28px_rgba(92,48,20,0.55)] sm:p-5">
+              <article key={service.id} className="reveal-up flex flex-col justify-between gap-7 rounded-[1.25rem] border border-border/50 bg-card p-4 shadow-[0_12px_36px_-32px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_48px_-30px_rgba(92,48,20,0.48)] sm:p-5">
                 <div>
                   <div className="relative mb-6 aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-secondary">
                     {image ? <Image src={image} alt={name} fill loading="lazy" className="object-cover" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{service.icon}</span>}
@@ -72,7 +72,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                     </div>
                   </div>
                 </div>
-                <Button onClick={() => openBooking({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null })} className="h-14 min-h-14 w-1/2 self-center rounded-full bg-lotus-pink px-4 font-sans text-lg font-semibold leading-none text-lotus-pink-foreground hover:bg-lotus-pink/90">{t.services.book}</Button>
+                <Button onClick={() => openBooking({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null })} className="h-12 min-h-12 w-1/2 self-center rounded-full bg-accent px-4 font-sans text-sm font-semibold uppercase tracking-[0.08em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90">{t.services.book}</Button>
               </article>
             )
           })}

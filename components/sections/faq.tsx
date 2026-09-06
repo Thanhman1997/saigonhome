@@ -21,12 +21,12 @@ export function Faq({ faqs }: { faqs: FaqRow[] }) {
         </div>
 
         {faqs.length > 0 && (
-          <Accordion type="single" collapsible className="mt-10 border-t border-border">
+          <Accordion type="single" collapsible className="mt-10 border-t border-border/70">
             {faqs.map((faq) => {
               const question = pickLocalized({ en: faq.questionEn, ko: faq.questionKo, vi: faq.questionVi }, locale)
               const answer = pickLocalized({ en: faq.answerEn, ko: faq.answerKo, vi: faq.answerVi }, locale)
               return (
-                <AccordionItem key={faq.id} value={`item-${faq.id}`} className="border-border">
+                <AccordionItem key={faq.id} value={`item-${faq.id}`} className="border-border/60 py-2">
                   <AccordionTrigger className="font-serif text-xl font-semibold text-foreground hover:no-underline [&>svg]:text-primary">
                     {question}
                   </AccordionTrigger>
