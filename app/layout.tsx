@@ -46,7 +46,10 @@ const lora = Lora({ subsets: ["latin"], variable: "--font-lora", weight: ["400",
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", weight: ["400", "500", "600", "700"], preload: false })
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", weight: ["400", "500", "600", "700"], preload: false })
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
     template: "%s | Lotus Wellness",
@@ -60,11 +63,21 @@ export const metadata: Metadata = {
     "in-room massage HCMC",
     "Lotus Wellness",
   ],
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
     description: "Excellence, convenience, affordability, and privacy — professional massage wherever you are.",
+    url: siteUrl,
+    siteName: "Lotus Wellness",
     type: "website",
     locale: "en_US",
+    images: [{ url: "/images/hero.jpg", width: 1200, height: 630, alt: "Lotus Wellness mobile massage" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
+    description: "Professional mobile massage in Ho Chi Minh City.",
+    images: ["/images/hero.jpg"],
   },
   generator: "v0.app",
 }
@@ -94,6 +107,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       >
         <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
         <style id="section-styles" dangerouslySetInnerHTML={{ __html: sectionStyleCss }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "HealthAndBeautyBusiness",
+          name: "Lotus Wellness",
+          url: siteUrl,
+          image: `${siteUrl}/images/hero.jpg`,
+          telephone: "+84 102 645 1934",
+          address: { "@type": "PostalAddress", addressLocality: "Ho Chi Minh City", addressCountry: "VN" },
+          areaServed: "Ho Chi Minh City",
+          priceRange: "$$",
+          openingHours: "Mo-Su 09:00-01:00",
+        }) }} />
         <LanguageProvider defaultLocale={defaultLocale}>{children}</LanguageProvider>
         <Analytics />
       </body>
