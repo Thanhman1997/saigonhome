@@ -17,6 +17,8 @@ const fallbackImages: Record<string, { src: string; flag: string }> = {
   reflexology: { src: "/images/service-reflexology.png", flag: "RF" },
   "office-syndrome": { src: "/images/service-office-syndrome.png", flag: "OS" },
   "traveler-recover": { src: "/images/service-traveler-recovery.png", flag: "TR" },
+  "mens-tress-relief": { src: "/images/service-office-syndrome.png", flag: "MR" },
+  "men-full-body": { src: "/images/service-deep-tissue.png", flag: "FB" },
 }
 
 function imageForService(service: ServiceWithDurations) {
