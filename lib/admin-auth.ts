@@ -13,12 +13,13 @@ export const ADMIN_SESSION_COOKIE = "lw_admin_session"
 export async function getAdminSessionCookieOptions() {
   const { headers } = await import("next/headers")
   const headerStore = await headers()
-  const isHttps =
-    headerStore.get("x-forwarded-proto") === "https" || process.env.NODE_ENV === "production"
+  const forwardedHost = headerStore.get("x-forwarded-host") ?? headerStore.get("host") ?? ""
+  const isHttps = headerStore.get("x-forwarded-proto") === "https" || process.env.NODE_ENV === "production"
+  const isEmbeddedPreview = /vusercontent\.net|vercel\.app/i.test(forwardedHost)
 
-  return isHttps
+  return isHttps && isEmbeddedPreview
     ? { secure: true as const, sameSite: "none" as const }
-    : { secure: false as const, sameSite: "lax" as const }
+    : { secure: isHttps, sameSite: "lax" as const }
 }
 
 async function sha256Hex(input: string) {

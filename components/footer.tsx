@@ -52,7 +52,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
       </div>
       <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-3 border-t border-border/70 pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <p>Lotus Wellness Massage · Professional care delivered to you</p>
-        <div className="flex gap-5"><span>Privacy Policy</span><span>Terms of Service</span></div>
+        <div className="flex gap-5"><a href="/privacy" className="transition-colors hover:text-accent">Privacy Policy</a><a href="/terms" className="transition-colors hover:text-accent">Terms of Service</a></div>
       </div>
     </footer>
   )
