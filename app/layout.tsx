@@ -101,7 +101,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const sectionStyleCss = sectionStyles.map((style) => `#${style.sectionKey} h1,#${style.sectionKey} h2,#${style.sectionKey} h3{color:${safe(style.titleColor)};font-size:${safe(style.titleSize === "sm" ? "1.5rem" : style.titleSize === "lg" ? "3rem" : "2rem")};text-align:${style.sectionKey === "services" || style.sectionKey === "experts" ? "center" : "inherit"}}#${style.sectionKey} p{color:${safe(style.bodyColor)};font-size:${safe(style.bodySize === "sm" ? "0.875rem" : style.bodySize === "lg" ? "1.25rem" : "1rem")}}`).join("")
 
   return (
-    <html lang="en" className="bg-background" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" className="bg-background" suppressHydrationWarning>
       <body
         className={`${dmSans.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${notoSans.variable} ${notoSansKr.variable} ${notoSerifKr.variable} ${playfair.variable} ${dmSerifDisplay.variable} ${lora.variable} ${manrope.variable} ${inter.variable} font-sans antialiased`}
       >
