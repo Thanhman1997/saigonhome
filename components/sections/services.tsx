@@ -27,6 +27,12 @@ function imageForService(service: ServiceWithDurations) {
 
 type ServicesContent = { kickerEn: string; kickerKo: string; kickerVi: string; titleEn: string; titleKo: string; titleVi: string; subtitleEn: string; subtitleKo: string; subtitleVi: string }
 
+function withServiceCount(text: string, count: number, locale: "en" | "ko" | "vi") {
+  if (locale === "ko") return text.replace(/\d+가지/, `${count}가지`)
+  if (locale === "vi") return text.replace(/Mười một|Chín|Nine|Eleven/i, count === 11 ? "Mười một" : String(count))
+  return text.replace(/Nine|Eleven|\d+/i, String(count))
+}
+
 export function ServicesSection({ services, featured = services.slice(0, 3), fullPage = false, content }: { services: ServiceWithDurations[]; featured?: ServiceWithDurations[]; fullPage?: boolean; content?: ServicesContent | null }) {
   const { t, locale } = useLanguage()
   const [showAll, setShowAll] = useState(false)
@@ -41,7 +47,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
         <div className="mx-auto max-w-3xl text-center">
           {t.services.kicker ? <p className="text-center font-sans text-[clamp(1.75rem,3.2vw,3.5rem)] font-bold leading-tight tracking-[-0.02em] text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
           <h2 className="mt-4 text-center font-sans text-[clamp(2.75rem,4.8vw,5.25rem)] font-extrabold leading-[1.08] tracking-[-0.025em] text-accent">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
-          <p className="mx-auto mt-4 max-w-3xl text-center font-sans text-lg font-normal leading-relaxed text-muted-foreground">{localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi)}</p>
+          <p className="mx-auto mt-4 max-w-3xl text-center font-sans text-lg font-normal leading-relaxed text-muted-foreground">{withServiceCount(localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi), services.length, locale)}</p>
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
