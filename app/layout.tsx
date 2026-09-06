@@ -1,5 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
+import { cookies } from "next/headers"
 import {
   DM_Sans,
   Cormorant_Garamond,
@@ -75,7 +76,10 @@ export const viewport: Viewport = { themeColor: "#FCE2C1", width: "device-width"
 export const dynamic = "force-dynamic"
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [defaultLocale, designSettings, sectionStyles] = await Promise.all([getDefaultLocale(), getDesignSettings(), getSectionStyles()])
+  const cookieStore = await cookies()
+  const savedLocale = cookieStore.get("lotus-wellness-locale")?.value
+  const [databaseLocale, designSettings, sectionStyles] = await Promise.all([getDefaultLocale(), getDesignSettings(), getSectionStyles()])
+  const defaultLocale = savedLocale === "en" || savedLocale === "vi" || savedLocale === "ko" ? savedLocale : databaseLocale
   // Keep the public Lotus experience aligned with the approved reference preset.
   // Legacy database rows may contain the previous muted palette and make the page appear broken.
   const activeDesign = designSettings?.presetKey === "lotus-premium" ? DESIGN_PRESETS[0].values : (designSettings ?? DESIGN_PRESETS[0].values)
