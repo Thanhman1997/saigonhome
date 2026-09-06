@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { Phone } from "lucide-react"
-import { SiKakaotalk } from "react-icons/si"
+import { SiInstagram, SiKakaotalk } from "react-icons/si"
 import { useLanguage } from "@/lib/i18n/language-provider"
 import type { getContactInfo } from "@/lib/data"
 
@@ -25,7 +25,7 @@ export function ContactSection({ contactInfo }: { contactInfo: ContactInfoRow })
     contactInfo?.lineUrl && normalizeContactUrl(contactInfo.lineUrl) && { label: "LINE", href: normalizeContactUrl(contactInfo.lineUrl)!, icon: <Image src="/images/contact-line.png" alt="LINE" width={28} height={28} className="size-9 rounded-md object-cover" /> },
     contactInfo?.kakaoUrl && normalizeContactUrl(contactInfo.kakaoUrl) && { label: "KakaoTalk", href: normalizeContactUrl(contactInfo.kakaoUrl)!, icon: <SiKakaotalk className="size-8 text-kakaotalk" aria-hidden="true" /> },
     contactInfo?.messengerUrl && normalizeContactUrl(contactInfo.messengerUrl) && { label: "Messenger", href: normalizeContactUrl(contactInfo.messengerUrl)!, icon: <Image src="/images/contact-messenger.png" alt="Messenger" width={28} height={28} className="size-9 rounded-md object-cover" /> },
-    contactInfo?.instagramUrl && normalizeContactUrl(contactInfo.instagramUrl) && { label: "Instagram", href: normalizeContactUrl(contactInfo.instagramUrl)!, icon: <Image src="https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons/instagram/default.svg" alt="Instagram" width={32} height={32} unoptimized className="size-8 object-contain" /> },
+    contactInfo?.instagramUrl && normalizeContactUrl(contactInfo.instagramUrl) && { label: "Instagram", href: normalizeContactUrl(contactInfo.instagramUrl)!, icon: <SiInstagram className="size-8 text-instagram" aria-hidden="true" /> },
     { label: CONTACT_PHONE, href: `tel:${CONTACT_PHONE}`, icon: <Phone className="size-8 text-blue-300" aria-hidden="true" /> },
   ].filter(Boolean) as { label: string; href: string; icon: React.ReactNode }[]
 
