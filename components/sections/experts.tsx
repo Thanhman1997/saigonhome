@@ -21,7 +21,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
     <section id="experts" className="bg-background py-20 lg:py-28">
       <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="mt-4 text-balance section-heading text-accent">{t.experts.title}</h2>
+          <h2 className="mt-4 text-balance text-xl font-semibold leading-snug tracking-tight text-accent sm:text-2xl">{t.experts.title}</h2>
           <p className="mt-6 text-pretty text-base leading-relaxed text-muted-foreground">{t.experts.subtitle}</p>
         </div>
 

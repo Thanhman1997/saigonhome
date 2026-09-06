@@ -30,7 +30,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
       <div className="mx-auto max-w-[100rem] px-6 lg:px-16">
         <div className="max-w-2xl">
           <p className="section-heading text-accent">{t.kicker}</p>
-          <h2 className="mt-3 text-balance section-heading text-foreground">
+          <h2 className="mt-3 text-balance text-xl font-semibold leading-snug tracking-tight text-foreground sm:text-2xl">
             {t.title}
           </h2>
           <p className="mt-3 max-w-xl text-pretty text-base font-normal leading-relaxed text-muted-foreground">{t.subtitle}</p>

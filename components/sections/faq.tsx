@@ -15,7 +15,7 @@ export function Faq({ faqs }: { faqs: FaqRow[] }) {
       <div className="mx-auto max-w-[88rem] px-6 lg:px-16">
         <div>
           <p className="text-[clamp(1.75rem,3.2vw,3.5rem)] font-bold leading-tight tracking-[-0.02em] text-primary">{t.kicker}</p>
-          <h2 className="mt-3 text-balance section-heading text-foreground">
+          <h2 className="mt-3 text-balance text-xl font-semibold leading-snug tracking-tight text-foreground sm:text-2xl">
             {t.title}
           </h2>
         </div>
