@@ -60,6 +60,11 @@ export async function getFeaturedServices() {
   return serviceList.slice(0, 3)
 }
 
+export async function getServiceBySlug(slug: string) {
+  const serviceList = await getServicesWithDurations()
+  return serviceList.find((service) => service.slug === slug) ?? null
+}
+
 export async function getTherapists() {
   return db.select().from(therapists).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }

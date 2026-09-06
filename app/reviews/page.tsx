@@ -2,10 +2,15 @@ import { getApprovedReviews } from "@/lib/data"
 import { Header } from "@/components/header"
 import { ReviewForm } from "@/components/reviews/review-form"
 import { Star } from "lucide-react"
+import type { Metadata } from "next"
 import { LocalizedReviewList } from "@/components/reviews/localized-review-list"
 
 export const dynamic = "force-dynamic"
-export const metadata = { title: "Reviews | Lotus Wellness" }
+export const metadata: Metadata = {
+  title: "Massage Reviews in Ho Chi Minh City | Lotus Wellness",
+  description: "Read real guest experiences from Lotus Wellness mobile massage visits in Ho Chi Minh City.",
+  alternates: { canonical: "/reviews" },
+}
 
 export default async function ReviewsPage() {
   const reviews = await getApprovedReviews()

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { track } from "@vercel/analytics"
 import { CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useBooking } from "@/lib/booking-context"
@@ -59,6 +60,7 @@ export function StepConfirm({
         isFirstTime,
       })
       if (result.success) {
+        track("booking_submitted", { service: service.slug, guests: String(draft.guests) })
         setBookingResult({
           reference: result.reference,
           totalVnd: result.totalVnd,
