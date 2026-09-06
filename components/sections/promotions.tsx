@@ -29,7 +29,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
     <section id="promotions" className="bg-secondary py-20 md:py-24">
       <div className="mx-auto max-w-[100rem] px-6 lg:px-16">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase leading-tight tracking-[0.22em] text-accent">{t.kicker}</p>
+          <p className="section-heading text-accent">{t.kicker}</p>
           <h2 className="mt-3 text-balance section-heading text-foreground">
             {t.title}
           </h2>

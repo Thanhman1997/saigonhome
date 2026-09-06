@@ -45,7 +45,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
     <section id="services" className="bg-muted py-24 lg:py-32">
       <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
         <div className="mx-auto max-w-3xl text-center">
-          {t.services.kicker ? <p className="text-center font-sans text-sm font-semibold uppercase leading-tight tracking-[0.22em] text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
+          {t.services.kicker ? <p className="section-heading text-center text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
           <h2 className="mt-4 text-center text-balance section-heading text-foreground">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</h2>
           <p className="mx-auto mt-4 max-w-3xl text-center font-sans text-lg font-normal leading-relaxed text-muted-foreground">{withServiceCount(localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi), services.length, locale)}</p>
         </div>
