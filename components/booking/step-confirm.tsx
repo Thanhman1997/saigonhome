@@ -9,7 +9,6 @@ import { formatVnd, getGroupDiscountRate } from "@/lib/pricing"
 import { createBooking } from "@/app/actions/booking"
 import { checkIsFirstTimeCustomer } from "@/app/actions/customer"
 import type { CustomerInfo } from "./step-details"
-import { PaymentButton } from "./payment-button"
 
 export function StepConfirm({
   customerInfo,
@@ -83,13 +82,12 @@ export function StepConfirm({
           <CheckCircle2 className="size-8" />
         </span>
         <h2 className="font-serif text-3xl">{t.booking.success}</h2>
-        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">{t.booking.successMessage}</p>
         <div className="mt-2 border border-border px-6 py-4">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">{t.booking.reference}</p>
           <p className="mt-1 font-mono text-lg">{bookingResult.reference}</p>
         </div>
         <p className="font-sans text-2xl font-semibold tracking-tight">{formatVnd(bookingResult.totalVnd)}</p>
-        <PaymentButton reference={bookingResult.reference} />
+        <p className="max-w-md text-sm leading-relaxed text-muted-foreground">{t.booking.successMessage}</p>
       </div>
     )
   }
