@@ -33,7 +33,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
           <h2 className="mt-3 text-balance section-heading text-foreground">
             {t.title}
           </h2>
-          <p className="mt-3 max-w-xl text-pretty text-lg font-normal leading-relaxed text-muted-foreground">{t.subtitle}</p>
+          <p className="mt-3 max-w-xl text-pretty text-base font-normal leading-relaxed text-muted-foreground">{t.subtitle}</p>
         </div>
 
         {promotions.length > 0 ? (

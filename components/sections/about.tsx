@@ -36,7 +36,7 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
           <Image src="/images/lotus-philosophy-logo.png" alt="Lotus Wellness" width={720} height={420} className="mx-auto mb-3 h-auto w-48 object-contain sm:w-56 lg:w-64" loading="lazy" />
           <h2 className={`mt-0 text-balance section-heading text-guiding-pink font-sans tracking-[-0.02em]`}>{title}</h2>
           <div className="mt-8 flex flex-col gap-4 text-left">
-            {body.map((paragraph, idx) => <p key={idx} className="text-pretty text-base leading-relaxed text-muted-foreground first:text-lg first:text-foreground">{paragraph}</p>)}
+            {body.map((paragraph, idx) => <p key={idx} className="text-pretty text-base leading-relaxed text-muted-foreground first:text-base first:text-foreground">{paragraph}</p>)}
           </div>
         </div>
         <div className="mt-16 grid items-stretch gap-6 lg:grid-cols-[1.4fr_.6fr]">

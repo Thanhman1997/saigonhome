@@ -22,7 +22,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
       <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="mt-4 text-balance section-heading text-accent">{t.experts.title}</h2>
-          <p className="mt-6 text-pretty text-lg leading-relaxed text-muted-foreground">{t.experts.subtitle}</p>
+          <p className="mt-6 text-pretty text-base leading-relaxed text-muted-foreground">{t.experts.subtitle}</p>
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

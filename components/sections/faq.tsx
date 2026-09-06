@@ -30,7 +30,7 @@ export function Faq({ faqs }: { faqs: FaqRow[] }) {
                   <AccordionTrigger className="font-serif text-xl font-semibold text-foreground hover:no-underline [&>svg]:text-primary">
                     {question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-lg leading-relaxed text-muted-foreground">{answer}</AccordionContent>
+                  <AccordionContent className="text-base leading-relaxed text-muted-foreground">{answer}</AccordionContent>
                 </AccordionItem>
               )
             })}

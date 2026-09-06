@@ -18,7 +18,7 @@ export function ExperienceVideo({ videoUrl }: { videoUrl?: string | null }) {
           <h2 id="experience-video-title" className="text-balance section-heading font-sans text-foreground">
             {t.experienceVideo.title}
           </h2>
-          <p className="mt-6 max-w-lg text-pretty font-sans text-lg leading-relaxed text-muted-foreground">
+          <p className="mt-6 max-w-lg text-pretty font-sans text-base leading-relaxed text-muted-foreground">
             {t.experienceVideo.description}
           </p>
           <div className="mt-8 flex items-center gap-3 text-sm text-muted-foreground">
