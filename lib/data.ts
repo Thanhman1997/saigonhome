@@ -1,3 +1,4 @@
+import { list } from "@vercel/blob"
 import { db } from "@/lib/db"
 import { dictionary } from "@/lib/i18n/dictionary"
 import {
@@ -19,6 +20,14 @@ import {
   sectionStyles,
 } from "@/lib/db/schema"
 import { asc, eq, desc, sql } from "drizzle-orm"
+
+export async function getLatestVideoMedia() {
+  const { blobs } = await list({ prefix: "lotus-wellness/" })
+  const video = blobs
+    .filter((blob) => /\.(mp4|webm)$/i.test(blob.pathname))
+    .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0]
+  return video ? `/api/media?pathname=${encodeURIComponent(video.pathname)}` : null
+}
 
 export async function getServicesContent() {
   const rows = await db.select().from(servicesContent).limit(1)

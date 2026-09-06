@@ -8,9 +8,11 @@ import { deleteMediaFile } from "@/app/actions/media"
 
 export type MediaFile = {
   url: string
+  blobUrl: string
   pathname: string
   size: number
   uploadedAt: string
+  contentType: string
 }
 
 function formatSize(bytes: number): string {
@@ -45,7 +47,11 @@ function MediaCard({ file }: { file: MediaFile }) {
   return (
     <div className="group flex flex-col gap-2 rounded-lg border border-border bg-card p-2">
       <div className="relative aspect-square overflow-hidden rounded-md bg-muted">
-        <Image src={file.url} alt="" fill className="object-cover" unoptimized />
+        {file.contentType.startsWith("video/") ? (
+          <video src={file.url} controls preload="metadata" poster="/images/service-deep-tissue.png" className="h-full w-full object-cover" aria-label={file.pathname.split("/").pop() ?? "Uploaded video"} />
+        ) : (
+          <Image src={file.url} alt="" fill className="object-cover" unoptimized />
+        )}
         <div className="absolute right-1 top-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
           <CopyButton url={file.url} />
           <button
@@ -82,7 +88,7 @@ function MediaCard({ file }: { file: MediaFile }) {
               disabled={isPending}
               onClick={() => {
                 startTransition(async () => {
-                  await deleteMediaFile(file.url)
+                  await deleteMediaFile(file.blobUrl)
                   setConfirming(false)
                 })
               }}
@@ -140,7 +146,7 @@ export function MediaGallery({ files }: { files: MediaFile[] }) {
           <input
             ref={inputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,video/mp4,video/webm"
             multiple
             className="hidden"
             onChange={(e) => {
@@ -156,7 +162,7 @@ export function MediaGallery({ files }: { files: MediaFile[] }) {
             className="gap-2"
           >
             {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
-            {uploading ? "Uploading…" : "Upload images"}
+            {uploading ? "Uploading…" : "Upload media"}
           </Button>
         </div>
       </div>
@@ -166,7 +172,7 @@ export function MediaGallery({ files }: { files: MediaFile[] }) {
       {files.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-16 text-center">
           <ImagePlus className="size-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">No media uploaded yet. Upload images to use across the site.</p>
+          <p className="text-sm text-muted-foreground">No media uploaded yet. Upload images or MP4/WebM videos to use across the site.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">

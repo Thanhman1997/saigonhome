@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server"
 export async function GET(request: NextRequest) {
   const pathname = request.nextUrl.searchParams.get("pathname")
   if (!pathname || !pathname.startsWith("lotus-wellness/")) {
-    return NextResponse.json({ error: "Invalid image path" }, { status: 400 })
+    return NextResponse.json({ error: "Invalid media path" }, { status: 400 })
   }
 
   try {

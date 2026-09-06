@@ -4,7 +4,7 @@ import Image from "next/image"
 import { Play, Sparkles } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/language-provider"
 
-export function ExperienceVideo() {
+export function ExperienceVideo({ videoUrl }: { videoUrl?: string | null }) {
   const { t } = useLanguage()
 
   return (
@@ -37,7 +37,7 @@ export function ExperienceVideo() {
               className="object-cover transition duration-700 group-hover:scale-105"
             />
             <video className="absolute inset-0 h-full w-full object-cover" controls preload="metadata" poster="/images/service-deep-tissue.png" aria-label={t.experienceVideo.posterAlt}>
-              <source src="/videos/lotus-massage-50s.mp4" type="video/mp4" />
+              {videoUrl && <source src={videoUrl} type={videoUrl.endsWith(".webm") ? "video/webm" : "video/mp4"} />}
             </video>
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-foreground/55 via-foreground/10 to-transparent" aria-hidden="true" />
             <div className="pointer-events-none absolute inset-0 grid place-items-center">
@@ -45,7 +45,7 @@ export function ExperienceVideo() {
                 <Play className="ml-1 h-7 w-7 fill-current" />
               </div>
             </div>
-            <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between text-primary-foreground">
+            <div className="pointer-events-none absolute bottom-5 left-5 right-5 flex items-end justify-between text-primary-foreground">
               <span className="text-sm font-medium tracking-wide">{t.experienceVideo.watchLabel}</span>
               <span className="rounded-full border border-primary-foreground/50 px-3 py-1 text-xs">00:50</span>
             </div>
