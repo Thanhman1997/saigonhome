@@ -1,10 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { useBooking, type ServiceWithDurations } from "@/lib/booking-context"
 import { formatVnd } from "@/lib/pricing"
 import Image from "next/image"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 const fallbackImages: Record<string, { src: string; flag: string }> = {
@@ -29,7 +29,8 @@ type ServicesContent = { kickerEn: string; kickerKo: string; kickerVi: string; t
 
 export function ServicesSection({ services, featured = services.slice(0, 3), fullPage = false, content }: { services: ServiceWithDurations[]; featured?: ServiceWithDurations[]; fullPage?: boolean; content?: ServicesContent | null }) {
   const { t, locale } = useLanguage()
-  const displayedServices = fullPage ? services : featured
+  const [showAll, setShowAll] = useState(false)
+  const displayedServices = fullPage ? services : showAll ? services : featured
   const { openBooking } = useBooking()
   const servicesContent = content ?? { kickerEn: t.services.kicker, kickerKo: t.services.kicker, kickerVi: t.services.kicker, titleEn: t.services.title, titleKo: t.services.title, titleVi: t.services.title, subtitleEn: t.services.subtitle, subtitleKo: t.services.subtitle, subtitleVi: t.services.subtitle }
   const localizedContent = (en: string, ko: string, vi: string) => pickLocalized({ en, ko, vi }, locale)
@@ -70,7 +71,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
             )
           })}
         </div>
-        {!fullPage && <div className="mt-10 flex justify-center"><Link href="/services" className="rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground">{t.services.viewAll}</Link></div>}
+        {!fullPage && !showAll && services.length > featured.length && <div className="mt-10 flex justify-center"><Button type="button" variant="outline" onClick={() => setShowAll(true)} className="rounded-full border-primary px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground">{t.services.viewAll}</Button></div>}
       </div>
     </section>
   )
