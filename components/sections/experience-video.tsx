@@ -15,10 +15,10 @@ export function ExperienceVideo({ videoUrl }: { videoUrl?: string | null }) {
             <Sparkles className="h-4 w-4" aria-hidden="true" />
             <span>{t.experienceVideo.kicker}</span>
           </div>
-          <h2 id="experience-video-title" className="text-balance section-heading text-foreground">
+          <h2 id="experience-video-title" className="text-balance section-heading font-sans text-foreground">
             {t.experienceVideo.title}
           </h2>
-          <p className="mt-6 max-w-lg text-pretty text-lg leading-relaxed text-muted-foreground">
+          <p className="mt-6 max-w-lg text-pretty font-sans text-lg leading-relaxed text-muted-foreground">
             {t.experienceVideo.description}
           </p>
           <div className="mt-8 flex items-center gap-3 text-sm text-muted-foreground">
