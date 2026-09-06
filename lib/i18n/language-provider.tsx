@@ -11,7 +11,12 @@ type LanguageContextValue = {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null)
 
-const STORAGE_KEY = "lotus-wellness-locale"
+const LOCALE_COOKIE = "lotus-wellness-locale"
+
+function readLocaleCookie(): Locale | null {
+  const value = document.cookie.split("; ").find((part) => part.startsWith(`${LOCALE_COOKIE}=`))?.split("=")[1]
+  return value && Object.prototype.hasOwnProperty.call(dictionary, value) ? (value as Locale) : null
+}
 
 export function LanguageProvider({
   children,
@@ -23,15 +28,13 @@ export function LanguageProvider({
   const [locale, setLocaleState] = useState<Locale>(defaultLocale)
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY) as Locale | null
-    if (stored && Object.prototype.hasOwnProperty.call(dictionary, stored)) {
-      setLocaleState(stored)
-    }
+    const stored = readLocaleCookie()
+    if (stored) setLocaleState(stored)
   }, [])
 
   function setLocale(next: Locale) {
     setLocaleState(next)
-    window.localStorage.setItem(STORAGE_KEY, next)
+    document.cookie = `${LOCALE_COOKIE}=${next}; Path=/; Max-Age=31536000; SameSite=Lax`
   }
 
   return (

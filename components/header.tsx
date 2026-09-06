@@ -71,7 +71,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 min-w-0 max-w-none items-center justify-between gap-2 px-3 sm:h-20 sm:px-5 lg:h-24 lg:px-8">
+      <div className="mx-auto flex h-16 min-w-0 w-full max-w-[96rem] items-center justify-between gap-2 px-3 sm:h-20 sm:px-5 lg:h-24 lg:px-8">
         <a href="#top" onClick={(event) => handleHashNavigation(event, "#top")} className="group flex items-center" aria-label="Lotus Wellness home">
           <Image src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ctVp17KBG47Gf3slo2vkFOzNoBGmVU.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-12 max-w-[45vw] w-auto object-contain sm:h-16 sm:max-w-none lg:h-24" />
         </a>
@@ -88,7 +88,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
             </a>
           ))}
         </nav>
-        <div className="flex min-w-0 -translate-x-1 items-center lg:hidden">
+        <div className="flex min-w-0 items-center lg:hidden">
           <LanguageSwitcher />
         </div>
         <button
@@ -100,7 +100,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
-        <div className="hidden -translate-x-10 lg:flex">
+        <div className="hidden lg:flex">
           <LanguageSwitcher />
         </div>
       </div>

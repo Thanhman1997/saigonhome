@@ -16,7 +16,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
   }[locale]
   return (
     <footer className="border-t border-border bg-secondary px-5 py-8 font-sans text-sm text-foreground lg:px-8">
-      <div className="mx-auto grid max-w-6xl gap-1 md:grid-cols-3 md:translate-x-[1.5cm]">
+      <div className="mx-auto grid w-full max-w-6xl gap-6 md:grid-cols-3">
         <div>
           <h2 className="font-sans text-base font-bold leading-tight tracking-[0.08em] text-guiding-pink">{footerCopy.services}</h2>
           <nav className="mt-3 flex flex-col gap-1.5 text-base font-normal leading-6 text-muted-foreground" aria-label="Services navigation">
@@ -29,7 +29,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
             {footerCopy.aboutLinks.map((label, index) => <a key={label} href={["#about", "#about", "#experts", "/reviews", "#faq"][index]} className="transition-colors hover:text-accent">{label}</a>)}
           </nav>
         </div>
-        <div id="contact" className="text-foreground">
+        <div className="text-foreground">
           <h2 className="font-sans text-base font-bold leading-tight tracking-[0.08em] text-guiding-pink">{footerCopy.working}</h2>
           <div className="mt-3 flex items-start gap-2">
             <Clock3 className="mt-1 size-6 shrink-0 text-accent" strokeWidth={1.6} aria-hidden="true" />
@@ -52,7 +52,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
       </div>
       <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-3 border-t border-border/70 pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <p>Lotus Wellness Massage · Professional care delivered to you</p>
-        <div className="flex gap-5"><a href="#" className="hover:text-accent">Privacy Policy</a><a href="#" className="hover:text-accent">Terms of Service</a></div>
+        <div className="flex gap-5"><span>Privacy Policy</span><span>Terms of Service</span></div>
       </div>
     </footer>
   )
