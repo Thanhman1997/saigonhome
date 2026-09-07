@@ -1,12 +1,12 @@
 import type { MetadataRoute } from "next"
-import { getServicesWithDurations } from "@/lib/data"
+
+export const dynamic = "force-static"
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date()
-  const services = await getServicesWithDurations()
-  const paths = ["/", "/services", "/reviews", "/privacy", "/terms", ...services.map((service) => `/services/${service.slug}`)]
+  const paths = ["/", "/services", "/reviews", "/privacy", "/terms"]
   return paths.map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified,
