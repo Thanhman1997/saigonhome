@@ -108,8 +108,12 @@ export async function getFaqs() {
 }
 
 export async function getContactInfo() {
-  const rows = await db.select().from(contactInfo).limit(1)
-  return rows[0] ?? null
+  try {
+    const rows = await db.select().from(contactInfo).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export async function getHeroContent() {
@@ -127,7 +131,11 @@ export async function getLotusValues() {
 }
 
 export async function getSectionStyles() {
-  return db.select().from(sectionStyles)
+  try {
+    return await db.select().from(sectionStyles)
+  } catch {
+    return []
+  }
 }
 
 export async function getDesignSettings() {
@@ -148,7 +156,11 @@ const VALID_LOCALES = ["en", "ko", "vi"] as const
 export type SiteLocale = (typeof VALID_LOCALES)[number]
 
 export async function getDefaultLocale(): Promise<SiteLocale> {
-  const rows = await db.select().from(siteContent).where(eq(siteContent.key, "default_locale")).limit(1)
-  const value = rows[0]?.valueEn
-  return (VALID_LOCALES as readonly string[]).includes(value ?? "") ? (value as SiteLocale) : "en"
+  try {
+    const rows = await db.select().from(siteContent).where(eq(siteContent.key, "default_locale")).limit(1)
+    const value = rows[0]?.valueEn
+    return (VALID_LOCALES as readonly string[]).includes(value ?? "") ? (value as SiteLocale) : "en"
+  } catch {
+    return "en"
+  }
 }
