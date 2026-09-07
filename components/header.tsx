@@ -11,7 +11,10 @@ type NavigationSetting = { menuKey: string; labelEn: string; labelVi: string; la
 export function Header({ navigationSettings = [] }: { navigationSettings?: NavigationSetting[] }) {
   const [open, setOpen] = useState(false)
   const { locale, t } = useLanguage()
-  const [pathname, setPathname] = useState(() => (typeof window === "undefined" ? "/" : window.location.pathname))
+  // Always start from "/" so the server-rendered HTML and the client's first
+  // render match (avoids React hydration error #418). The real pathname is
+  // synced in the effect below right after mount.
+  const [pathname, setPathname] = useState("/")
   const [activeSection, setActiveSection] = useState("")
 
   useEffect(() => {
