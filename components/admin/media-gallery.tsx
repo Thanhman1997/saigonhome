@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import Image from "next/image"
 import { Check, Copy, ImagePlus, Loader2, Trash2, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -23,13 +23,22 @@ function formatSize(bytes: number): string {
 
 function CopyButton({ url }: { url: string }) {
   const [copied, setCopied] = useState(false)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [])
+
   return (
     <button
       type="button"
       onClick={async () => {
         await navigator.clipboard.writeText(url)
         setCopied(true)
-        setTimeout(() => setCopied(false), 1500)
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        timeoutRef.current = setTimeout(() => setCopied(false), 1500)
       }}
       className="flex size-7 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm"
       title="Copy URL"
