@@ -16,7 +16,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
   }[locale]
   return (
     <footer className="border-t border-border/70 bg-secondary px-5 py-12 font-sans text-base text-foreground lg:px-10 lg:py-14">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 md:grid-cols-3 lg:gap-16">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-10 md:flex-row lg:gap-16">
         <div>
           <h2 className="font-sans text-2xl font-bold leading-tight tracking-[0.08em] text-guiding-pink">{footerCopy.services}</h2>
           <nav className="mt-3 flex flex-col gap-1.5 text-2xl font-normal leading-9 text-muted-foreground" aria-label="Services navigation">
