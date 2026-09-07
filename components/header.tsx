@@ -70,9 +70,9 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 min-w-0 w-full max-w-[96rem] items-center justify-between gap-2 px-3 sm:h-20 sm:px-5 lg:h-20 lg:px-12">
+      <div className="mx-auto flex h-20 min-w-0 w-full max-w-[96rem] items-center justify-between gap-2 px-3 sm:h-24 sm:px-5 lg:h-24 lg:px-12">
         <a href="#top" onClick={(event) => handleHashNavigation(event, "#top")} className="group flex items-center" aria-label="Lotus Wellness home">
-          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-10 max-w-[40vw] w-auto object-contain mix-blend-multiply sm:h-12 sm:max-w-none lg:h-16" />
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-12 max-w-[44vw] w-auto object-contain mix-blend-multiply sm:h-14 sm:max-w-none lg:h-20" />
         </a>
         <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Primary navigation">
           {links.map((link) => (
