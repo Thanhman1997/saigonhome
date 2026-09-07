@@ -96,8 +96,12 @@ export async function getNavigationSettings() {
 }
 
 export async function getDesignSettingsAdmin() {
-  const rows = await db.select().from(designSettings).limit(1)
-  return rows[0] ?? null
+  try {
+    const rows = await db.select().from(designSettings).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export async function getBookingSettingsAdmin() {
