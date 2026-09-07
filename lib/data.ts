@@ -131,8 +131,12 @@ export async function getSectionStyles() {
 }
 
 export async function getDesignSettings() {
-  const rows = await db.select().from(designSettings).limit(1)
-  return rows[0] ?? null
+  try {
+    const rows = await db.select().from(designSettings).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export async function getBookingSettings() {
