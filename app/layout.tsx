@@ -20,31 +20,33 @@ import { getContactInfo, getDefaultLocale, getDesignSettings, getSectionStyles }
 import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
 import "./globals.css"
 
-// Primary display fonts (Latin only)
-const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", weight: ["300", "400", "500", "600", "700"] })
+// Primary display fonts (Latin only). Weight lists are kept minimal — each
+// extra weight is a separate .woff2 file, and loading dozens of font files at
+// once can exhaust the browser (net::ERR_INSUFFICIENT_RESOURCES).
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", weight: ["400", "500", "600", "700"] })
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   variable: "--font-cormorant",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "600", "700"],
 })
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", weight: ["400", "500"] })
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", weight: ["400"] })
 
 // Fallback fonts so Korean and Vietnamese text always render, regardless of
 // the visitor's system fonts. These are chained after the primary fonts in
 // globals.css so the browser only falls back per-glyph when a character is
 // missing (e.g. Hangul or Vietnamese diacritics).
-const notoSans = Noto_Sans({ subsets: ["latin", "vietnamese"], variable: "--font-noto-sans", weight: ["300", "400", "500", "600", "700"] })
-const notoSansKr = Noto_Sans_KR({ variable: "--font-noto-sans-kr", weight: ["300", "400", "500", "600", "700"], preload: false })
-const notoSerifKr = Noto_Serif_KR({ variable: "--font-noto-serif-kr", weight: ["300", "400", "500", "600", "700"], preload: false })
+const notoSans = Noto_Sans({ subsets: ["latin", "vietnamese"], variable: "--font-noto-sans", weight: ["400", "500", "700"] })
+const notoSansKr = Noto_Sans_KR({ variable: "--font-noto-sans-kr", weight: ["400", "500", "700"], preload: false })
+const notoSerifKr = Noto_Serif_KR({ variable: "--font-noto-serif-kr", weight: ["400", "600", "700"], preload: false })
 
 // Vetted, Admin-selectable Design Settings font pool. Preloaded here (never
 // injected as arbitrary CSS) so the Design Settings module can only switch
 // between these known-safe families.
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", weight: ["400", "500", "600", "700"], preload: false })
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", weight: ["400", "600", "700"], preload: false })
 const dmSerifDisplay = DM_Serif_Display({ subsets: ["latin"], variable: "--font-dm-serif-display", weight: ["400"], preload: false })
-const lora = Lora({ subsets: ["latin"], variable: "--font-lora", weight: ["400", "500", "600", "700"], preload: false })
-const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", weight: ["400", "500", "600", "700"], preload: false })
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", weight: ["400", "500", "600", "700"], preload: false })
+const lora = Lora({ subsets: ["latin"], variable: "--font-lora", weight: ["400", "600", "700"], preload: false })
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", weight: ["400", "600", "700"], preload: false })
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", weight: ["400", "600", "700"], preload: false })
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
 
