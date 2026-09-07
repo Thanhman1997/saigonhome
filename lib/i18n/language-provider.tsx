@@ -9,7 +9,13 @@ type LanguageContextValue = {
   t: Dictionary
 }
 
-const LanguageContext = createContext<LanguageContextValue | null>(null)
+const defaultLanguageContext: LanguageContextValue = {
+  locale: "en",
+  setLocale: () => undefined,
+  t: dictionary.en,
+}
+
+const LanguageContext = createContext<LanguageContextValue>(defaultLanguageContext)
 const LOCALE_COOKIE = "lotus-wellness-locale"
 
 export function LanguageProvider({
@@ -34,9 +40,7 @@ export function LanguageProvider({
 }
 
 export function useLanguage() {
-  const ctx = useContext(LanguageContext)
-  if (!ctx) throw new Error("useLanguage must be used within LanguageProvider")
-  return ctx
+  return useContext(LanguageContext)
 }
 
 export function pickLocalized<T extends { en: string; ko: string; vi: string } | Record<string, string>>(
