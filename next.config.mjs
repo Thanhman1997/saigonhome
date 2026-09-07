@@ -1,11 +1,12 @@
 /** @type {import('next').NextConfig} */
-const isDev = process.env.NODE_ENV !== "production"
-
-// Next.js uses `eval` in development (HMR / source maps), which trips the
-// report-only CSP and logs a console warning. Allow `unsafe-eval` only in dev.
-const scriptSrc = isDev
-  ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-  : "script-src 'self' 'unsafe-inline'"
+// The CSP below is Report-Only: it only logs, it never blocks. Some runtime
+// dependencies (HMR in dev, certain analytics/runtime code in production) use
+// `eval`, which the browser surfaces as a CSP console warning. Since a
+// report-only policy provides no protection until enforced, allow
+// `unsafe-eval` in the script-src to remove the noisy warning. If this CSP is
+// later switched to the enforcing `Content-Security-Policy`, revisit this and
+// prefer removing the eval usage / using a nonce instead.
+const scriptSrc = "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
 
 const nextConfig = {
   images: {
