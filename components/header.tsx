@@ -69,7 +69,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     .map((link) => ({ ...link, label: pickLocalized({ en: link.labelEn, vi: link.labelVi, ko: link.labelKo }, locale) }))
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-card backdrop-blur-md">
       <div className="mx-auto flex h-20 min-w-0 w-full max-w-[96rem] items-center justify-between gap-2 px-3 sm:h-24 sm:px-5 lg:h-24 lg:px-12">
         <a href="#top" onClick={(event) => handleHashNavigation(event, "#top")} className="group flex items-center" aria-label="Lotus Wellness home">
           <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-12 max-w-[44vw] w-auto object-contain mix-blend-multiply sm:h-14 sm:max-w-none lg:h-20" />
@@ -104,7 +104,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         </div>
       </div>
       {open && (
-        <nav id="mobile-menu" className="border-t border-border bg-background px-5 py-6 lg:hidden" aria-label="Mobile navigation">
+        <nav id="mobile-menu" className="border-t border-border bg-card px-5 py-6 lg:hidden" aria-label="Mobile navigation">
           <div className="flex flex-col gap-5">
             {links.map((link) => (
               <a key={link.href} href={resolveHref(link.href)} onClick={(event) => { handleHashNavigation(event, resolveHref(link.href)); if (!event.defaultPrevented) setOpen(false) }} className={`font-serif text-4xl font-bold ${locale === "en" ? "uppercase" : ""} ${isActive(link) ? "text-accent" : "text-foreground"}`} style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "2.2rem" : link.fontSize === "md" ? "1.9rem" : "1.6rem") : locale === "en" ? (link.fontSize === "lg" ? "2.7rem" : link.fontSize === "md" ? "2.25rem" : "1.8rem") : (link.fontSize === "lg" ? "3rem" : link.fontSize === "md" ? "2.5rem" : "2rem"), fontWeight: 800, color: isActive(link) || link.textColor === "inherit" ? undefined : link.textColor }}>
