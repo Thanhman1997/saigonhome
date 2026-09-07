@@ -283,8 +283,10 @@ export const navigationSettings = pgTable("navigation_settings", {
 
 export const sectionStyles = pgTable("section_styles", {
   sectionKey: text("section_key").primaryKey(),
+  titleFont: text("title_font").notNull().default("inherit"),
   titleColor: text("title_color"),
   titleSize: text("title_size").notNull().default("md"),
+  bodyFont: text("body_font").notNull().default("inherit"),
   bodyColor: text("body_color"),
   bodySize: text("body_size").notNull().default("md"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

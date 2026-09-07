@@ -17,7 +17,7 @@ import {
 import { Analytics } from "@vercel/analytics/next"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
 import { getContactInfo, getDefaultLocale, getDesignSettings, getSectionStyles } from "@/lib/data"
-import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
+import { buildDesignTokenCss, DESIGN_PRESETS, FONT_OPTIONS } from "@/lib/design-tokens"
 import "./globals.css"
 
 // Primary display fonts (Latin only). Weight lists are kept minimal — each
@@ -100,7 +100,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const activeDesign = designSettings?.presetKey === "lotus-premium" ? DESIGN_PRESETS[0].values : (designSettings ?? DESIGN_PRESETS[0].values)
   const designTokenCss = buildDesignTokenCss(activeDesign)
   const safe = (value: string | null) => value && /^[#(),.%\- a-zA-Z0-9]+$/.test(value) ? value : "inherit"
-  const sectionStyleCss = sectionStyles.map((style) => `#${style.sectionKey} h1,#${style.sectionKey} h2,#${style.sectionKey} h3{color:${safe(style.titleColor)};font-size:${safe(style.titleSize === "sm" ? "1.5rem" : style.titleSize === "lg" ? "3rem" : "2rem")};text-align:${style.sectionKey === "services" || style.sectionKey === "experts" ? "center" : "inherit"}}#${style.sectionKey} p{color:${safe(style.bodyColor)};font-size:${safe(style.bodySize === "sm" ? "0.875rem" : style.bodySize === "lg" ? "1.25rem" : "1rem")}}`).join("")
+  // Turn a stored section font key into a font-family declaration. Only keys
+  // from the vetted FONT_OPTIONS pool resolve to a CSS variable; anything else
+  // (including "inherit") falls back to inheriting the site font.
+  const fontDecl = (key: string | null | undefined) => {
+    const option = FONT_OPTIONS.find((f) => f.key === key)
+    return option ? `font-family:var(${option.cssVar}),${option.category};` : ""
+  }
+  const sectionStyleCss = sectionStyles.map((style) => `#${style.sectionKey} h1,#${style.sectionKey} h2,#${style.sectionKey} h3{${fontDecl(style.titleFont)}color:${safe(style.titleColor)};font-size:${safe(style.titleSize === "sm" ? "1.5rem" : style.titleSize === "lg" ? "3rem" : "2rem")};text-align:${style.sectionKey === "services" || style.sectionKey === "experts" ? "center" : "inherit"}}#${style.sectionKey} p{${fontDecl(style.bodyFont)}color:${safe(style.bodyColor)};font-size:${safe(style.bodySize === "sm" ? "0.875rem" : style.bodySize === "lg" ? "1.25rem" : "1rem")}}`).join("")
 
   return (
     <html lang="en" data-scroll-behavior="smooth" className="bg-background" suppressHydrationWarning>
