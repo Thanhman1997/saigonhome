@@ -101,7 +101,7 @@ export function FaqFormDialog({ faq }: { faq?: FaqRow }) {
             </div>
           </div>
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-          <DialogFooter><span className="text-sm text-muted-foreground" aria-live="polite">{autosaveStatus === "saving" ? "Saving..." : autosaveStatus === "saved" ? "Saved ✓" : autosaveStatus === "error" ? "Draft save failed" : ""}</span>
+          <DialogFooter><span className="text-sm text-muted-foreground" aria-live="polite">{autosaveStatus.status === "saving" ? "Saving..." : autosaveStatus.status === "saved" ? "Saved ✓" : autosaveStatus.status === "error" ? "Draft save failed" : ""}</span>
             <SubmitButton label={faq ? "Save changes" : "Create FAQ"} />
           </DialogFooter>
         </form>

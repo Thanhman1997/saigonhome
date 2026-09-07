@@ -164,7 +164,7 @@ export function PromotionFormDialog({ promotion }: { promotion?: PromotionRow })
           <ImageUpload label="Promotion image" name="imageUrl" value={imageUrl} onChange={setImageUrl} aspect="aspect-video" />
 
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-          <DialogFooter><span className="text-sm text-muted-foreground" aria-live="polite">{autosaveStatus === "saving" ? "Saving..." : autosaveStatus === "saved" ? "Saved ✓" : autosaveStatus === "error" ? "Draft save failed" : ""}</span>
+          <DialogFooter><span className="text-sm text-muted-foreground" aria-live="polite">{autosaveStatus.status === "saving" ? "Saving..." : autosaveStatus.status === "saved" ? "Saved ✓" : autosaveStatus.status === "error" ? "Draft save failed" : ""}</span>
             <SubmitButton label={promotion ? "Save changes" : "Create promotion"} />
           </DialogFooter>
         </form>
