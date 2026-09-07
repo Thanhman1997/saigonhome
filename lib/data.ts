@@ -1,3 +1,4 @@
+import { list } from "@vercel/blob"
 import { db } from "@/lib/db"
 import { dictionary } from "@/lib/i18n/dictionary"
 import {
@@ -19,6 +20,14 @@ import {
   sectionStyles,
 } from "@/lib/db/schema"
 import { asc, eq, desc, sql } from "drizzle-orm"
+
+export async function getLatestVideoMedia() {
+  const { blobs } = await list({ prefix: "lotus-wellness/" })
+  const video = blobs
+    .filter((blob) => /\.(mp4|webm)$/i.test(blob.pathname))
+    .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0]
+  return video ? `/api/media?pathname=${encodeURIComponent(video.pathname)}` : null
+}
 
 export async function getServicesContent() {
   const rows = await db.select().from(servicesContent).limit(1)
@@ -51,6 +60,11 @@ export async function getFeaturedServices() {
   return serviceList.slice(0, 3)
 }
 
+export async function getServiceBySlug(slug: string) {
+  const serviceList = await getServicesWithDurations()
+  return serviceList.find((service) => service.slug === slug) ?? null
+}
+
 export async function getTherapists() {
   return db.select().from(therapists).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
@@ -70,8 +84,19 @@ export async function getActivePromotions() {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date())
-  const all = await db.select().from(events).where(eq(events.active, true)).orderBy(asc(events.sortOrder))
-  return all.filter((e) => (!e.startDate || e.startDate <= now) && (!e.endDate || e.endDate >= now))
+  const all = await db.select().from(events).where(eq(events.active, true)).orderBy(asc(events.sortOrder), asc(events.startDate), asc(events.id))
+  const seasonal = all.filter((event) => event.type === "seasonal")
+  const currentSeasonal = seasonal.filter((event) => (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now))
+  if (currentSeasonal.length > 0) return [...currentSeasonal, ...all.filter((event) => event.type !== "seasonal" && (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now))].slice(0, 3)
+
+  const nextSeasonal = seasonal.find((event) => event.startDate && event.startDate > now)
+  if (nextSeasonal) {
+    const fallback = all.filter((event) => event.id !== nextSeasonal.id && event.type !== "seasonal" && (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now)).slice(0, 2)
+    return [nextSeasonal, ...fallback]
+  }
+
+  const current = all.filter((event) => (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now))
+  return current.slice(0, 3)
 }
 
 export async function getMembershipPlans() {

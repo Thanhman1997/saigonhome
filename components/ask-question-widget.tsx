@@ -52,7 +52,7 @@ export function AskQuestionWidget() {
     <>
       <Button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 h-14 gap-2 rounded-full px-5 text-sm font-bold shadow-lg bg-lotus-pink text-lotus-pink-foreground hover:bg-lotus-pink/90"
+        className="fixed bottom-5 right-5 z-40 h-12 gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground shadow-[0_10px_30px_-16px_var(--accent)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90 sm:bottom-6 sm:right-6 sm:h-14 sm:px-5"
       >
         <MessageCircleQuestion className="size-5" />
         <span className="hidden sm:inline">{t.askQuestion.trigger}</span>

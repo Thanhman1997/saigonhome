@@ -1,7 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { usePathname } from "next/navigation"
+import { useEffect, useState, type MouseEvent } from "react"
 import Image from "next/image"
 import { Menu, X } from "lucide-react"
 import { LanguageSwitcher } from "@/components/language-switcher"
@@ -12,8 +11,15 @@ type NavigationSetting = { menuKey: string; labelEn: string; labelVi: string; la
 export function Header({ navigationSettings = [] }: { navigationSettings?: NavigationSetting[] }) {
   const [open, setOpen] = useState(false)
   const { locale, t } = useLanguage()
-  const pathname = usePathname()
-  const [activeSection, setActiveSection] = useState(pathname === "/" ? "home" : "")
+  const [pathname, setPathname] = useState(() => (typeof window === "undefined" ? "/" : window.location.pathname))
+  const [activeSection, setActiveSection] = useState("")
+
+  useEffect(() => {
+    const syncPathname = () => setPathname(window.location.pathname)
+    syncPathname()
+    window.addEventListener("popstate", syncPathname)
+    return () => window.removeEventListener("popstate", syncPathname)
+  }, [])
 
   useEffect(() => {
     if (pathname !== "/") return
@@ -30,24 +36,22 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     return () => window.removeEventListener("scroll", updateActiveSection)
   }, [pathname])
 
-  const resolveHref = (href: string, menuKey?: string) => {
-    if (menuKey === "services") return "/services"
+  const resolveHref = (href: string) => {
     return href.startsWith("#") && pathname !== "/" ? `/${href}` : href
   }
-  const isActive = (link: { menuKey: string; href: string }) => pathname === "/" ? (link.href.startsWith("#") ? activeSection === link.menuKey : false) : (link.menuKey === "services" ? pathname === "/services" : link.href.startsWith("/") && pathname.startsWith(link.href))
-  const navigate = (href: string) => {
-    if (href.startsWith("#") && pathname === "/") {
-      const target = document.querySelector(href)
-      if (target) {
-        const headerOffset = 96
-        const top = target.getBoundingClientRect().top + window.scrollY - headerOffset
-        window.scrollTo({ top, behavior: "auto" })
-      }
-      setOpen(false)
-      setActiveSection(href === "#top" ? "home" : href.slice(1))
-      return
+  const isActive = (link: { menuKey: string; href: string }) => pathname === "/" ? (link.href.startsWith("#") ? activeSection === link.menuKey : false) : (link.href.startsWith("/") && pathname.startsWith(link.href))
+  const handleHashNavigation = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!href.startsWith("#") || pathname !== "/") return
+
+    event.preventDefault()
+    const target = document.querySelector(href)
+    if (target) {
+      const headerOffset = 96
+      const top = target.getBoundingClientRect().top + window.scrollY - headerOffset
+      window.scrollTo({ top, behavior: "auto" })
     }
-    window.location.assign(href)
+    setOpen(false)
+    setActiveSection(href === "#top" ? "home" : href.slice(1))
   }
 
   const defaultLinks: NavigationSetting[] = [
@@ -55,7 +59,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     { menuKey: "services", labelEn: t.nav.services, labelVi: t.nav.services, labelKo: t.nav.services, href: "#services", visible: true },
     { menuKey: "experts", labelEn: t.nav.experts, labelVi: t.nav.experts, labelKo: t.nav.experts, href: "#experts", visible: true },
     { menuKey: "faq", labelEn: t.nav.faq, labelVi: t.nav.faq, labelKo: t.nav.faq, href: "#faq", visible: true },
-    { menuKey: "reviews", labelEn: t.nav.reviews, labelVi: t.nav.reviews, labelKo: t.nav.reviews, href: "/reviews", visible: true },
+    { menuKey: "reviews", labelEn: t.nav.reviews, labelVi: t.nav.reviews, labelKo: t.nav.reviews, href: "#reviews", visible: true },
     { menuKey: "contact", labelEn: t.nav.contact, labelVi: t.nav.contact, labelKo: t.nav.contact, href: "#contact", visible: true },
   ]
   const allowedMenuKeys = new Set(["home", "services", "experts", "contact", "faq", "reviews"])
@@ -65,17 +69,17 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     .map((link) => ({ ...link, label: pickLocalized({ en: link.labelEn, vi: link.labelVi, ko: link.labelKo }, locale) }))
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 min-w-0 max-w-6xl items-center justify-between gap-2 px-3 sm:h-20 sm:px-5 lg:h-24 lg:px-8">
-        <a href="#top" onClick={(event) => { event.preventDefault(); navigate("#top") }} className="group flex items-center lg:-translate-x-16" aria-label="Lotus Wellness home">
-          <Image src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ctVp17KBG47Gf3slo2vkFOzNoBGmVU.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-12 max-w-[45vw] w-auto object-contain sm:h-16 sm:max-w-none lg:h-24" />
+    <header className="sticky top-0 z-50 border-b-2 border-[#d96b8a] bg-header-background backdrop-blur-md">
+      <div className="mx-auto flex h-20 min-w-0 w-full max-w-[96rem] items-center justify-between gap-2 px-3 sm:h-24 sm:px-5 lg:h-24 lg:px-12">
+        <a href="#top" onClick={(event) => handleHashNavigation(event, "#top")} className="group flex items-center" aria-label="Lotus Wellness home">
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-12 max-w-[44vw] w-auto object-contain mix-blend-multiply sm:h-14 sm:max-w-none lg:h-20" />
         </a>
-        <nav className="hidden translate-x-16 items-center gap-7 lg:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Primary navigation">
           {links.map((link) => (
             <a
               key={link.href}
-              href={resolveHref(link.href, link.menuKey)}
-              onClick={(event) => { event.preventDefault(); navigate(resolveHref(link.href, link.menuKey)) }}
+              href={resolveHref(link.href)}
+              onClick={(event) => handleHashNavigation(event, resolveHref(link.href))}
               className={`relative tracking-[0.08em] transition-colors ${locale === "en" || locale === "vi" ? "uppercase" : ""} ${isActive(link) ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
               style={{ fontFamily: locale === "ko" ? '"Spoqa Han Sans Neo", "Noto Sans KR", sans-serif' : locale === "en" || locale === "vi" ? '"Palatino Linotype", Palatino, Georgia, serif' : link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? "1.15rem" : locale === "en" ? "1.15rem" : locale === "ko" ? "1.5rem" : (link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem"), fontWeight: locale === "ko" ? 600 : 500, color: isActive(link) ? "var(--accent)" : link.textColor === "inherit" ? undefined : link.textColor }}
             >
@@ -100,10 +104,10 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         </div>
       </div>
       {open && (
-        <nav id="mobile-menu" className="border-t border-border bg-background px-5 py-6 lg:hidden" aria-label="Mobile navigation">
+        <nav id="mobile-menu" className="border-t border-border bg-card px-5 py-6 lg:hidden" aria-label="Mobile navigation">
           <div className="flex flex-col gap-5">
             {links.map((link) => (
-              <a key={link.href} href={resolveHref(link.href, link.menuKey)} onClick={(event) => { event.preventDefault(); setOpen(false); navigate(resolveHref(link.href, link.menuKey)) }} className={`font-serif text-4xl font-bold ${locale === "en" ? "uppercase" : ""} ${isActive(link) ? "text-accent" : "text-foreground"}`} style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "2.2rem" : link.fontSize === "md" ? "1.9rem" : "1.6rem") : locale === "en" ? (link.fontSize === "lg" ? "2.7rem" : link.fontSize === "md" ? "2.25rem" : "1.8rem") : (link.fontSize === "lg" ? "3rem" : link.fontSize === "md" ? "2.5rem" : "2rem"), fontWeight: 800, color: isActive(link) || link.textColor === "inherit" ? undefined : link.textColor }}>
+              <a key={link.href} href={resolveHref(link.href)} onClick={(event) => { handleHashNavigation(event, resolveHref(link.href)); if (!event.defaultPrevented) setOpen(false) }} className={`font-serif text-4xl font-bold ${locale === "en" ? "uppercase" : ""} ${isActive(link) ? "text-accent" : "text-foreground"}`} style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "2.2rem" : link.fontSize === "md" ? "1.9rem" : "1.6rem") : locale === "en" ? (link.fontSize === "lg" ? "2.7rem" : link.fontSize === "md" ? "2.25rem" : "1.8rem") : (link.fontSize === "lg" ? "3rem" : link.fontSize === "md" ? "2.5rem" : "2rem"), fontWeight: 800, color: isActive(link) || link.textColor === "inherit" ? undefined : link.textColor }}>
                 {link.label}
               </a>
             ))}

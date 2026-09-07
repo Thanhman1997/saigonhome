@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useContext, useState, type ReactNode } from "react"
 import { dictionary, type Locale, type Dictionary } from "./dictionary"
 
 type LanguageContextValue = {
@@ -10,8 +10,7 @@ type LanguageContextValue = {
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null)
-
-const STORAGE_KEY = "lotus-wellness-locale"
+const LOCALE_COOKIE = "lotus-wellness-locale"
 
 export function LanguageProvider({
   children,
@@ -22,16 +21,9 @@ export function LanguageProvider({
 }) {
   const [locale, setLocaleState] = useState<Locale>(defaultLocale)
 
-  useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY) as Locale | null
-    if (stored && Object.prototype.hasOwnProperty.call(dictionary, stored)) {
-      setLocaleState(stored)
-    }
-  }, [])
-
   function setLocale(next: Locale) {
     setLocaleState(next)
-    window.localStorage.setItem(STORAGE_KEY, next)
+    document.cookie = `${LOCALE_COOKIE}=${next}; Path=/; Max-Age=31536000; SameSite=Lax`
   }
 
   return (

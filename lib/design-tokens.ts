@@ -131,7 +131,7 @@ export const DESIGN_PRESETS: { key: string; label: string; description: string; 
       colorSecondary: "#f3e4d1",
       colorAccent: "#c65d24",
       colorLotusPink: "#e94f87",
-      colorBackground: "#fff8ef",
+      colorBackground: "#fbe1bf",
       colorForeground: "#3b2418",
       buttonRadius: "full",
       buttonSize: "md",

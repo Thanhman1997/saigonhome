@@ -1,5 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
+import { cookies } from "next/headers"
 import {
   DM_Sans,
   Cormorant_Garamond,
@@ -15,7 +16,7 @@ import {
 } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
-import { getDefaultLocale, getDesignSettings, getSectionStyles } from "@/lib/data"
+import { getContactInfo, getDefaultLocale, getDesignSettings, getSectionStyles } from "@/lib/data"
 import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
 import "./globals.css"
 
@@ -45,7 +46,10 @@ const lora = Lora({ subsets: ["latin"], variable: "--font-lora", weight: ["400",
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", weight: ["400", "500", "600", "700"], preload: false })
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", weight: ["400", "500", "600", "700"], preload: false })
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
     template: "%s | Lotus Wellness",
@@ -59,11 +63,21 @@ export const metadata: Metadata = {
     "in-room massage HCMC",
     "Lotus Wellness",
   ],
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
     description: "Excellence, convenience, affordability, and privacy — professional massage wherever you are.",
+    url: siteUrl,
+    siteName: "Lotus Wellness",
     type: "website",
     locale: "en_US",
+    images: [{ url: "/images/hero.jpg", width: 1200, height: 630, alt: "Lotus Wellness mobile massage" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
+    description: "Professional mobile massage in Ho Chi Minh City.",
+    images: ["/images/hero.jpg"],
   },
   generator: "v0.app",
 }
@@ -75,7 +89,10 @@ export const viewport: Viewport = { themeColor: "#FCE2C1", width: "device-width"
 export const dynamic = "force-dynamic"
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [defaultLocale, designSettings, sectionStyles] = await Promise.all([getDefaultLocale(), getDesignSettings(), getSectionStyles()])
+  const cookieStore = await cookies()
+  const savedLocale = cookieStore.get("lotus-wellness-locale")?.value
+  const [databaseLocale, designSettings, sectionStyles, contactInfo] = await Promise.all([getDefaultLocale(), getDesignSettings(), getSectionStyles(), getContactInfo()])
+  const defaultLocale = savedLocale === "en" || savedLocale === "vi" || savedLocale === "ko" ? savedLocale : databaseLocale
   // Keep the public Lotus experience aligned with the approved reference preset.
   // Legacy database rows may contain the previous muted palette and make the page appear broken.
   const activeDesign = designSettings?.presetKey === "lotus-premium" ? DESIGN_PRESETS[0].values : (designSettings ?? DESIGN_PRESETS[0].values)
@@ -84,12 +101,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const sectionStyleCss = sectionStyles.map((style) => `#${style.sectionKey} h1,#${style.sectionKey} h2,#${style.sectionKey} h3{color:${safe(style.titleColor)};font-size:${safe(style.titleSize === "sm" ? "1.5rem" : style.titleSize === "lg" ? "3rem" : "2rem")};text-align:${style.sectionKey === "services" || style.sectionKey === "experts" ? "center" : "inherit"}}#${style.sectionKey} p{color:${safe(style.bodyColor)};font-size:${safe(style.bodySize === "sm" ? "0.875rem" : style.bodySize === "lg" ? "1.25rem" : "1rem")}}`).join("")
 
   return (
-    <html lang="en" className="bg-background" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" className="bg-background" suppressHydrationWarning>
       <body
         className={`${dmSans.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${notoSans.variable} ${notoSansKr.variable} ${notoSerifKr.variable} ${playfair.variable} ${dmSerifDisplay.variable} ${lora.variable} ${manrope.variable} ${inter.variable} font-sans antialiased`}
       >
         <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
         <style id="section-styles" dangerouslySetInnerHTML={{ __html: sectionStyleCss }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "HealthAndBeautyBusiness",
+          name: "Lotus Wellness",
+          url: siteUrl,
+          image: `${siteUrl}/images/hero.jpg`,
+          ...(contactInfo?.phone ? { telephone: contactInfo.phone } : {}),
+          ...(contactInfo?.addressEn ? { address: { "@type": "PostalAddress", streetAddress: contactInfo.addressEn, addressCountry: "VN" } } : {}),
+          areaServed: "Ho Chi Minh City",
+          priceRange: "$$",
+        }) }} />
         <LanguageProvider defaultLocale={defaultLocale}>{children}</LanguageProvider>
         <Analytics />
       </body>

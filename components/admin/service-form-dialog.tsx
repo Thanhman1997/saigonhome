@@ -1,6 +1,7 @@
 "use client"
 
-import { useActionState, useEffect, useState } from "react"
+import { useActionState, useCallback, useEffect, useRef, useState } from "react"
+import { AdminDraftRecoveryBanner } from "@/components/admin/admin-draft-recovery-banner"
 import { useAdminAutosave } from "@/hooks/use-admin-autosave"
 import { useFormStatus } from "react-dom"
 import { Plus, Pencil } from "lucide-react"
@@ -47,14 +48,23 @@ export function ServiceFormDialog({ service }: { service?: ServiceRow }) {
   const action = service ? updateService.bind(null, service.id) : createService
   const [state, formAction] = useActionState(action, undefined)
   const [imageUrl, setImageUrl] = useState<string | null>(service?.imageUrl ?? null)
-  const [draftValues, setDraftValues] = useState<Record<string, string>>({})
-  const autosaveStatus = useAdminAutosave("service", String(service?.id ?? "new"), draftValues)
+  const formRef = useRef<HTMLFormElement>(null)
+  const [draftValues, setDraftValues] = useState<Record<string, unknown>>({})
+  const applyDraft = useCallback((values: Record<string, unknown>) => {
+    const form = formRef.current
+    if (!form) return
+    Object.entries(values).forEach(([name, value]) => { const field = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | null; if (field) field.value = String(value ?? "") })
+    if (typeof values.imageUrl === "string") setImageUrl(values.imageUrl)
+  }, [])
+  const autosave = useAdminAutosave("service", String(service?.id ?? "new"), draftValues, { onRestore: applyDraft })
+  const { discard } = autosave
 
   useEffect(() => {
     if (state && !state.error) {
+      void discard()
       setOpen(false)
     }
-  }, [state])
+  }, [state, discard])
 
   const durationsDefault = service?.durations.map((d) => `${d.minutes}, ${d.priceVnd}`).join("\n") ?? "60, 300000\n90, 450000"
 
@@ -78,7 +88,8 @@ export function ServiceFormDialog({ service }: { service?: ServiceRow }) {
           <DialogTitle>{service ? "Edit service" : "Create a service"}</DialogTitle>
           <DialogDescription>Multilingual copy, imagery, and duration/pricing options.</DialogDescription>
         </DialogHeader>
-        <form action={formAction} onChange={(event) => setDraftValues(Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string, string>)} className="flex flex-col gap-4">
+        <form ref={formRef} action={formAction} onChange={(event) => setDraftValues(Object.fromEntries(new FormData(event.currentTarget).entries()))} className="flex flex-col gap-4">
+          <AdminDraftRecoveryBanner savedAt={autosave.savedAt} onDiscard={autosave.discard} />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="nameEn">Name (English)</Label>
@@ -123,7 +134,7 @@ export function ServiceFormDialog({ service }: { service?: ServiceRow }) {
           <ImageUpload label="Service image" name="imageUrl" value={imageUrl} onChange={setImageUrl} aspect="aspect-video" />
 
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-          <DialogFooter><span className="text-sm text-muted-foreground" aria-live="polite">{autosaveStatus === "saving" ? "Saving..." : autosaveStatus === "saved" ? "Saved ✓" : autosaveStatus === "error" ? "Draft save failed" : ""}</span>
+          <DialogFooter><span className="text-sm text-muted-foreground" aria-live="polite">{autosave.status === "saving" ? "Saving..." : autosave.status === "saved" ? "Saved ✓" : autosave.status === "error" ? "Draft save failed" : ""}</span>
             <SubmitButton label={service ? "Save changes" : "Create service"} />
           </DialogFooter>
         </form>

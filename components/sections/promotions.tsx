@@ -26,14 +26,14 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
   const t = dict.promotions
 
   return (
-    <section id="promotions" className="bg-secondary py-20 md:py-28">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="promotions" className="bg-header-background py-20 md:py-24">
+      <div className="mx-auto max-w-[100rem] px-6 lg:px-16">
         <div className="max-w-2xl">
-          <p className="text-[clamp(1.75rem,3.2vw,3.5rem)] font-bold leading-tight tracking-[-0.02em] text-primary">{t.kicker}</p>
-          <h2 className="mt-3 text-balance font-sans text-4xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
+          <p className="section-heading text-accent">{t.kicker}</p>
+          <h2 className="mt-3 text-balance text-xl font-semibold leading-snug tracking-tight text-foreground sm:text-2xl">
             {t.title}
           </h2>
-          <p className="mt-3 max-w-xl text-pretty text-lg font-normal leading-relaxed text-muted-foreground">{t.subtitle}</p>
+          <p className="mt-3 max-w-xl text-pretty text-base font-normal leading-relaxed text-muted-foreground">{t.subtitle}</p>
         </div>
 
         {promotions.length > 0 ? (
@@ -47,11 +47,11 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
               return (
                 <div
                   key={promo.id}
-                  className="flex flex-col overflow-hidden border border-border bg-background"
+                  className="group flex flex-col overflow-hidden rounded-[1.25rem] border border-border/60 bg-background shadow-[0_14px_40px_-34px_rgba(92,48,20,0.55)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_22px_50px_-34px_rgba(92,48,20,0.55)]"
                 >
                   {promo.imageUrl && (
-                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-                      <Image src={promo.imageUrl} alt={name} fill loading="lazy" sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                      <Image src={promo.imageUrl} alt={name} fill loading="lazy" sizes="(min-width: 1024px) 45vw, 100vw" className="object-contain" />
                     </div>
                   )}
                   <div className="flex flex-1 flex-col justify-between p-8">

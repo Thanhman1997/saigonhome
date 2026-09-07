@@ -18,11 +18,11 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
   const visible = therapists.slice(0, visibleCount)
 
   return (
-    <section id="experts" className="bg-background py-24 lg:py-32">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8">
+    <section id="experts" className="bg-header-background py-20 lg:py-28">
+      <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="mt-4 text-balance font-sans font-bold leading-tight tracking-tight text-accent" style={{ fontSize: "clamp(2.75rem, 4.8vw, 5.25rem)" }}>{t.experts.title}</h2>
-          <p className="mt-6 text-pretty text-lg leading-relaxed text-muted-foreground">{t.experts.subtitle}</p>
+          <h2 className="mt-4 text-balance section-heading text-accent">{t.experts.title}</h2>
+          <p className="mt-6 text-pretty text-base leading-relaxed text-muted-foreground">{t.experts.subtitle}</p>
         </div>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -34,7 +34,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
             const bio = pickLocalized({ en: therapist.bioEn ?? "", ko: therapist.bioKo ?? "", vi: therapist.bioVi ?? "" }, locale)
 
             return (
-              <article key={therapist.id} className="flex flex-col overflow-hidden rounded-xl border border-border/70 bg-secondary shadow-[0_12px_40px_-30px_rgba(92,48,20,0.5)] transition-transform duration-300 hover:-translate-y-1">
+              <article key={therapist.id} className="flex flex-col overflow-hidden rounded-[1.25rem] border border-border/50 bg-secondary/70 shadow-[0_12px_36px_-32px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_44px_-30px_rgba(92,48,20,0.48)]">
                 <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
                   <Image src={therapist.photoUrl!} alt={`Therapist ${therapist.code}`} fill sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 92vw" loading="lazy" className="object-cover" />
                   <span
@@ -87,7 +87,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
                     size="lg"
                     disabled={!therapist.available}
                     onClick={() => openBooking({ therapistId: therapist.id })}
-                    className="mt-auto h-14 w-1/2 self-center bg-lotus-pink text-lg font-semibold text-lotus-pink-foreground hover:bg-lotus-pink/90 disabled:bg-muted disabled:text-muted-foreground"
+                    className="mt-auto h-12 w-1/2 self-center rounded-full bg-accent text-sm font-semibold uppercase tracking-[0.08em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground"
                   >
                     {t.experts.book}
                   </Button>

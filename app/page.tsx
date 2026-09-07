@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer"
 import { HeroSection } from "@/components/sections/hero"
 import { AboutSection } from "@/components/sections/about"
 import { ServicesSection } from "@/components/sections/services"
+import { ExperienceVideo } from "@/components/sections/experience-video"
 import { ExpertsSection } from "@/components/sections/experts"
 import { Promotions } from "@/components/sections/promotions"
 import { Membership } from "@/components/sections/membership"
@@ -30,10 +31,11 @@ import {
   getAboutContent,
   getLotusValues,
   getApprovedReviews,
+  getLatestVideoMedia,
 } from "@/lib/data"
 
 export default async function Home() {
-  const [services, servicesContent, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews] =
+  const [services, servicesContent, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews, videoUrl] =
     await Promise.all([
       getServicesWithDurations(),
       getServicesContent(),
@@ -49,6 +51,7 @@ export default async function Home() {
       getAboutContent(),
       getLotusValues(),
       getApprovedReviews(),
+      getLatestVideoMedia(),
     ])
 
   return (
@@ -57,6 +60,7 @@ export default async function Home() {
         <Header navigationSettings={navigationSettings} />
         <HeroSection hero={hero} />
         <ServicesSection services={services} featured={featuredServices} content={servicesContent} />
+        <ExperienceVideo videoUrl={videoUrl} />
         <ExpertsSection therapists={allTherapists} />
         <Promotions promotions={promotions} />
         <AboutSection about={about} values={lotusValues} />
