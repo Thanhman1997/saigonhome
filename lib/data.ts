@@ -84,8 +84,12 @@ export async function getActivePromotions() {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date())
-  const all = await db.select().from(events).where(eq(events.active, true)).orderBy(asc(events.sortOrder))
-  return all.filter((e) => (!e.startDate || e.startDate <= now) && (!e.endDate || e.endDate >= now))
+  const all = await db.select().from(events).where(eq(events.active, true)).orderBy(asc(events.sortOrder), asc(events.startDate), asc(events.id))
+  const current = all.filter((event) => (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now))
+  if (current.length > 0) return current
+
+  const nextScheduled = all.find((event) => event.startDate && event.startDate > now)
+  return nextScheduled ? [nextScheduled] : all.filter((event) => !event.endDate || event.endDate >= now)
 }
 
 export async function getMembershipPlans() {
