@@ -11,7 +11,7 @@ export function Faq({ faqs }: { faqs: FaqRow[] }) {
   const t = dict.faq
 
   return (
-    <section id="faq" className="bg-secondary py-20 md:py-28">
+    <section id="faq" className="bg-header-background py-20 md:py-28">
       <div className="mx-auto max-w-[88rem] px-6 lg:px-16">
         <div>
           <p className="text-[clamp(1.75rem,3.2vw,3.5rem)] font-bold leading-tight tracking-[-0.02em] text-primary">{t.kicker}</p>

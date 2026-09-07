@@ -26,7 +26,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
   const t = dict.promotions
 
   return (
-    <section id="promotions" className="bg-secondary py-20 md:py-24">
+    <section id="promotions" className="bg-header-background py-20 md:py-24">
       <div className="mx-auto max-w-[100rem] px-6 lg:px-16">
         <div className="max-w-2xl">
           <p className="section-heading text-accent">{t.kicker}</p>

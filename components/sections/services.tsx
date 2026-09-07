@@ -42,7 +42,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
   const localizedContent = (en: string, ko: string, vi: string) => pickLocalized({ en, ko, vi }, locale)
 
   return (
-    <section id="services" className="bg-muted py-24 lg:py-32">
+    <section id="services" className="bg-header-background py-24 lg:py-32">
       <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
         <div className="mx-auto max-w-3xl text-center">
           {t.services.kicker ? <p className="section-heading text-center text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}

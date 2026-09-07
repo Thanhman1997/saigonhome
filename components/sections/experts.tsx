@@ -18,7 +18,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
   const visible = therapists.slice(0, visibleCount)
 
   return (
-    <section id="experts" className="bg-background py-20 lg:py-28">
+    <section id="experts" className="bg-header-background py-20 lg:py-28">
       <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="mt-4 text-balance section-heading text-accent">{t.experts.title}</h2>
