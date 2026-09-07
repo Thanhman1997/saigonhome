@@ -85,11 +85,15 @@ export async function getActivePromotions() {
     day: "2-digit",
   }).format(new Date())
   const all = await db.select().from(events).where(eq(events.active, true)).orderBy(asc(events.sortOrder), asc(events.startDate), asc(events.id))
-  const current = all.filter((event) => (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now))
-  if (current.length > 0) return current
+  const seasonal = all.filter((event) => event.type === "seasonal")
+  const currentSeasonal = seasonal.filter((event) => (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now))
+  if (currentSeasonal.length > 0) return currentSeasonal
 
-  const nextScheduled = all.find((event) => event.startDate && event.startDate > now)
-  return nextScheduled ? [nextScheduled] : all.filter((event) => !event.endDate || event.endDate >= now)
+  const nextSeasonal = seasonal.find((event) => event.startDate && event.startDate > now)
+  if (nextSeasonal) return [nextSeasonal]
+
+  const current = all.filter((event) => (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now))
+  return current
 }
 
 export async function getMembershipPlans() {
