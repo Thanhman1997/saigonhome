@@ -99,8 +99,8 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
 
         {visibleCount < therapists.length && (
           <div className="mt-10 flex justify-center">
-            <Button variant="outline" size="lg" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
-              {locale === "en" ? "Show more therapists" : locale === "ko" ? "더 많은 테라피스트 보기" : "Xem thêm chuyên viên"}
+            <Button variant="outline" size="sm" className="px-4" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
+              {locale === "en" ? "Show more" : locale === "ko" ? "더보기" : "Xem thêm"}
             </Button>
           </div>
         )}
