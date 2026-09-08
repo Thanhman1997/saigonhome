@@ -27,7 +27,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
 
   return (
     <section id="promotions" className="bg-header-background py-12 md:py-16">
-      <div className="mx-auto max-w-[100rem] px-6 lg:px-16">
+      <div className="mx-auto max-w-[80rem] px-8 lg:px-20">
         <div className="max-w-2xl">
           <p className="section-heading text-accent">{t.kicker}</p>
           <h2 className="mt-3 text-balance text-xl font-semibold leading-snug tracking-tight text-foreground sm:text-2xl">
