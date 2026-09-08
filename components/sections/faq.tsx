@@ -12,7 +12,7 @@ export function Faq({ faqs }: { faqs: FaqRow[] }) {
 
   return (
     <section id="faq" className="bg-header-background py-20 md:py-28">
-      <div className="mx-auto max-w-[88rem] px-6 lg:px-16">
+      <div className="mx-auto max-w-[80rem] px-8 lg:px-20">
         <div>
           <p className="text-[clamp(1.75rem,3.2vw,3.5rem)] font-bold leading-tight tracking-[-0.02em] text-accent">{t.kicker}</p>
           <h2 className="mt-3 text-balance text-xl font-semibold leading-snug tracking-tight text-foreground sm:text-2xl">

@@ -31,7 +31,7 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
 
   return (
     <section id="about" className="bg-header-background py-20 lg:py-28">
-      <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
+      <div className="mx-auto max-w-[80rem] px-8 lg:px-20">
         <div className="mx-auto max-w-3xl text-center">
           <Image src="/images/lotus-philosophy-logo.png" alt="Lotus Wellness" width={720} height={420} className="mx-auto mb-3 h-auto w-48 object-contain mix-blend-multiply sm:w-56 lg:w-64" loading="lazy" />
           <h2 className="section-heading mt-3 text-balance font-serif text-accent">{title}</h2>

@@ -24,7 +24,7 @@ export function HeroSection({ hero }: { hero: Hero }) {
 
   return (
     <section id="top" className="overflow-hidden bg-card text-foreground">
-      <div className="mx-auto grid max-w-[96rem] px-3 sm:px-5 lg:px-10 lg:grid-cols-[.85fr_1.15fr]">
+      <div className="mx-auto grid max-w-[80rem] px-8 lg:grid-cols-[.85fr_1.15fr]">
         <div className="flex flex-col justify-center px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-8">
           {content.visible && <>
             <div className={`reveal-up mb-5 flex items-center gap-3 font-sans text-base font-medium tracking-[0.08em] text-accent ${locale === "ko" ? "font-korean-sans not-italic tracking-wide" : ""}`}><ShieldCheck className="size-4" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
