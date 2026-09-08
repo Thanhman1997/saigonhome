@@ -11,8 +11,8 @@ export const dictionary = {
     nav: { home: "Home", services: "Services", experts: "KTV", reviews: "Reviews", faq: "FAQ", contact: "Contact", book: "Book now" },
     hero: {
       kicker: "Excellence · Convenience · Affordability · Privacy",
-      titleLine1: "Wellness,",
-      titleLine2: "delivered to your door.",
+      titleLine1: "Wellness Massage,",
+      titleLine2: "Delivered to Your Door.",
       subtitle: "Professional wellness, brought to you — private, safe, and deeply relaxing.",
       cta: "BOOKING",
       ctaSecondary: "Explore services",
@@ -165,8 +165,8 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     nav: { home: "홈", services: "서비스", experts: "마사지사", reviews: "후기", faq: "FAQ", contact: "문의", book: "예약하기" },
     hero: {
       kicker: "탁월함 · 편리함 · 합리적인 가격 · 프라이버시",
-      titleLine1: "웰니스를,",
-      titleLine2: "당신의 문 앞으로.",
+titleLine1: "웰니스 마사지,",
+    titleLine2: "당신이 머무는 곳으로.",
       subtitle: "전문적인 웰니스 케어를 당신의 공간에서 — 프라이빗하고 안전하게, 온전한 휴식을 선사합니다.",
       cta: "예약하기",
       ctaSecondary: "서비스 보기",
@@ -289,8 +289,8 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     nav: { home: "Trang chủ", services: "Dịch vụ", experts: "KTV", reviews: "Đánh giá", faq: "Hỏi đáp", contact: "Liên hệ", book: "ĐẶT LỊCH" },
     hero: {
       kicker: "Xuất Sắc · Tiện Lợi · Hợp Lý · Riêng Tư",
-      titleLine1: "Chăm sóc sức khỏe,",
-      titleLine2: "đến ngay tận cửa.",
+      titleLine1: "Massage chuyên nghiệp,",
+      titleLine2: "tận nơi bạn ở.",
       subtitle: "Chăm sóc chuyên nghiệp, tận nơi — riêng tư, an toàn và trọn vẹn thư giãn.",
       cta: "ĐẶT LỊCH NGAY",
       ctaSecondary: "Khám phá dịch v����",
