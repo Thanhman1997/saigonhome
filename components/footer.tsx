@@ -17,21 +17,21 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
     <footer className="border-t border-border/70 bg-secondary px-5 py-12 font-sans text-base text-foreground lg:px-10 lg:py-14">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 md:flex-row md:items-start md:gap-12 lg:gap-20">
         <div className="flex-1 text-left">
-          <h2 className="font-sans text-[1.8rem] font-bold leading-tight tracking-[0.08em] text-guiding-pink">{footerCopy.about}</h2>
-          <nav className="mt-3 flex flex-col items-start gap-1.5 text-left text-xl font-light leading-8 text-muted-foreground" aria-label="About navigation">
+          <h2 className="font-sans text-[2rem] font-bold leading-tight tracking-[0.08em] text-guiding-pink">{footerCopy.about}</h2>
+          <nav className="mt-3 flex flex-col items-start gap-1.5 text-left text-lg font-light leading-7 text-muted-foreground" aria-label="About navigation">
             {footerCopy.aboutLinks.map((label, index) => <a key={label} href={["#about", "#experts", "/reviews", "#faq"][index]} className="transition-colors hover:text-accent">{label}</a>)}
           </nav>
         </div>
         <div className="flex-1 text-left">
-          <h2 className="font-sans text-[1.8rem] font-bold leading-tight tracking-[0.08em] text-guiding-pink">{footerCopy.services}</h2>
-          <nav className="mt-3 flex flex-col items-start gap-1.5 text-left text-xl font-light leading-8 text-muted-foreground" aria-label="Services navigation">
+          <h2 className="font-sans text-[2rem] font-bold leading-tight tracking-[0.08em] text-guiding-pink">{footerCopy.services}</h2>
+          <nav className="mt-3 flex flex-col items-start gap-1.5 text-left text-lg font-light leading-7 text-muted-foreground" aria-label="Services navigation">
             {footerCopy.serviceLinks.map((label) => <a key={label} href="#services" className="transition-colors hover:text-accent">{label}</a>)}
           </nav>
         </div>
         <div className="flex-1 text-left text-foreground">
-          <h2 className="font-sans text-[1.8rem] font-bold leading-tight tracking-[0.08em] text-guiding-pink">{footerCopy.working}</h2>
+          <h2 className="font-sans text-[2rem] font-bold leading-tight tracking-[0.08em] text-guiding-pink">{footerCopy.working}</h2>
           <div className="mt-3 flex items-start">
-            <div className="flex flex-col gap-1 text-left text-xl font-light leading-8 text-muted-foreground">
+            <div className="flex flex-col gap-1 text-left text-lg font-light leading-7 text-muted-foreground">
               <div>
                 <p className="font-medium text-foreground">{footerCopy.open}</p>
                 <p>7:00 AM – 11:00 PM</p>
@@ -43,7 +43,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
             </div>
           </div>
           <div className="mt-4 flex items-start">
-            <p className="text-left text-xl font-light leading-8 text-muted-foreground">{footerCopy.note.split("\n").map((line) => <span key={line}>{line}<br /></span>)}</p>
+            <p className="text-left text-lg font-light leading-7 text-muted-foreground">{footerCopy.note.split("\n").map((line) => <span key={line}>{line}<br /></span>)}</p>
           </div>
         </div>
       </div>
