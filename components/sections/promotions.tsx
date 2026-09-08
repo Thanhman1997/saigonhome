@@ -26,8 +26,8 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
   const t = dict.promotions
 
   return (
-    <section id="promotions" className="bg-header-background py-20 md:py-24">
-      <div className="mx-auto max-w-[100rem] px-6 lg:px-16">
+    <section id="promotions" className="bg-header-background py-12 md:py-16">
+      <div className="mx-auto max-w-[80rem] px-8 lg:px-20">
         <div className="max-w-2xl">
           <p className="section-heading text-accent">{t.kicker}</p>
           <h2 className="mt-3 text-balance text-xl font-semibold leading-snug tracking-tight text-foreground sm:text-2xl">
@@ -37,7 +37,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
         </div>
 
         {promotions.length > 0 ? (
-          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {promotions.map((promo) => {
               const name = pickLocalized({ en: promo.nameEn, ko: promo.nameKo, vi: promo.nameVi }, locale)
               const desc = pickLocalized({ en: promo.descEn, ko: promo.descKo, vi: promo.descVi }, locale)
@@ -50,11 +50,11 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
                   className="group flex flex-col overflow-hidden rounded-[1.25rem] border border-border/60 bg-background shadow-[0_14px_40px_-34px_rgba(92,48,20,0.55)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_22px_50px_-34px_rgba(92,48,20,0.55)]"
                 >
                   {promo.imageUrl && (
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                       <Image src={promo.imageUrl} alt={name} fill loading="lazy" sizes="(min-width: 1024px) 45vw, 100vw" className="object-contain" />
                     </div>
                   )}
-                  <div className="flex flex-1 flex-col justify-between p-8">
+                  <div className="flex flex-1 flex-col justify-between p-4">
                     <div>
                       <div className="flex items-center justify-between gap-4">
                         <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
@@ -64,8 +64,8 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
                           </span>
                         )}
                       </div>
-                      <h3 className="mt-6 font-serif text-2xl text-foreground">{name}</h3>
-                      <p className="mt-3 leading-relaxed text-muted-foreground">{desc}</p>
+                      <h3 className="mt-4 font-serif text-xl text-foreground">{name}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
                     </div>
                     {isSeasonal && promo.endDate && (
                       <p className="mt-6 text-xs uppercase tracking-wide text-primary">

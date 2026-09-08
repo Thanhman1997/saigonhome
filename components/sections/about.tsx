@@ -31,12 +31,12 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
 
   return (
     <section id="about" className="bg-header-background py-20 lg:py-28">
-      <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
+      <div className="mx-auto max-w-[80rem] px-8 lg:px-20">
         <div className="mx-auto max-w-3xl text-center">
           <Image src="/images/lotus-philosophy-logo.png" alt="Lotus Wellness" width={720} height={420} className="mx-auto mb-3 h-auto w-48 object-contain mix-blend-multiply sm:w-56 lg:w-64" loading="lazy" />
           <h2 className="section-heading mt-3 text-balance font-serif text-accent">{title}</h2>
           <div className="mt-8 flex flex-col gap-5 text-left">
-            {body.map((paragraph, idx) => <p key={idx} className="text-pretty text-lg leading-8 text-foreground/80 first:text-lg first:font-medium first:text-foreground sm:text-xl">{paragraph}</p>)}
+            {body.map((paragraph, idx) => <p key={idx} className="text-pretty text-base leading-7 text-foreground/80 sm:text-lg">{paragraph}</p>)}
           </div>
         </div>
         <div className="mt-16 grid items-stretch gap-6 lg:grid-cols-[1.4fr_.6fr]">

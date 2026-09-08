@@ -58,8 +58,8 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     { menuKey: "home", labelEn: "HOME", labelVi: "TRANG CHỦ", labelKo: "홈", href: "#top", visible: true },
     { menuKey: "services", labelEn: t.nav.services, labelVi: t.nav.services, labelKo: t.nav.services, href: "#services", visible: true },
     { menuKey: "experts", labelEn: t.nav.experts, labelVi: t.nav.experts, labelKo: t.nav.experts, href: "#experts", visible: true },
-    { menuKey: "faq", labelEn: t.nav.faq, labelVi: t.nav.faq, labelKo: t.nav.faq, href: "#faq", visible: true },
     { menuKey: "reviews", labelEn: t.nav.reviews, labelVi: t.nav.reviews, labelKo: t.nav.reviews, href: "#reviews", visible: true },
+    { menuKey: "faq", labelEn: t.nav.faq, labelVi: t.nav.faq, labelKo: t.nav.faq, href: "#faq", visible: true },
     { menuKey: "contact", labelEn: t.nav.contact, labelVi: t.nav.contact, labelKo: t.nav.contact, href: "#contact", visible: true },
   ]
   const allowedMenuKeys = new Set(["home", "services", "experts", "contact", "faq", "reviews"])
@@ -70,9 +70,9 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-[#d96b8a] bg-header-background backdrop-blur-md">
-      <div className="mx-auto flex h-20 min-w-0 w-full max-w-[96rem] items-center justify-between gap-2 px-3 sm:h-24 sm:px-5 lg:h-24 lg:px-12">
+      <div className="mx-auto flex h-20 min-w-0 w-full max-w-[96rem] items-center justify-between gap-2 px-3 sm:h-24 sm:px-5 lg:h-24 lg:pr-2 lg:pl-12">
         <a href="#top" onClick={(event) => handleHashNavigation(event, "#top")} className="group flex items-center" aria-label="Lotus Wellness home">
-          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-12 max-w-[44vw] w-auto object-contain mix-blend-multiply sm:h-14 sm:max-w-none lg:h-20" />
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-14 max-w-[44vw] w-auto object-contain mix-blend-multiply sm:h-16 sm:max-w-none lg:h-24" />
         </a>
         <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Primary navigation">
           {links.map((link) => (
@@ -99,7 +99,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
-        <div className="hidden lg:flex">
+        <div className="hidden translate-x-4 lg:flex">
           <LanguageSwitcher />
         </div>
       </div>

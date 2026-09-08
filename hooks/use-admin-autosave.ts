@@ -18,36 +18,68 @@ export function useAdminAutosave<T extends Record<string, unknown>>(
   const latest = useRef(values)
   const requestId = useRef(0)
   const hydrated = useRef(false)
-  const onRestore = options.onRestore
+  const onRestoreRef = useRef(options.onRestore)
+  const serverUpdatedAtRef = useRef(options.serverUpdatedAt)
   const delay = options.delay ?? 700
 
   useEffect(() => { latest.current = values }, [values])
+  useEffect(() => { onRestoreRef.current = options.onRestore }, [options.onRestore])
+  useEffect(() => { serverUpdatedAtRef.current = options.serverUpdatedAt }, [options.serverUpdatedAt])
 
   useEffect(() => {
     let active = true
+    hydrated.current = false
+    requestId.current += 1
     setStatus("loading")
+    setDraft(null)
+    setSavedAt(null)
+
     loadAdminDraft(editor, identity, options.serverUpdatedAt).then((result) => {
       if (!active) return
-      if (result) { setDraft(result); setSavedAt(result.savedAt); onRestore?.(result.values as T) }
-      setStatus(result ? "saved" : "idle")
+      if (result) {
+        setDraft(result)
+        setSavedAt(result.savedAt)
+        onRestoreRef.current?.(result.values as T)
+      }
       hydrated.current = true
-    }).catch(() => { if (active) { setStatus("error"); hydrated.current = true } })
-    return () => { active = false }
-  }, [editor, identity, options.serverUpdatedAt, onRestore])
+      setStatus(result ? "saved" : "idle")
+    }).catch(() => {
+      if (!active) return
+      hydrated.current = true
+      setStatus("error")
+    })
+
+    return () => {
+      active = false
+      requestId.current += 1
+    }
+  }, [editor, identity, options.serverUpdatedAt])
 
   useEffect(() => {
     if (!hydrated.current) return
-    const id = window.setTimeout(async () => {
+
+    let active = true
+    const timeoutId = window.setTimeout(() => {
       const currentId = ++requestId.current
       setStatus("saving")
-      try {
-        const result = await saveAdminDraft(editor, identity, latest.current, options.serverUpdatedAt)
-        if (currentId !== requestId.current) return
-        setSavedAt(result.savedAt); setStatus("saved")
-      } catch { if (currentId === requestId.current) setStatus("error") }
+
+      void saveAdminDraft(editor, identity, latest.current, serverUpdatedAtRef.current)
+        .then((result) => {
+          if (!active || currentId !== requestId.current) return
+          setSavedAt(result.savedAt)
+          setStatus("saved")
+        })
+        .catch(() => {
+          if (active && currentId === requestId.current) setStatus("error")
+        })
     }, delay)
-    return () => window.clearTimeout(id)
-  }, [values, editor, identity, options.serverUpdatedAt, delay])
+
+    return () => {
+      active = false
+      window.clearTimeout(timeoutId)
+      requestId.current += 1
+    }
+  }, [values, editor, identity, delay])
 
   useEffect(() => {
     const guard = (event: BeforeUnloadEvent) => { if (status === "saving") { event.preventDefault(); event.returnValue = "" } }

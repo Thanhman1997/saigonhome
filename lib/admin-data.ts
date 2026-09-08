@@ -65,6 +65,13 @@ export async function getContactInfoAdmin() {
   return rows[0] ?? null
 }
 
+export async function getExperienceVideoAdmin() {
+  const rows = await db.select().from(siteContent).where(eq(siteContent.key, "experience_video")).limit(1)
+  const value = rows[0]?.valueEn
+  if (!value) return null
+  try { return JSON.parse(value) as { videoUrl: string; thumbnailUrl: string | null; aspectRatio: number } } catch { return null }
+}
+
 export async function getAllTherapistsAdmin() {
   return db.select().from(therapists).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
@@ -96,8 +103,12 @@ export async function getNavigationSettings() {
 }
 
 export async function getDesignSettingsAdmin() {
-  const rows = await db.select().from(designSettings).limit(1)
-  return rows[0] ?? null
+  try {
+    const rows = await db.select().from(designSettings).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export async function getBookingSettingsAdmin() {

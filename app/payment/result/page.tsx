@@ -4,6 +4,13 @@ import { bookings } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { getCheckoutPaymentStatus } from "@/lib/payments/stripe-gateway"
 import { PaymentButton } from "@/components/booking/payment-button"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Payment Result | Lotus Wellness",
+  description: "View the status of your Lotus Wellness booking payment.",
+  robots: { index: false, follow: false },
+}
 
 export default async function PaymentResult({ searchParams }: { searchParams: Promise<{ session_id?: string; cancelled?: string; order_id?: string; reference?: string }> }) {
   const params = await searchParams

@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import { ImagePlus, Library, Loader2, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -36,6 +36,14 @@ export function ImageUpload({
   const [libraryImages, setLibraryImages] = useState<LibraryImage[]>([])
   const [search, setSearch] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   async function handleFile(file: File) {
     setError(null)
@@ -46,11 +54,12 @@ export function ImageUpload({
       const res = await fetch("/api/admin/upload", { method: "POST", body: formData })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? "Upload failed")
+      if (!isMountedRef.current) return
       onChange(data.url)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed")
+      if (isMountedRef.current) setError(e instanceof Error ? e.message : "Upload failed")
     } finally {
-      setUploading(false)
+      if (isMountedRef.current) setUploading(false)
     }
   }
 
@@ -62,11 +71,11 @@ export function ImageUpload({
       const res = await fetch("/api/admin/media", { cache: "no-store" })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? "Could not load media library")
-      setLibraryImages(data.files)
+      if (isMountedRef.current) setLibraryImages(data.files)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load media library")
+      if (isMountedRef.current) setError(e instanceof Error ? e.message : "Could not load media library")
     } finally {
-      setLoadingLibrary(false)
+      if (isMountedRef.current) setLoadingLibrary(false)
     }
   }
 
@@ -76,9 +85,9 @@ export function ImageUpload({
       const query = value.trim() ? `?search=${encodeURIComponent(value.trim())}` : ""
       const res = await fetch(`/api/admin/media${query}`, { cache: "no-store" })
       const data = await res.json()
-      if (res.ok) setLibraryImages(data.files)
+      if (res.ok && isMountedRef.current) setLibraryImages(data.files)
     } catch {
-      setError("Could not search media library")
+      if (isMountedRef.current) setError("Could not search media library")
     }
   }
 

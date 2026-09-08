@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { getServiceBySlug, getServicesWithDurations } from "@/lib/data"
+import { getServiceBySlug } from "@/lib/data"
 import { formatVnd } from "@/lib/pricing"
 import { ServiceBookingCta } from "@/components/sections/service-booking-cta"
 import { BookingProvider } from "@/lib/booking-context"
@@ -11,10 +11,9 @@ import { getAvailableTherapists } from "@/lib/data"
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
 
-export async function generateStaticParams() {
-  const services = await getServicesWithDurations()
-  return services.map((service) => ({ slug: service.slug }))
-}
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
