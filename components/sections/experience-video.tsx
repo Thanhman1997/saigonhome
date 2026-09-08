@@ -23,7 +23,7 @@ export function ExperienceVideo({ videoUrl }: { videoUrl?: string | null }) {
           </p>
         </div>
 
-        <div className="group relative w-full max-w-full justify-self-end overflow-hidden rounded-[1.5rem] border border-border/70 bg-secondary p-1.5 shadow-[0_24px_70px_-42px_rgba(92,48,20,0.65)] lg:w-1/6">
+        <div className="group relative w-full max-w-full justify-self-end overflow-hidden rounded-[1.5rem] border border-border/70 bg-secondary p-1.5 shadow-[0_24px_70px_-42px_rgba(92,48,20,0.65)] lg:w-1/3">
           <div className="relative aspect-video overflow-hidden rounded-[1.5rem] bg-secondary">
             <Image
               src="/images/service-deep-tissue.png"
