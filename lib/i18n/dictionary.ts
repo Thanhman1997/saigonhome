@@ -29,7 +29,7 @@ export const dictionary = {
       ],
       values: ["CONVENIENCE", "PRIVACY", "HEALING", "PROFESSIONALISM"],
     },
-    experienceVideo: { kicker: "The Lotus Experience", title: "A softer way to come back to yourself.", description: "Take a quiet glimpse into the care, calm, and skilled touch that define every Lotus Wellness visit.", duration: "A 50-second moment of calm", watchLabel: "Watch the experience", posterAlt: "A calming massage experience at Lotus Wellness" },
+    experienceVideo: { kicker: "The Lotus Experience", title: "A softer way to come back to yourself.", description: "Experience the care, tranquility, and expert touch in every visit to Lotus Wellness.", duration: "A 50-second moment of calm", watchLabel: "Watch the experience", posterAlt: "A calming massage experience at Lotus Wellness" },
     services: {
       travelerRecover: "Traveler Recover Massage",
       kicker: "Our Services",
@@ -183,7 +183,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       ],
       values: ["편리함", "프라이버시", "치유", "전문성"],
     },
-  experienceVideo: { kicker: "롯데스 웰니스의 경험", title: "나 자신에게 돌아오는 부드러운 시간.", description: "롯데스 웰니스의 세심한 케어와 편안한 손길을 담은 짧은 순간을 만나보세요.", duration: "50초의 평온한 순간", watchLabel: "경험 영상 보기", posterAlt: "롯데스 웰니스의 편안한 마사지 경험" },
+  experienceVideo: { kicker: "롯데스 웰니스의 경험", title: "나 자신에게 돌아오는 부드러운 시간.", description: "Lotus Wellness에서 매 순간 느껴지는 정성, 평온함, 그리고 전문가의 손길을 경험해 보세요.", duration: "50초의 평온한 순간", watchLabel: "경험 영상 보기", posterAlt: "롯데스 웰니스의 편안한 마사지 경험" },
   services: {
   travelerRecover: "Traveler Recover 마사지",
       kicker: "우리서비스",
@@ -307,7 +307,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       ],
       values: ["TIỆN LỢI", "RIÊNG TƯ", "CHỮA LÀNH", "CHUYÊN NGHIỆP"],
     },
-    experienceVideo: { kicker: "Trải nghiệm Lotus", title: "Một cách dịu dàng để trở về với chính mình.", description: "Cùng nhìn thoáng qua sự tận tâm, bình yên và đôi tay chuyên nghiệp trong mỗi chuyến ghé thăm Lotus Wellness.", duration: "50 giây thư thái", watchLabel: "Xem trải nghiệm", posterAlt: "Trải nghiệm massage thư giãn tại Lotus Wellness" },
+    experienceVideo: { kicker: "Trải nghiệm Lotus", title: "Một cách dịu dàng để trở về với chính mình.", description: "Cùng cảm nhận sự tận tâm, bình yên và đôi tay chuyên nghiệp trong từng trải nghiệm tại Lotus Wellness.", duration: "50 giây thư thái", watchLabel: "Xem trải nghiệm", posterAlt: "Trải nghiệm massage thư giãn tại Lotus Wellness" },
     services: {
       travelerRecover: "Traveler Recover Massage",
       kicker: "Các Liệu Trình Trị Liệu",
