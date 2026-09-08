@@ -101,13 +101,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const sectionStyleCss = sectionStyles.map((style) => `#${style.sectionKey} h1,#${style.sectionKey} h2,#${style.sectionKey} h3{color:${safe(style.titleColor)};font-size:${safe(style.titleSize === "sm" ? "1.5rem" : style.titleSize === "lg" ? "3rem" : "2rem")};text-align:${style.sectionKey === "services" || style.sectionKey === "experts" ? "center" : "inherit"}}#${style.sectionKey} p{color:${safe(style.bodyColor)};font-size:${safe(style.bodySize === "sm" ? "0.875rem" : style.bodySize === "lg" ? "1.25rem" : "1rem")}}`).join("")
 
   return (
-    <html lang="en" data-scroll-behavior="smooth" className="bg-background" suppressHydrationWarning>
+    <html lang={defaultLocale} data-scroll-behavior="smooth" className="bg-background" suppressHydrationWarning>
       <body
         className={`${dmSans.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${notoSans.variable} ${notoSansKr.variable} ${notoSerifKr.variable} ${playfair.variable} ${dmSerifDisplay.variable} ${lora.variable} ${manrope.variable} ${inter.variable} font-sans antialiased`}
       >
         <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
         <style id="section-styles" dangerouslySetInnerHTML={{ __html: sectionStyleCss }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([
+          { "@context": "https://schema.org", "@type": "WebSite", name: "Lotus Wellness", url: siteUrl },
+          {
           "@context": "https://schema.org",
           "@type": "HealthAndBeautyBusiness",
           name: "Lotus Wellness",
@@ -117,7 +119,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           ...(contactInfo?.addressEn ? { address: { "@type": "PostalAddress", streetAddress: contactInfo.addressEn, addressCountry: "VN" } } : {}),
           areaServed: "Ho Chi Minh City",
           priceRange: "$$",
-        }) }} />
+          }
+        ]) }} />
         <LanguageProvider defaultLocale={defaultLocale}>{children}</LanguageProvider>
         <Analytics />
       </body>
