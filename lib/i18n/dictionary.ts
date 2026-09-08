@@ -54,7 +54,7 @@ export const dictionary = {
     promotions: {
       kicker: "Promotions",
       title: "Current offers",
-      subtitle: "Save automatically — no code required.",
+      subtitle: "Don’t miss our latest promotions.",
       until: "Until",
       none: "No active promotions right now — check back soon.",
       seasonalBadge: "Limited time",
@@ -208,7 +208,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     promotions: {
       kicker: "프로모션",
       title: "현재 진행 중인 혜택",
-      subtitle: "코드 없이 자동으로 할인이 적용됩니다.",
+      subtitle: "새로운 프로모션을 놓치지 마세요.",
       until: "종료일",
       none: "현재 진행 중인 프로모션이 없습니다 — 곧 다시 확인해주세요.",
       seasonalBadge: "기간 한정",
@@ -293,7 +293,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       titleLine2: "đến ngay tận cửa.",
       subtitle: "Dịch vụ massage chuyên nghiệp tận nơi, đến thẳng phòng khách sạn, căn hộ hoặc nơi lưu trú của bạn — nhẹ nhàng, an toàn và tuyệt vời.",
       cta: "ĐẶT LỊCH NGAY",
-      ctaSecondary: "Khám phá dịch v���",
+      ctaSecondary: "Khám phá dịch v����",
       hours: "Giờ nhận đặt lịch: 9h sáng–1h sáng",
     },
     about: {
@@ -332,7 +332,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     promotions: {
       kicker: "Khuyến mãi",
       title: "Ưu đãi hiện tại",
-      subtitle: "Tự động tiết kiệm — không cần mã khuyến mãi.",
+      subtitle: "Đừng bỏ lỡ các chương trình khuyến mãi mới nhất.",
       until: "Đến hết",
       none: "Hiện không có khuyến mãi nào — hãy quay lại sau.",
       seasonalBadge: "Giới hạn thời gian",
