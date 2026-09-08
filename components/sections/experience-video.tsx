@@ -9,7 +9,7 @@ export function ExperienceVideo({ videoUrl }: { videoUrl?: string | null }) {
 
   return (
     <section className="experience-video border-y border-border/70 bg-header-background py-24 lg:py-32" aria-labelledby="experience-video-title">
-      <div className="mx-auto grid max-w-[100rem] gap-10 px-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:gap-20 lg:px-16">
+      <div className="mx-auto grid max-w-[100rem] gap-10 px-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:gap-10 lg:px-16">
         <div className="max-w-xl">
           <div className="mb-6 flex -translate-y-1 items-center gap-3 whitespace-nowrap section-heading text-accent" style={{ fontSize: "clamp(1.7rem, 3.2vw, 2.9rem)" }}>
             <Sparkles className="h-4 w-4" aria-hidden="true" />
