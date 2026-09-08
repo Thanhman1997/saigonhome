@@ -50,11 +50,11 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
                   className="group flex flex-col overflow-hidden rounded-[1.25rem] border border-border/60 bg-background shadow-[0_14px_40px_-34px_rgba(92,48,20,0.55)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_22px_50px_-34px_rgba(92,48,20,0.55)]"
                 >
                   {promo.imageUrl && (
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                       <Image src={promo.imageUrl} alt={name} fill loading="lazy" sizes="(min-width: 1024px) 45vw, 100vw" className="object-contain" />
                     </div>
                   )}
-                  <div className="flex flex-1 flex-col justify-between p-5">
+                  <div className="flex flex-1 flex-col justify-between p-4">
                     <div>
                       <div className="flex items-center justify-between gap-4">
                         <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
