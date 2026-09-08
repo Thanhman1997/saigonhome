@@ -65,8 +65,8 @@ export default async function Home() {
         <Promotions promotions={promotions} />
         <AboutSection about={about} values={lotusValues} />
         <Membership plans={plans} />
-        <Faq faqs={faqs} />
         <ReviewsSection reviews={reviews} />
+        <Faq faqs={faqs} />
         <ContactSection contactInfo={contactInfo} />
         <Footer contactInfo={contactInfo} />
       </main>
