@@ -18,14 +18,14 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
   const visible = therapists.slice(0, visibleCount)
 
   return (
-    <section id="experts" className="bg-header-background py-20 lg:py-28">
+    <section id="experts" className="bg-header-background py-10 lg:py-14">
       <div className="mx-auto max-w-[100rem] px-5 lg:px-16">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="mt-4 text-balance section-heading text-accent">{t.experts.title}</h2>
           <p className="mt-6 text-pretty text-base leading-relaxed text-muted-foreground">{t.experts.subtitle}</p>
         </div>
 
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {visible.map((therapist) => {
             const location = pickLocalized(
               { en: therapist.locationEn ?? "", ko: therapist.locationKo ?? "", vi: therapist.locationVi ?? "" },
@@ -47,7 +47,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
                   </span>
                 </div>
 
-                <div className="flex flex-1 flex-col gap-3 p-5">
+                <div className="flex flex-1 flex-col gap-2 p-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-xl">{therapist.code}</h3>
                     {therapist.experienceYears != null && (
@@ -87,7 +87,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
                     size="lg"
                     disabled={!therapist.available}
                     onClick={() => openBooking({ therapistId: therapist.id })}
-                    className={`mt-auto h-12 ${locale === "ko" ? "w-2/5 font-korean-sans" : "w-1/2"} self-center rounded-full bg-accent text-sm font-semibold uppercase tracking-[0.08em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground`}
+                    className={`mt-auto h-9 ${locale === "ko" ? "w-2/5 font-korean-sans" : "w-1/2"} self-center rounded-full bg-accent text-sm font-semibold uppercase tracking-[0.08em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground`}
                   >
                     {t.experts.book}
                   </Button>
