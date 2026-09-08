@@ -68,7 +68,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                     <h3 className={`font-sans leading-tight ${locale === "en" || locale === "vi" ? "text-xl font-semibold" : "text-lg font-medium"}`}>{name}</h3>
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{desc}</p>
                     <div className="mt-1 flex flex-col gap-0 border-t border-border pt-0.5">
-                      {service.durations.map((d) => <div key={d.id} className="flex items-center justify-between text-[11px] leading-[0.7rem]"><span className="text-muted-foreground">{d.minutes} {t.services.minutes}</span><span className="font-medium">{formatVnd(d.priceVnd)}</span></div>)}
+                      {service.durations.map((d) => <div key={d.id} className="grid grid-cols-[1fr_auto] items-center gap-4 text-[11px] leading-[0.7rem]"><span className="text-muted-foreground">{d.minutes} {t.services.minutes}</span><span className="text-right font-medium">{formatVnd(d.priceVnd)}</span></div>)}
                     </div>
                   </div>
                 </div>
