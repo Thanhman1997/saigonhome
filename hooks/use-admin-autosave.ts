@@ -57,9 +57,10 @@ export function useAdminAutosave<T extends Record<string, unknown>>(
 
   useEffect(() => {
     if (!hydrated.current) return
+
+    let active = true
     const timeoutId = window.setTimeout(() => {
       const currentId = ++requestId.current
-      let active = true
       setStatus("saving")
 
       void saveAdminDraft(editor, identity, latest.current, serverUpdatedAtRef.current)
@@ -71,11 +72,13 @@ export function useAdminAutosave<T extends Record<string, unknown>>(
         .catch(() => {
           if (active && currentId === requestId.current) setStatus("error")
         })
-
-      return () => { active = false }
     }, delay)
 
-    return () => window.clearTimeout(timeoutId)
+    return () => {
+      active = false
+      window.clearTimeout(timeoutId)
+      requestId.current += 1
+    }
   }, [values, editor, identity, delay])
 
   useEffect(() => {
