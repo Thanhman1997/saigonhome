@@ -70,7 +70,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-[#d96b8a] bg-header-background backdrop-blur-md">
-      <div className="mx-auto flex h-20 min-w-0 w-full max-w-[96rem] items-center justify-between gap-2 px-3 sm:h-24 sm:px-5 lg:h-24 lg:px-12">
+      <div className="mx-auto flex h-20 min-w-0 w-full max-w-[96rem] items-center justify-between gap-2 px-3 sm:h-24 sm:px-5 lg:h-24 lg:pr-2 lg:pl-12">
         <a href="#top" onClick={(event) => handleHashNavigation(event, "#top")} className="group flex items-center" aria-label="Lotus Wellness home">
           <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-14 max-w-[44vw] w-auto object-contain mix-blend-multiply sm:h-16 sm:max-w-none lg:h-24" />
         </a>
@@ -99,7 +99,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
-        <div className="hidden translate-x-4 lg:flex">
+        <div className="hidden lg:flex">
           <LanguageSwitcher />
         </div>
       </div>
