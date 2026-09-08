@@ -44,7 +44,7 @@ export const dictionary = {
     experts: {
       kicker: "Massage Experts",
       title: "Meet Our Therapists",
-      subtitle: "40 professional, background-checked therapists ready to travel to you.",
+      subtitle: "",
       years: "yrs exp.",
       book: "Book",
       viewProfile: "View profile",
@@ -198,7 +198,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     experts: {
       kicker: "마사지 전문가",
       title: "테라피스트 소개",
-      subtitle: "신원 확인을 ����� 40명의 전문 테라피스트가 방문합니다.",
+      subtitle: "",
       years: "년 경력",
       book: "예약",
       viewProfile: "프로필 보기",
@@ -322,7 +322,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
     experts: {
       kicker: "Chuyên gia massage",
       title: "Kỹ Thuật Viên",
-      subtitle: "40 chuyên viên chuyên nghiệp, đã được kiểm tra lý lịch, sẵn sàng đến với bạn.",
+      subtitle: "",
       years: "năm kinh nghiệm",
       book: "ĐẶT LỊCH",
       viewProfile: "Xem hồ sơ",
