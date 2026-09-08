@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react"
 import Image from "next/image"
 import { Check, Copy, ImagePlus, Loader2, Trash2, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { deleteMediaFile } from "@/app/actions/media"
+import { deleteMediaFile, saveExperienceVideo } from "@/app/actions/media"
 
 export type MediaFile = {
   url: string
@@ -121,11 +121,28 @@ function MediaCard({ file }: { file: MediaFile }) {
   )
 }
 
-export function MediaGallery({ files }: { files: MediaFile[] }) {
+export function MediaGallery({ files, experienceVideo }: { files: MediaFile[]; experienceVideo: { videoUrl: string; thumbnailUrl: string | null; aspectRatio: number } | null }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedVideo, setSelectedVideo] = useState(experienceVideo?.videoUrl ?? "")
+  const [selectedThumbnail, setSelectedThumbnail] = useState(experienceVideo?.thumbnailUrl ?? "")
+  const [aspectRatio, setAspectRatio] = useState(experienceVideo?.aspectRatio ?? 16 / 9)
+  const [saving, setSaving] = useState(false)
+
+  const videos = files.filter((file) => file.contentType.startsWith("video/"))
+  const images = files.filter((file) => file.contentType.startsWith("image/"))
+
+  async function saveVideoSettings() {
+    if (!selectedVideo || !selectedThumbnail) return setError("Select both a video and a thumbnail.")
+    setSaving(true)
+    setError(null)
+    try {
+      await saveExperienceVideo({ videoUrl: selectedVideo, thumbnailUrl: selectedThumbnail, aspectRatio })
+      window.location.reload()
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not save video settings") } finally { setSaving(false) }
+  }
 
   async function handleFiles(fileList: FileList) {
     setError(null)
@@ -200,6 +217,22 @@ export function MediaGallery({ files }: { files: MediaFile[] }) {
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {videos.length > 0 && (
+        <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
+          <div>
+            <h2 className="font-medium text-foreground">Experience video</h2>
+            <p className="text-sm text-muted-foreground">Choose a video and thumbnail. The display ratio follows the uploaded video.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {videos.map((file) => <Button key={file.url} type="button" size="sm" variant={selectedVideo === file.url ? "default" : "outline"} onClick={() => { setSelectedVideo(file.url); const probe = document.createElement("video"); probe.onloadedmetadata = () => probe.videoWidth && setAspectRatio(probe.videoWidth / probe.videoHeight); probe.src = file.url }}>{file.pathname.split("/").pop()}</Button>)}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {images.map((file) => <Button key={file.url} type="button" size="sm" variant={selectedThumbnail === file.url ? "default" : "outline"} onClick={() => setSelectedThumbnail(file.url)}>{file.pathname.split("/").pop()}</Button>)}
+          </div>
+          <Button type="button" size="sm" className="self-start" disabled={saving} onClick={saveVideoSettings}>{saving ? "Saving…" : "Save experience video"}</Button>
+        </div>
+      )}
 
       {files.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-16 text-center">

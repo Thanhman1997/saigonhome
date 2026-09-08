@@ -22,11 +22,19 @@ import {
 import { asc, eq, desc, sql } from "drizzle-orm"
 
 export async function getLatestVideoMedia() {
+  const configured = await db.select().from(siteContent).where(eq(siteContent.key, "experience_video")).limit(1)
+  const value = configured[0]?.valueEn
+  if (value) {
+    try {
+      const parsed = JSON.parse(value) as { videoUrl?: string; thumbnailUrl?: string; aspectRatio?: number }
+      if (parsed.videoUrl) return { videoUrl: parsed.videoUrl, thumbnailUrl: parsed.thumbnailUrl ?? null, aspectRatio: parsed.aspectRatio ?? 16 / 9 }
+    } catch {
+      // Ignore legacy or malformed configuration and use the media fallback below.
+    }
+  }
   const { blobs } = await list({ prefix: "lotus-wellness/" })
-  const video = blobs
-    .filter((blob) => /\.(mp4|webm)$/i.test(blob.pathname))
-    .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0]
-  return video ? `/api/media?pathname=${encodeURIComponent(video.pathname)}` : null
+  const video = blobs.filter((blob) => /\.(mp4|webm)$/i.test(blob.pathname)).sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0]
+  return video ? { videoUrl: `/api/media?pathname=${encodeURIComponent(video.pathname)}`, thumbnailUrl: null, aspectRatio: 16 / 9 } : null
 }
 
 export async function getServicesContent() {

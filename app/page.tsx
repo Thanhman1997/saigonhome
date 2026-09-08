@@ -35,7 +35,7 @@ import {
 } from "@/lib/data"
 
 export default async function Home() {
-  const [services, servicesContent, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews, videoUrl] =
+  const [services, servicesContent, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews, videoMedia] =
     await Promise.all([
       getServicesWithDurations(),
       getServicesContent(),
@@ -60,7 +60,7 @@ export default async function Home() {
         <Header navigationSettings={navigationSettings} />
         <HeroSection hero={hero} />
         <ServicesSection services={services} featured={featuredServices} content={servicesContent} />
-        <ExperienceVideo videoUrl={videoUrl} />
+        <ExperienceVideo video={videoMedia} />
         <ExpertsSection therapists={allTherapists} />
         <Promotions promotions={promotions} />
         <AboutSection about={about} values={lotusValues} />

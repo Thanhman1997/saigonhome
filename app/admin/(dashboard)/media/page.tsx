@@ -1,5 +1,6 @@
 import { list } from "@vercel/blob"
 import { MediaGallery, type MediaFile } from "@/components/admin/media-gallery"
+import { getExperienceVideoAdmin } from "@/lib/admin-data"
 
 export const metadata = { title: "Media Library" }
 
@@ -17,6 +18,8 @@ export default async function AdminMediaPage() {
     }))
     .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
 
+  const experienceVideo = await getExperienceVideoAdmin()
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -25,7 +28,7 @@ export default async function AdminMediaPage() {
           Upload and manage images and short videos used across the site. Copy a URL to use media in content fields.
         </p>
       </div>
-      <MediaGallery files={files} />
+      <MediaGallery files={files} experienceVideo={experienceVideo} />
     </div>
   )
 }

@@ -4,7 +4,7 @@ import Image from "next/image"
 import { Play, Sparkles } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/language-provider"
 
-export function ExperienceVideo({ videoUrl }: { videoUrl?: string | null }) {
+export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbnailUrl: string | null; aspectRatio: number } | null }) {
   const { t } = useLanguage()
 
   return (
@@ -24,17 +24,17 @@ export function ExperienceVideo({ videoUrl }: { videoUrl?: string | null }) {
         </div>
 
         <div className="group relative w-full max-w-full justify-self-end overflow-hidden rounded-[1.5rem] border border-border/70 bg-secondary p-1.5 shadow-[0_24px_70px_-42px_rgba(92,48,20,0.65)] lg:w-full">
-          <div className="relative aspect-video overflow-hidden rounded-[1.5rem] bg-secondary">
+          <div className="relative overflow-hidden rounded-[1.5rem] bg-secondary" style={{ aspectRatio: video?.aspectRatio ?? 16 / 9 }}>
             <Image
-              src="/images/service-deep-tissue.png"
+              src={video?.thumbnailUrl ?? "/images/service-deep-tissue.png"}
               alt={t.experienceVideo.posterAlt}
               fill
               sizes="(min-width: 1024px) 60vw, 94vw"
               className="object-cover transition duration-700 group-hover:scale-105"
             />
-            {videoUrl ? (
-              <video className="absolute inset-0 h-full w-full object-cover" controls preload="metadata" poster="/images/service-deep-tissue.png" aria-label={t.experienceVideo.posterAlt}>
-                <source src={videoUrl} type={videoUrl.endsWith(".webm") ? "video/webm" : "video/mp4"} />
+            {video?.videoUrl ? (
+              <video className="absolute inset-0 h-full w-full object-cover" controls preload="metadata" poster={video?.thumbnailUrl ?? "/images/service-deep-tissue.png"} aria-label={t.experienceVideo.posterAlt}>
+                <source src={video.videoUrl} type={video.videoUrl.endsWith(".webm") ? "video/webm" : "video/mp4"} />
               </video>
             ) : null}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-foreground/55 via-foreground/10 to-transparent" aria-hidden="true" />
