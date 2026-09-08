@@ -87,7 +87,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
                     size="lg"
                     disabled={!therapist.available}
                     onClick={() => openBooking({ therapistId: therapist.id })}
-                    className={`mt-auto h-9 ${locale === "ko" ? "w-1/5 font-korean-sans" : "w-1/4"} self-center rounded-full bg-accent text-sm font-semibold uppercase tracking-[0.08em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground`}
+                    className={`mt-auto h-9 min-w-24 whitespace-nowrap px-4 ${locale === "ko" ? "font-korean-sans" : ""} self-center rounded-full bg-accent text-xs font-semibold uppercase tracking-[0.06em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground`}
                   >
                     {t.experts.book}
                   </Button>
