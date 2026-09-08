@@ -123,6 +123,7 @@ function MediaCard({ file }: { file: MediaFile }) {
 
 export function MediaGallery({ files }: { files: MediaFile[] }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -155,7 +156,18 @@ export function MediaGallery({ files }: { files: MediaFile[] }) {
           <input
             ref={inputRef}
             type="file"
-            accept="image/*,video/mp4,video/webm"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files?.length) handleFiles(e.target.files)
+              e.target.value = ""
+            }}
+          />
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/mp4,video/webm"
             multiple
             className="hidden"
             onChange={(e) => {
@@ -166,12 +178,23 @@ export function MediaGallery({ files }: { files: MediaFile[] }) {
           <Button
             type="button"
             size="sm"
+            variant="outline"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
             className="gap-2"
           >
+            <ImagePlus className="size-3.5" />
+            Upload image
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={uploading}
+            onClick={() => videoInputRef.current?.click()}
+            className="gap-2"
+          >
             {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
-            {uploading ? "Uploading…" : "Upload media"}
+            {uploading ? "Uploading…" : "Upload video"}
           </Button>
         </div>
       </div>
@@ -181,7 +204,7 @@ export function MediaGallery({ files }: { files: MediaFile[] }) {
       {files.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-16 text-center">
           <ImagePlus className="size-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">No media uploaded yet. Upload images or MP4/WebM videos to use across the site.</p>
+          <p className="text-sm text-muted-foreground">No media uploaded yet. Use Upload image or Upload video to add files.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
