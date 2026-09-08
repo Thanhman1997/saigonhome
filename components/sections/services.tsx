@@ -62,14 +62,14 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
             const image = service.imageUrl || fallback?.src
 
             return (
-              <article key={service.id} className="reveal-up flex flex-col justify-between gap-4 rounded-[1rem] border border-border/50 bg-card p-3 shadow-[0_12px_36px_-32px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_48px_-30px_rgba(92,48,20,0.48)] sm:p-4">
+              <article key={service.id} className="reveal-up flex flex-col justify-between gap-2 rounded-[1rem] border border-border/50 bg-card p-2 shadow-[0_12px_36px_-32px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_48px_-30px_rgba(92,48,20,0.48)] sm:p-3">
                 <div>
-                  <div className="relative mb-3 aspect-[16/9] overflow-hidden rounded-[0.9rem] bg-secondary">
+                  <div className="relative mb-2 aspect-[2.35/1] overflow-hidden rounded-[0.9rem] bg-secondary">
                     {image ? <Image src={image} alt={name} fill loading="lazy" className="object-cover" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{service.icon}</span>}
                   </div>
                   <div className="px-1">
                     <h3 className={`font-sans leading-tight ${locale === "en" || locale === "vi" ? "text-xl font-semibold" : "text-lg font-medium"}`}>{name}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{desc}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{desc}</p>
                     <div className="mt-1 flex flex-col gap-0 border-t border-border pt-0.5">
                       {service.durations.map((d) => <div key={d.id} className="grid grid-cols-[max-content_max-content] items-center justify-start gap-2 text-[11px] leading-[0.7rem]"><span className="text-muted-foreground">{d.minutes} {locale === "en" ? "mins" : locale === "ko" ? "분" : "phút"} :</span><span className="text-right font-medium">{formatServicePrice(d.priceVnd, locale)}</span></div>)}
                     </div>
