@@ -72,7 +72,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                     </div>
                   </div>
                 </div>
-                <Button onClick={() => openBooking({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null })} className="h-9 min-h-9 w-1/2 self-center rounded-full bg-accent px-4 font-sans text-sm font-semibold uppercase tracking-[0.08em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90">{t.services.book}</Button>
+                <Button onClick={() => openBooking({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null })} className="h-8 min-h-8 w-1/3 self-center rounded-full bg-accent px-3 font-sans text-xs font-semibold uppercase tracking-[0.06em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90">{t.services.book}</Button>
               </article>
             )
           })}
