@@ -35,7 +35,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
 
             return (
               <article key={therapist.id} className="flex flex-col overflow-hidden rounded-[1.25rem] border border-border/50 bg-secondary/70 shadow-[0_12px_36px_-32px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_44px_-30px_rgba(92,48,20,0.48)]">
-                <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
                   <Image src={therapist.photoUrl!} alt={`Therapist ${therapist.code}`} fill sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 92vw" loading="lazy" className="object-cover" />
                   <span
                     className={cn(
@@ -47,7 +47,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
                   </span>
                 </div>
 
-                <div className="flex flex-1 flex-col gap-2 p-3">
+                <div className="flex flex-1 flex-col gap-1.5 p-2.5">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-xl">{therapist.code}</h3>
                     {therapist.experienceYears != null && (
