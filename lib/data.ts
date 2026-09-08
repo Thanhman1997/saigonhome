@@ -1,6 +1,5 @@
 import { list } from "@vercel/blob"
 import { db } from "@/lib/db"
-import { dictionary } from "@/lib/i18n/dictionary"
 import {
   services,
   servicesContent,
@@ -45,9 +44,9 @@ export async function getServicesContent() {
   // Keep legacy database rows from overwriting the canonical multilingual dictionary.
   return {
     ...row,
-    kickerEn: row.kickerEn === "Therapies for every need" ? dictionary.en.services.kicker : row.kickerEn,
-    kickerKo: row.kickerKo === "모든 니즈를 위한 테라피" ? dictionary.ko.services.kicker : row.kickerKo,
-    kickerVi: row.kickerVi === "Liệu trình cho mọi nhu cầu" ? dictionary.vi.services.kicker : row.kickerVi,
+    kickerEn: row.kickerEn,
+    kickerKo: row.kickerKo,
+    kickerVi: row.kickerVi,
   }
 }
 
