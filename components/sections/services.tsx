@@ -3,7 +3,10 @@
 import { useState } from "react"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { useBooking, type ServiceWithDurations } from "@/lib/booking-context"
-import { formatVnd } from "@/lib/pricing"
+function formatServicePrice(priceVnd: number, locale: "en" | "ko" | "vi") {
+  const price = new Intl.NumberFormat("en-US").format(priceVnd).replaceAll(",", " ")
+  return `${price} ${locale === "vi" ? "VNĐ" : "VND"}`
+}
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
@@ -68,7 +71,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                     <h3 className={`font-sans leading-tight ${locale === "en" || locale === "vi" ? "text-xl font-semibold" : "text-lg font-medium"}`}>{name}</h3>
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{desc}</p>
                     <div className="mt-1 flex flex-col gap-0 border-t border-border pt-0.5">
-                      {service.durations.map((d) => <div key={d.id} className="grid grid-cols-[max-content_max-content] items-center justify-start gap-2 text-[11px] leading-[0.7rem]"><span className="text-muted-foreground">{d.minutes} {t.services.minutes}</span><span className="text-right font-medium">{formatVnd(d.priceVnd)}</span></div>)}
+                      {service.durations.map((d) => <div key={d.id} className="grid grid-cols-[max-content_max-content] items-center justify-start gap-2 text-[11px] leading-[0.7rem]"><span className="text-muted-foreground">{d.minutes} {locale === "en" ? "mins" : locale === "ko" ? "분" : "phút"} :</span><span className="text-right font-medium">{formatServicePrice(d.priceVnd, locale)}</span></div>)}
                     </div>
                   </div>
                 </div>
