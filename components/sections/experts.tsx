@@ -25,7 +25,7 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
           <p className="mt-6 text-pretty text-base leading-relaxed text-muted-foreground">{t.experts.subtitle}</p>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto mt-8 grid gap-4 sm:grid-cols-2 lg:max-w-5xl lg:grid-cols-4">
           {visible.map((therapist) => {
             const location = pickLocalized(
               { en: therapist.locationEn ?? "", ko: therapist.locationKo ?? "", vi: therapist.locationVi ?? "" },
