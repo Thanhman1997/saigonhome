@@ -26,7 +26,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
   const t = dict.promotions
 
   return (
-    <section id="promotions" className="bg-header-background py-20 md:py-24">
+    <section id="promotions" className="bg-header-background py-12 md:py-16">
       <div className="mx-auto max-w-[100rem] px-6 lg:px-16">
         <div className="max-w-2xl">
           <p className="section-heading text-accent">{t.kicker}</p>
@@ -37,7 +37,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
         </div>
 
         {promotions.length > 0 ? (
-          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {promotions.map((promo) => {
               const name = pickLocalized({ en: promo.nameEn, ko: promo.nameKo, vi: promo.nameVi }, locale)
               const desc = pickLocalized({ en: promo.descEn, ko: promo.descKo, vi: promo.descVi }, locale)
@@ -54,7 +54,7 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
                       <Image src={promo.imageUrl} alt={name} fill loading="lazy" sizes="(min-width: 1024px) 45vw, 100vw" className="object-contain" />
                     </div>
                   )}
-                  <div className="flex flex-1 flex-col justify-between p-8">
+                  <div className="flex flex-1 flex-col justify-between p-5">
                     <div>
                       <div className="flex items-center justify-between gap-4">
                         <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
@@ -64,8 +64,8 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
                           </span>
                         )}
                       </div>
-                      <h3 className="mt-6 font-serif text-2xl text-foreground">{name}</h3>
-                      <p className="mt-3 leading-relaxed text-muted-foreground">{desc}</p>
+                      <h3 className="mt-4 font-serif text-xl text-foreground">{name}</h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
                     </div>
                     {isSeasonal && promo.endDate && (
                       <p className="mt-6 text-xs uppercase tracking-wide text-primary">
