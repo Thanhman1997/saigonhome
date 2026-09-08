@@ -27,7 +27,7 @@ export function Faq({ faqs }: { faqs: FaqRow[] }) {
               const answer = pickLocalized({ en: faq.answerEn, ko: faq.answerKo, vi: faq.answerVi }, locale)
               return (
                 <AccordionItem key={faq.id} value={`item-${faq.id}`} className="border-border/60 py-2">
-                  <AccordionTrigger className="font-serif text-xl font-semibold text-foreground hover:no-underline [&>svg]:text-primary">
+                  <AccordionTrigger className="font-sans text-lg font-normal leading-relaxed text-foreground hover:no-underline [&>svg]:text-primary">
                     {question}
                   </AccordionTrigger>
                   <AccordionContent className="text-base leading-relaxed text-muted-foreground">{answer}</AccordionContent>
