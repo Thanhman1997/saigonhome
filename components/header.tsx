@@ -58,8 +58,8 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
     { menuKey: "home", labelEn: "HOME", labelVi: "TRANG CHỦ", labelKo: "홈", href: "#top", visible: true },
     { menuKey: "services", labelEn: t.nav.services, labelVi: t.nav.services, labelKo: t.nav.services, href: "#services", visible: true },
     { menuKey: "experts", labelEn: t.nav.experts, labelVi: t.nav.experts, labelKo: t.nav.experts, href: "#experts", visible: true },
-    { menuKey: "faq", labelEn: t.nav.faq, labelVi: t.nav.faq, labelKo: t.nav.faq, href: "#faq", visible: true },
     { menuKey: "reviews", labelEn: t.nav.reviews, labelVi: t.nav.reviews, labelKo: t.nav.reviews, href: "#reviews", visible: true },
+    { menuKey: "faq", labelEn: t.nav.faq, labelVi: t.nav.faq, labelKo: t.nav.faq, href: "#faq", visible: true },
     { menuKey: "contact", labelEn: t.nav.contact, labelVi: t.nav.contact, labelKo: t.nav.contact, href: "#contact", visible: true },
   ]
   const allowedMenuKeys = new Set(["home", "services", "experts", "contact", "faq", "reviews"])
