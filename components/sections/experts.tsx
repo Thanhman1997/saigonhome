@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { Languages, MapPin, Ruler, BadgeCheck } from "lucide-react"
+import { Languages, MapPin, Ruler, BadgeCheck, UserRound } from "lucide-react"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { useBooking, type TherapistRow } from "@/lib/booking-context"
 import { Button } from "@/components/ui/button"
@@ -35,7 +35,13 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
             return (
               <article key={therapist.id} className="flex flex-col overflow-hidden rounded-[1.25rem] border border-border/50 bg-secondary/70 shadow-[0_12px_36px_-32px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_44px_-30px_rgba(92,48,20,0.48)]">
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-                  <Image src={therapist.photoUrl!} alt={`Therapist ${therapist.code}`} fill sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 92vw" loading="lazy" className="object-cover" />
+                  {therapist.photoUrl ? (
+                    <Image src={therapist.photoUrl} alt={`Therapist ${therapist.code}`} fill sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 92vw" loading="lazy" className="object-cover" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-muted-foreground">
+                      <UserRound className="size-10" aria-hidden="true" />
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-1 flex-col gap-1.5 p-2.5">

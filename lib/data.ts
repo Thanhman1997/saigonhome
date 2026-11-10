@@ -18,7 +18,7 @@ import {
   siteContent,
   sectionStyles,
 } from "@/lib/db/schema"
-import { asc, eq, desc, sql } from "drizzle-orm"
+import { and, asc, eq, desc, sql } from "drizzle-orm"
 import { unstable_cache } from "next/cache"
 
 export const LAYOUT_DATA_TAG = "site-layout"
@@ -110,11 +110,11 @@ export async function getServiceBySlug(slug: string) {
 }
 
 export async function getTherapists() {
-  return db.select().from(therapists).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
+  return db.select().from(therapists).where(eq(therapists.visible, true)).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getAvailableTherapists() {
-  return db.select().from(therapists).where(eq(therapists.available, true)).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
+  return db.select().from(therapists).where(and(eq(therapists.visible, true), eq(therapists.available, true))).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getApprovedReviews() {

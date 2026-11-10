@@ -62,6 +62,7 @@ export const therapists = pgTable("therapists", {
   bioVi: text("bio_vi"),
   photoUrl: text("photo_url"),
   available: boolean("available").notNull().default(true),
+  visible: boolean("visible").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
 })
 

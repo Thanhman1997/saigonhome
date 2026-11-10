@@ -4,7 +4,7 @@ const rows = {
   settings: { advanceBookingDays: 30, minNoticeHours: 2, maxGuests: 20, openTime: "09:00", closeTime: "21:00", closedWeekdays: [0] },
   service: { id: 1, nameEn: "Massage", active: true },
   duration: { serviceId: 1, minutes: 60, priceVnd: 500000 },
-  therapist: { id: 1, available: true },
+  therapist: { id: 1, available: true, visible: true },
 }
 
 vi.mock("@/lib/db", () => ({

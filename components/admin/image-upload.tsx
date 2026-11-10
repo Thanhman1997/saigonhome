@@ -22,12 +22,16 @@ export function ImageUpload({
   value,
   onChange,
   aspect = "aspect-[4/5]",
+  className = "w-40",
+  fit = "object-contain",
 }: {
   label: string
   name: string
   value: string | null
   onChange: (url: string | null) => void
   aspect?: string
+  className?: string
+  fit?: "object-contain" | "object-cover"
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -95,8 +99,8 @@ export function ImageUpload({
     <div className="flex flex-col gap-1.5">
       <Label>{label}</Label>
       <input type="hidden" name={name} value={value ?? ""} />
-      <div className={cn("relative w-40 overflow-hidden rounded-lg border border-dashed border-border bg-muted", aspect)}>
-        {value ? <Image src={value} alt="" fill className="object-contain" unoptimized /> : <div className="flex h-full items-center justify-center text-muted-foreground"><ImagePlus className="size-6" /></div>}
+      <div className={cn("relative overflow-hidden rounded-lg border border-dashed border-border bg-muted", className, aspect)}>
+        {value ? <Image src={value} alt="" fill className={fit} unoptimized /> : <div className="flex h-full items-center justify-center text-muted-foreground"><ImagePlus className="size-6" /></div>}
         {uploading && <div className="absolute inset-0 flex items-center justify-center bg-background/70"><Loader2 className="size-5 animate-spin text-foreground" /></div>}
         {value && !uploading && <button type="button" onClick={() => onChange(null)} className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm"><X className="size-3.5" /><span className="sr-only">Remove image</span></button>}
       </div>
