@@ -5,7 +5,13 @@ import { getExperienceVideoAdmin } from "@/lib/admin-data"
 export const metadata = { title: "Media Library" }
 
 export default async function AdminMediaPage() {
-  const { blobs } = await list({ prefix: "lotus-wellness/" })
+  let blobs: Awaited<ReturnType<typeof list>>["blobs"] = []
+  let storageError = false
+  try {
+    blobs = (await list({ prefix: "lotus-wellness/" })).blobs
+  } catch {
+    storageError = true
+  }
 
   const files: MediaFile[] = blobs
     .map((blob) => ({
@@ -28,6 +34,11 @@ export default async function AdminMediaPage() {
           Upload and manage images and short videos used across the site. Copy a URL to use media in content fields.
         </p>
       </div>
+      {storageError && (
+        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          Could not load files from storage. The Blob store may be suspended or unreachable. Existing site content is not affected.
+        </p>
+      )}
       <MediaGallery files={files} experienceVideo={experienceVideo} />
     </div>
   )

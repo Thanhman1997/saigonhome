@@ -16,7 +16,7 @@ import {
 } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
-import { getContactInfo, getDefaultLocale, getDesignSettings, getSectionStyles } from "@/lib/data"
+import { getLayoutSiteData } from "@/lib/data"
 import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
 import "./globals.css"
 
@@ -91,7 +91,7 @@ export const dynamic = "force-dynamic"
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies()
   const savedLocale = cookieStore.get("lotus-wellness-locale")?.value
-  const [databaseLocale, designSettings, sectionStyles, contactInfo] = await Promise.all([getDefaultLocale(), getDesignSettings(), getSectionStyles(), getContactInfo()])
+  const { defaultLocale: databaseLocale, designSettings, sectionStyles, contactInfo } = await getLayoutSiteData()
   const defaultLocale = savedLocale === "en" || savedLocale === "vi" || savedLocale === "ko" ? savedLocale : databaseLocale
   // Keep the public Lotus experience aligned with the approved reference preset.
   // Legacy database rows may contain the previous muted palette and make the page appear broken.

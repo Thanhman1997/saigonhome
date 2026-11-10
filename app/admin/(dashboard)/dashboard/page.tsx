@@ -3,7 +3,9 @@ import { AlertTriangle, ArrowUpRight, CalendarDays, FileText, MessageSquare, Sta
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getAllBookingsWithRelations, getAllEventsAdmin, getAllFaqsAdmin, getAllQuestions, getAllReviewsWithRelations, getAllServicesAdmin, getAboutContentAdmin, getHeroContentAdmin } from "@/lib/admin-data"
+import { getAllEventsAdmin, getAllFaqsAdmin, getAllServicesAdmin, getAboutContentAdmin, getDashboardCounts, getHeroContentAdmin } from "@/lib/admin-data"
+
+const vietnamDateFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" })
 
 export const metadata = { title: "Dashboard | Admin" }
 
@@ -17,15 +19,13 @@ function startOfWeek(date: Date) {
 
 export default async function DashboardPage() {
   const now = new Date()
-  const today = now.toISOString().slice(0, 10)
+  const today = vietnamDateFormatter.format(now)
   const weekStart = startOfWeek(now)
-  const [bookings, questions, reviews, events, services, faqs, hero, about] = await Promise.all([
-    getAllBookingsWithRelations(), getAllQuestions(), getAllReviewsWithRelations(), getAllEventsAdmin(), getAllServicesAdmin(), getAllFaqsAdmin(), getHeroContentAdmin(), getAboutContentAdmin(),
+  const [counts, events, services, faqs, hero, about] = await Promise.all([
+    getDashboardCounts(today, weekStart), getAllEventsAdmin(), getAllServicesAdmin(), getAllFaqsAdmin(), getHeroContentAdmin(), getAboutContentAdmin(),
   ])
-  const todayBookings = bookings.filter((booking) => booking.date === today).length
-  const weekBookings = bookings.filter((booking) => new Date(booking.createdAt) >= weekStart).length
-  const unreadQuestions = questions.filter((question) => question.status === "pending").length
-  const pendingReviews = reviews.filter((review) => !review.approved).length
+  const { todayBookings, weekBookings, pendingReviews } = counts
+  const unreadQuestions = counts.pendingQuestions
   const activePromotions = events.filter((event) => event.active).length
   const endingSoon = events.filter((event) => event.active && event.endDate && new Date(`${event.endDate}T23:59:59`) >= now && new Date(`${event.endDate}T23:59:59`).getTime() - now.getTime() < 7 * 86400000).length
   const missingTranslations = services.filter((s) => !s.nameEn || !s.nameKo || !s.nameVi || !s.descEn || !s.descKo || !s.descVi).length + faqs.filter((f) => !f.questionEn || !f.questionKo || !f.questionVi || !f.answerEn || !f.answerKo || !f.answerVi).length + (hero && (!hero.kickerEn || !hero.kickerKo || !hero.kickerVi || !hero.titleLine1En || !hero.titleLine1Ko || !hero.titleLine1Vi || !hero.titleLine2En || !hero.titleLine2Ko || !hero.titleLine2Vi || !hero.subtitleEn || !hero.subtitleKo || !hero.subtitleVi || !hero.ctaEn || !hero.ctaKo || !hero.ctaVi) ? 1 : 0) + (about && (!about.titleEn || !about.titleKo || !about.titleVi) ? 1 : 0)

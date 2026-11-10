@@ -19,6 +19,43 @@ import {
   sectionStyles,
 } from "@/lib/db/schema"
 import { asc, eq, desc, sql } from "drizzle-orm"
+import { unstable_cache } from "next/cache"
+
+export const LAYOUT_DATA_TAG = "site-layout"
+
+const loadLayoutSiteData = unstable_cache(
+  async () => {
+    const [localeRows, designRows, styleRows, contactRows] = await Promise.all([
+      db.select().from(siteContent).where(eq(siteContent.key, "default_locale")).limit(1),
+      db.select().from(designSettings).limit(1),
+      db.select().from(sectionStyles),
+      db.select().from(contactInfo).limit(1),
+    ])
+    return {
+      databaseLocale: localeRows[0]?.valueEn ?? null,
+      designSettings: designRows[0] ?? null,
+      sectionStyles: styleRows,
+      contactInfo: contactRows[0] ?? null,
+    }
+  },
+  ["site-layout-data"],
+  { tags: [LAYOUT_DATA_TAG], revalidate: 300 },
+)
+
+/**
+ * Locale, design tokens, section styles, and contact info read by the root layout on every request.
+ * Cached for five minutes and expired immediately by the admin actions that change them (updateTag).
+ * Errors are not cached: a failed read falls back to defaults and retries on the next request.
+ */
+export async function getLayoutSiteData() {
+  try {
+    const data = await loadLayoutSiteData()
+    const locale = data.databaseLocale
+    return { ...data, defaultLocale: locale === "ko" || locale === "vi" ? locale : ("en" as SiteLocale) }
+  } catch {
+    return { databaseLocale: null, designSettings: null, sectionStyles: [], contactInfo: null, defaultLocale: "en" as SiteLocale }
+  }
+}
 
 export async function getLatestVideoMedia() {
   const configured = await db.select().from(siteContent).where(eq(siteContent.key, "experience_video")).limit(1)

@@ -1,6 +1,7 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, updateTag } from "next/cache"
+import { LAYOUT_DATA_TAG } from "@/lib/data"
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { sectionStyles } from "@/lib/db/schema"
@@ -28,6 +29,7 @@ export async function updateSectionStyle(formData: FormData) {
   const existing = await db.select({ sectionKey: sectionStyles.sectionKey }).from(sectionStyles).where(eq(sectionStyles.sectionKey, sectionKey)).limit(1)
   if (existing[0]) await db.update(sectionStyles).set(values).where(eq(sectionStyles.sectionKey, existing[0].sectionKey))
   else await db.insert(sectionStyles).values(values)
+  updateTag(LAYOUT_DATA_TAG)
   revalidatePath("/", "layout")
   revalidatePath("/admin/content")
 }

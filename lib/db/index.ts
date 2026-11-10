@@ -10,5 +10,13 @@ if (!connectionString) {
 
 const normalizedConnectionString = connectionString.replace(/([?&]sslmode=)require\b/, "$1verify-full")
 
-export const pool = new Pool({ connectionString: normalizedConnectionString })
+// Hot reloads re-evaluate this module; keeping the pool on globalThis stops each reload from leaking a new set of connections.
+const globalForPool = globalThis as unknown as { __lotusPgPool?: Pool }
+
+export const pool =
+  globalForPool.__lotusPgPool ??
+  new Pool({ connectionString: normalizedConnectionString, max: 5, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 10_000 })
+
+globalForPool.__lotusPgPool = pool
+
 export const db = drizzle(pool, { schema })
