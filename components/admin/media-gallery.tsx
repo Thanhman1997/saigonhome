@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Check, Copy, ImagePlus, Loader2, Trash2, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { deleteMediaFile, saveExperienceVideo } from "@/app/actions/media"
+import { uploadMedia } from "@/lib/upload-media"
 
 export type MediaFile = {
   url: string
@@ -149,12 +150,8 @@ export function MediaGallery({ files, experienceVideo }: { files: MediaFile[]; e
     setUploading(true)
     try {
       for (const file of Array.from(fileList)) {
-        const formData = new FormData()
-        formData.append("file", file)
-        const res = await fetch("/api/admin/upload", { method: "POST", body: formData })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error ?? "Upload failed")
-      }
+  await uploadMedia(file)
+  }
       window.location.reload()
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed")

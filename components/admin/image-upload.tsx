@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { uploadMedia } from "@/lib/upload-media"
 
 type LibraryImage = {
   url: string
@@ -53,13 +54,9 @@ export function ImageUpload({
     setError(null)
     setUploading(true)
     try {
-      const formData = new FormData()
-      formData.append("file", file)
-      const res = await fetch("/api/admin/upload", { method: "POST", body: formData })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? "Upload failed")
+      const url = await uploadMedia(file)
       if (!isMountedRef.current) return
-      onChange(data.url)
+      onChange(url)
     } catch (e) {
       if (isMountedRef.current) setError(e instanceof Error ? e.message : "Upload failed")
     } finally {
