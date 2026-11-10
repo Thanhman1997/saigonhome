@@ -23,7 +23,7 @@ import "./globals.css"
 // Primary display fonts (Latin only)
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", weight: ["300", "400", "500", "600", "700"] })
 const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext", "vietnamese"],
   variable: "--font-cormorant",
   weight: ["300", "400", "500", "600", "700"],
 })
