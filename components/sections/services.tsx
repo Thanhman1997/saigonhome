@@ -29,11 +29,9 @@ function imageForService(service: ServiceWithDurations) {
 }
 
 function ServiceCardImage({ image, alt, icon }: { image: string | null | undefined; alt: string; icon: string }) {
-  const [imageRatio, setImageRatio] = useState<number | null>(null)
-
   return (
-    <div className="relative mb-2 w-full overflow-hidden rounded-[0.9rem] bg-secondary" style={{ aspectRatio: imageRatio ?? "16 / 9" }}>
-      {image ? <Image src={image} alt={alt} fill loading="lazy" className="object-contain" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" onLoad={(event) => { const loadedImage = event.currentTarget; if (loadedImage.naturalWidth && loadedImage.naturalHeight) setImageRatio(loadedImage.naturalWidth / loadedImage.naturalHeight) }} /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{icon}</span>}
+    <div className="relative mb-2 aspect-video overflow-hidden rounded-[0.9rem] bg-secondary">
+      {image ? <Image src={image} alt={alt} fill loading="lazy" className="object-cover object-top" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{icon}</span>}
     </div>
   )
 }
