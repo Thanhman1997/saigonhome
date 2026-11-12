@@ -28,6 +28,16 @@ function imageForService(service: ServiceWithDurations) {
   return fallbackImages[service.slug] ?? { src: "/images/service-thai.png", flag: "LW" }
 }
 
+function ServiceCardImage({ image, alt, icon }: { image: string | null | undefined; alt: string; icon: string }) {
+  const [imageRatio, setImageRatio] = useState<number | null>(null)
+
+  return (
+    <div className="relative mb-2 w-full overflow-hidden rounded-[0.9rem] bg-secondary" style={{ aspectRatio: imageRatio ?? "16 / 9" }}>
+      {image ? <Image src={image} alt={alt} fill loading="lazy" className="object-contain" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" onLoad={(event) => { const loadedImage = event.currentTarget; if (loadedImage.naturalWidth && loadedImage.naturalHeight) setImageRatio(loadedImage.naturalWidth / loadedImage.naturalHeight) }} /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{icon}</span>}
+    </div>
+  )
+}
+
 type ServicesContent = { kickerEn: string; kickerKo: string; kickerVi: string; titleEn: string; titleKo: string; titleVi: string; subtitleEn: string; subtitleKo: string; subtitleVi: string }
 
 function withServiceCount(text: string, count: number, locale: "en" | "ko" | "vi") {
@@ -65,9 +75,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
             return (
               <article key={service.id} className="reveal-up flex flex-col justify-between gap-2 rounded-[1rem] border border-border/50 bg-card p-2 shadow-[0_12px_36px_-32px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_48px_-30px_rgba(92,48,20,0.48)] sm:p-3">
                 <div>
-                  <div className="relative mb-2 aspect-video overflow-hidden rounded-[0.9rem] bg-secondary">
-                    {image ? <Image src={image} alt={name} fill loading="lazy" className="object-contain" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{service.icon}</span>}
-                  </div>
+                  <ServiceCardImage image={image} alt={name} icon={service.icon} />
                   <div className="px-1">
                     <h3 className={`${luxuryFont} text-center text-[1.75rem]! font-bold leading-tight tracking-wide sm:text-[2rem]!`}>{name}</h3>
                     <p className="mt-2 text-base leading-relaxed text-muted-foreground">{desc}</p>
