@@ -17,7 +17,7 @@ const ICON_MAP: Record<string, typeof Sparkles> = {
   leaf: Leaf,
 }
 const fallbackIcons = [Sparkles, Home, Wallet, Lock]
-const valueImages = ["/images/spa-massage.png", "/images/spa-therapist.png", "/images/spa-oils.png", "/images/spa-couples.png"]
+const valueImages = ["/images/value-convenience.png", "/images/value-privacy.png", "/images/value-healing.png", "/images/value-professional.png"]
 
 type About = Awaited<ReturnType<typeof getAboutContent>>
 type LotusValue = Awaited<ReturnType<typeof getLotusValues>>[number]
