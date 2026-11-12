@@ -1,6 +1,7 @@
 "use server"
 
 import { del } from "@vercel/blob"
+import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { db } from "@/lib/db"
@@ -20,16 +21,24 @@ export async function deleteMediaFile(url: string) {
   revalidatePath("/admin/media")
 }
 
-export async function saveExperienceVideo(config: { videoUrl: string; thumbnailUrl: string; aspectRatio: number }) {
+export async function saveExperienceVideo(config: { videoUrl: string; thumbnailUrl: string | null; aspectRatio: number }) {
   await assertAdmin()
-  if (!config.videoUrl || !config.thumbnailUrl || !Number.isFinite(config.aspectRatio) || config.aspectRatio <= 0) {
-    throw new Error("Video, thumbnail, and a valid aspect ratio are required")
+  if (!config.videoUrl || !Number.isFinite(config.aspectRatio) || config.aspectRatio <= 0) {
+    throw new Error("A video and a valid aspect ratio are required")
   }
-  const value = JSON.stringify(config)
+  const value = JSON.stringify({ videoUrl: config.videoUrl, thumbnailUrl: config.thumbnailUrl || null, aspectRatio: config.aspectRatio })
   await db.insert(siteContent).values({ key: "experience_video", valueEn: value, valueKo: value, valueVi: value, updatedAt: new Date() }).onConflictDoUpdate({
     target: siteContent.key,
     set: { valueEn: value, valueKo: value, valueVi: value, updatedAt: new Date() },
   })
+  revalidatePath("/admin/video")
   revalidatePath("/admin/media")
+  revalidatePath("/")
+}
+
+export async function clearExperienceVideo() {
+  await assertAdmin()
+  await db.delete(siteContent).where(eq(siteContent.key, "experience_video"))
+  revalidatePath("/admin/video")
   revalidatePath("/")
 }

@@ -1,6 +1,5 @@
 import { list } from "@vercel/blob"
 import { MediaGallery, type MediaFile } from "@/components/admin/media-gallery"
-import { getExperienceVideoAdmin } from "@/lib/admin-data"
 
 export const metadata = { title: "Media Library" }
 
@@ -24,8 +23,6 @@ export default async function AdminMediaPage() {
     }))
     .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
 
-  const experienceVideo = await getExperienceVideoAdmin()
-
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -39,7 +36,7 @@ export default async function AdminMediaPage() {
           Could not load files from storage. The Blob store may be suspended or unreachable. Existing site content is not affected.
         </p>
       )}
-      <MediaGallery files={files} experienceVideo={experienceVideo} />
+      <MediaGallery files={files} />
     </div>
   )
 }
