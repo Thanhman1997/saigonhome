@@ -26,8 +26,9 @@ export function HeroSection({ hero }: { hero: Hero }) {
 
   return (
     <section id="top" className="overflow-hidden bg-card text-foreground">
-      <div className="mx-auto grid max-w-[88rem] items-center gap-8 px-6 sm:px-8 lg:grid-cols-[.85fr_1.15fr] lg:gap-10 lg:px-16 xl:px-20">
-        <div className="@container flex flex-col justify-center py-10 sm:py-12 lg:py-0 lg:pl-4">
+      <div className="mx-auto grid max-w-[88rem] gap-8 px-6 sm:px-8 lg:px-16 xl:px-20">
+        <div className="relative -mx-6 w-[calc(100%+3rem)] overflow-hidden bg-card sm:-mx-8 sm:w-[calc(100%+4rem)] lg:-mx-16 lg:w-[calc(100%+8rem)] xl:-mx-20 xl:w-[calc(100%+10rem)]" style={{ aspectRatio: imageRatio ?? "1280 / 655" }}><Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private home" fill priority sizes="(min-width: 1408px) 88rem, 100vw" onLoad={(event) => { const image = event.currentTarget; if (image.naturalWidth && image.naturalHeight) setImageRatio(image.naturalWidth / image.naturalHeight) }} className="object-contain object-center saturate-110" /></div>
+        <div className="@container flex w-full max-w-4xl flex-col justify-center py-8 sm:py-10 lg:py-12">
           {content.visible && <>
             <div className={`reveal-up mb-7 flex w-fit max-w-full items-center gap-3 whitespace-nowrap font-sans text-[clamp(0.625rem,2.8cqi,1.125rem)] font-medium tracking-[0.08em] text-accent ${locale === "ko" ? "font-korean-sans not-italic tracking-wide" : ""}`}><ShieldCheck className="size-5 shrink-0" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
             <h1 className={`w-full max-w-3xl whitespace-nowrap font-sans font-normal leading-tight tracking-[-0.035em] ${locale === "ko" ? "font-korean-sans" : ""}`} style={{ fontSize: "clamp(1.125rem, 8cqi, 3.75rem)" }}>{localized(content.titleLine1En, content.titleLine1Ko, content.titleLine1Vi)}<br /><span className="font-inherit text-accent capitalize">{localized(content.titleLine2En, content.titleLine2Ko, content.titleLine2Vi)}</span></h1>
@@ -35,7 +36,6 @@ export function HeroSection({ hero }: { hero: Hero }) {
             <div className="reveal-up reveal-delay-3 mt-10 flex flex-wrap items-center gap-4"><Button onClick={() => openBooking()} className={`h-14 ${locale === "ko" ? "w-32 text-xl font-korean-sans sm:w-36 sm:text-2xl" : locale === "en" ? "w-32 text-base sm:w-36 sm:text-lg" : "w-36 text-xl sm:w-40 sm:text-2xl"} shrink-0 rounded-full bg-accent px-5 font-extrabold text-accent-foreground hover:bg-accent/90`}>{locale === "en" ? "BOOK NOW" : localized(content.ctaEn, content.ctaKo, content.ctaVi)}</Button><a href="#about" className="flex items-center gap-2 text-base font-medium text-foreground sm:text-lg"><ArrowDown className="size-5" />{t.hero.hours}</a></div>
           </>}
         </div>
-        <div className="relative w-full overflow-hidden bg-card" style={{ aspectRatio: imageRatio ?? "1280 / 655" }}><Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private home" fill priority sizes="(min-width: 1024px) 58vw, 100vw" onLoad={(event) => { const image = event.currentTarget; if (image.naturalWidth && image.naturalHeight) setImageRatio(image.naturalWidth / image.naturalHeight) }} className="object-contain object-center saturate-110" /></div>
       </div>
     </section>
   )
