@@ -27,7 +27,7 @@ export function HeroSection({ hero }: { hero: Hero }) {
   return (
     <section id="top" className="overflow-hidden bg-card text-foreground">
       <div className="mx-auto grid max-w-[88rem] items-center gap-8 px-6 sm:px-8 lg:grid-cols-[.85fr_1.15fr] lg:gap-10 lg:px-16 xl:px-20">
-        <div className="@container flex flex-col justify-center py-10 sm:py-12 lg:py-12 lg:pl-4">
+        <div className="@container flex flex-col justify-center py-10 sm:py-12 lg:py-0 lg:pl-4">
           {content.visible && <>
             <div className={`reveal-up mb-7 flex w-fit max-w-full items-center gap-3 whitespace-nowrap font-sans text-[clamp(0.625rem,2.8cqi,1.125rem)] font-medium tracking-[0.08em] text-accent ${locale === "ko" ? "font-korean-sans not-italic tracking-wide" : ""}`}><ShieldCheck className="size-5 shrink-0" />{localized(content.kickerEn, content.kickerKo, content.kickerVi)}</div>
             <h1 className={`w-full max-w-3xl whitespace-nowrap font-sans font-normal leading-tight tracking-[-0.035em] ${locale === "ko" ? "font-korean-sans" : ""}`} style={{ fontSize: "clamp(1.125rem, 8cqi, 3.75rem)" }}>{localized(content.titleLine1En, content.titleLine1Ko, content.titleLine1Vi)}<br /><span className="font-inherit text-accent capitalize">{localized(content.titleLine2En, content.titleLine2Ko, content.titleLine2Vi)}</span></h1>
