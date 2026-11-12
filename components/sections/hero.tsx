@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { useState } from "react"
 import { ArrowDown, ShieldCheck } from "lucide-react"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { useBooking } from "@/lib/booking-context"
@@ -12,6 +13,7 @@ type Hero = typeof heroContent.$inferSelect | null
 export function HeroSection({ hero }: { hero: Hero }) {
   const { t, locale } = useLanguage()
   const { openBooking } = useBooking()
+  const [imageRatio, setImageRatio] = useState<number | null>(null)
   const content = hero ?? {
     imageUrl: "/images/spa-hero.png", visible: true,
     kickerEn: t.hero.kicker, kickerKo: t.hero.kicker, kickerVi: t.hero.kicker,
@@ -33,7 +35,7 @@ export function HeroSection({ hero }: { hero: Hero }) {
             <div className="reveal-up reveal-delay-3 mt-10 flex flex-wrap items-center gap-4"><Button onClick={() => openBooking()} className={`h-14 ${locale === "ko" ? "w-32 text-xl font-korean-sans sm:w-36 sm:text-2xl" : locale === "en" ? "w-32 text-base sm:w-36 sm:text-lg" : "w-36 text-xl sm:w-40 sm:text-2xl"} shrink-0 rounded-full bg-accent px-5 font-extrabold text-accent-foreground hover:bg-accent/90`}>{locale === "en" ? "BOOK NOW" : localized(content.ctaEn, content.ctaKo, content.ctaVi)}</Button><a href="#about" className="flex items-center gap-2 text-base font-medium text-foreground sm:text-lg"><ArrowDown className="size-5" />{t.hero.hours}</a></div>
           </>}
         </div>
-        <div className="relative min-h-[22rem] overflow-hidden sm:min-h-[26rem] lg:min-h-[34rem] xl:min-h-[40rem]"><Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private home" fill priority sizes="(min-width: 1024px) 58vw, 100vw" className="object-cover object-center saturate-110 transition-transform duration-700 hover:scale-[1.03]" /><div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent" /></div>
+        <div className="relative w-full overflow-hidden bg-card" style={{ aspectRatio: imageRatio ?? "1280 / 655" }}><Image src={content.imageUrl} alt="Lotus Wellness mobile massage in a private home" fill priority sizes="(min-width: 1024px) 58vw, 100vw" onLoad={(event) => { const image = event.currentTarget; if (image.naturalWidth && image.naturalHeight) setImageRatio(image.naturalWidth / image.naturalHeight) }} className="object-contain object-center saturate-110" /></div>
       </div>
     </section>
   )
