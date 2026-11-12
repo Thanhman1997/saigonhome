@@ -34,9 +34,9 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
 
             return (
               <article key={therapist.id} className="flex flex-col overflow-hidden rounded-[1.25rem] border border-border/50 bg-secondary/70 shadow-[0_12px_36px_-32px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_44px_-30px_rgba(92,48,20,0.48)]">
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted">
                   {therapist.photoUrl ? (
-                    <Image src={therapist.photoUrl} alt={`Therapist ${therapist.code}`} fill sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 92vw" loading="lazy" className="object-cover" />
+                    <Image src={therapist.photoUrl} alt={`Therapist ${therapist.code}`} fill sizes="(min-width: 1024px) 22vw, (min-width: 640px) 45vw, 92vw" loading="lazy" className="object-cover object-top" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-muted-foreground">
                       <UserRound className="size-10" aria-hidden="true" />
