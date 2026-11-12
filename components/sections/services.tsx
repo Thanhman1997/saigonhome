@@ -65,8 +65,8 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
             return (
               <article key={service.id} className="reveal-up flex flex-col justify-between gap-2 rounded-[1rem] border border-border/50 bg-card p-2 shadow-[0_12px_36px_-32px_rgba(92,48,20,0.5)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_48px_-30px_rgba(92,48,20,0.48)] sm:p-3">
                 <div>
-                  <div className="relative mb-2 aspect-[2.35/1] overflow-hidden rounded-[0.9rem] bg-secondary">
-                    {image ? <Image src={image} alt={name} fill loading="lazy" className="object-cover" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{service.icon}</span>}
+                  <div className="relative mb-2 aspect-video overflow-hidden rounded-[0.9rem] bg-secondary">
+                    {image ? <Image src={image} alt={name} fill loading="lazy" className="object-contain" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{service.icon}</span>}
                   </div>
                   <div className="px-1">
                     <h3 className={`${luxuryFont} text-center text-[1.75rem]! font-bold leading-tight tracking-wide sm:text-[2rem]!`}>{name}</h3>
