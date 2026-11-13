@@ -1,10 +1,12 @@
 "use client"
 
-import { useRef, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Check, Copy, ImagePlus, Loader2, Trash2, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { deleteMediaFile } from "@/app/actions/media"
+import { uploadMedia } from "@/lib/upload-media"
 
 export type MediaFile = {
   url: string
@@ -23,13 +25,22 @@ function formatSize(bytes: number): string {
 
 function CopyButton({ url }: { url: string }) {
   const [copied, setCopied] = useState(false)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    }
+  }, [])
+
   return (
     <button
       type="button"
       onClick={async () => {
         await navigator.clipboard.writeText(url)
         setCopied(true)
-        setTimeout(() => setCopied(false), 1500)
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        timeoutRef.current = setTimeout(() => setCopied(false), 1500)
       }}
       className="flex size-7 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm"
       title="Copy URL"
@@ -114,6 +125,7 @@ function MediaCard({ file }: { file: MediaFile }) {
 
 export function MediaGallery({ files }: { files: MediaFile[] }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -122,12 +134,8 @@ export function MediaGallery({ files }: { files: MediaFile[] }) {
     setUploading(true)
     try {
       for (const file of Array.from(fileList)) {
-        const formData = new FormData()
-        formData.append("file", file)
-        const res = await fetch("/api/admin/upload", { method: "POST", body: formData })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error ?? "Upload failed")
-      }
+  await uploadMedia(file)
+  }
       window.location.reload()
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed")
@@ -146,7 +154,18 @@ export function MediaGallery({ files }: { files: MediaFile[] }) {
           <input
             ref={inputRef}
             type="file"
-            accept="image/*,video/mp4,video/webm"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files?.length) handleFiles(e.target.files)
+              e.target.value = ""
+            }}
+          />
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/mp4,video/webm"
             multiple
             className="hidden"
             onChange={(e) => {
@@ -157,22 +176,38 @@ export function MediaGallery({ files }: { files: MediaFile[] }) {
           <Button
             type="button"
             size="sm"
+            variant="outline"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
             className="gap-2"
           >
+            <ImagePlus className="size-3.5" />
+            Upload image
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={uploading}
+            onClick={() => videoInputRef.current?.click()}
+            className="gap-2"
+          >
             {uploading ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
-            {uploading ? "Uploading…" : "Upload media"}
+            {uploading ? "Uploading…" : "Upload video"}
           </Button>
         </div>
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
+      <p className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+        To choose the video shown on the homepage, open{" "}
+        <Link href="/admin/video" className="font-medium text-foreground underline underline-offset-4">Experience video</Link>.
+      </p>
+
       {files.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-16 text-center">
           <ImagePlus className="size-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">No media uploaded yet. Upload images or MP4/WebM videos to use across the site.</p>
+          <p className="text-sm text-muted-foreground">No media uploaded yet. Use Upload image or Upload video to add files.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">

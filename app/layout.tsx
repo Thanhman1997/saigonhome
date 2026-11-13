@@ -16,14 +16,14 @@ import {
 } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
-import { getContactInfo, getDefaultLocale, getDesignSettings, getSectionStyles } from "@/lib/data"
+import { getLayoutSiteData } from "@/lib/data"
 import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
 import "./globals.css"
 
 // Primary display fonts (Latin only)
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", weight: ["300", "400", "500", "600", "700"] })
 const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext", "vietnamese"],
   variable: "--font-cormorant",
   weight: ["300", "400", "500", "600", "700"],
 })
@@ -91,7 +91,7 @@ export const dynamic = "force-dynamic"
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies()
   const savedLocale = cookieStore.get("lotus-wellness-locale")?.value
-  const [databaseLocale, designSettings, sectionStyles, contactInfo] = await Promise.all([getDefaultLocale(), getDesignSettings(), getSectionStyles(), getContactInfo()])
+  const { defaultLocale: databaseLocale, designSettings, sectionStyles, contactInfo } = await getLayoutSiteData()
   const defaultLocale = savedLocale === "en" || savedLocale === "vi" || savedLocale === "ko" ? savedLocale : databaseLocale
   // Keep the public Lotus experience aligned with the approved reference preset.
   // Legacy database rows may contain the previous muted palette and make the page appear broken.
@@ -101,13 +101,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const sectionStyleCss = sectionStyles.map((style) => `#${style.sectionKey} h1,#${style.sectionKey} h2,#${style.sectionKey} h3{color:${safe(style.titleColor)};font-size:${safe(style.titleSize === "sm" ? "1.5rem" : style.titleSize === "lg" ? "3rem" : "2rem")};text-align:${style.sectionKey === "services" || style.sectionKey === "experts" ? "center" : "inherit"}}#${style.sectionKey} p{color:${safe(style.bodyColor)};font-size:${safe(style.bodySize === "sm" ? "0.875rem" : style.bodySize === "lg" ? "1.25rem" : "1rem")}}`).join("")
 
   return (
-    <html lang="en" data-scroll-behavior="smooth" className="bg-background" suppressHydrationWarning>
+    <html lang={defaultLocale} data-scroll-behavior="smooth" className="bg-background" suppressHydrationWarning>
       <body
         className={`${dmSans.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${notoSans.variable} ${notoSansKr.variable} ${notoSerifKr.variable} ${playfair.variable} ${dmSerifDisplay.variable} ${lora.variable} ${manrope.variable} ${inter.variable} font-sans antialiased`}
       >
         <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
         <style id="section-styles" dangerouslySetInnerHTML={{ __html: sectionStyleCss }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([
+          { "@context": "https://schema.org", "@type": "WebSite", name: "Lotus Wellness", url: siteUrl },
+          {
           "@context": "https://schema.org",
           "@type": "HealthAndBeautyBusiness",
           name: "Lotus Wellness",
@@ -117,7 +119,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           ...(contactInfo?.addressEn ? { address: { "@type": "PostalAddress", streetAddress: contactInfo.addressEn, addressCountry: "VN" } } : {}),
           areaServed: "Ho Chi Minh City",
           priceRange: "$$",
-        }) }} />
+          }
+        ]) }} />
         <LanguageProvider defaultLocale={defaultLocale}>{children}</LanguageProvider>
         <Analytics />
       </body>

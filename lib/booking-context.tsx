@@ -32,6 +32,7 @@ export type TherapistRow = {
   bioVi: string | null
   photoUrl: string | null
   available: boolean
+  visible: boolean
 }
 
 type BookingDraft = {

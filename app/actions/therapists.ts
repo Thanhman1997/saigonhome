@@ -69,9 +69,10 @@ export async function createTherapist(formData: FormData) {
   revalidatePath("/admin/therapists")
 }
 
-export async function archiveTherapist(id: number) {
+export async function toggleTherapistVisible(id: number, visible: boolean) {
   await assertAdmin()
-  await db.update(therapists).set({ available: false }).where(eq(therapists.id, id))
+  await db.update(therapists).set({ visible }).where(eq(therapists.id, id))
   revalidatePath("/admin/therapists")
   revalidatePath("/")
+  revalidatePath("/services")
 }

@@ -71,7 +71,15 @@ export function TherapistFormDialog({ therapist }: { therapist: TherapistRow }) 
           <DialogDescription>Update profile details and photo shown on the public site.</DialogDescription>
         </DialogHeader>
         <form action={formAction} className="flex flex-col gap-4">
-          <ImageUpload label="Photo" name="photoUrl" value={photoUrl} onChange={setPhotoUrl} />
+          <ImageUpload
+            label="Photo (hiển thị tỉ lệ 4:3 trên website)"
+            name="photoUrl"
+            value={photoUrl}
+            onChange={setPhotoUrl}
+            aspect="aspect-[4/3]"
+            className="w-full max-w-sm"
+            fit="object-cover"
+          />
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="flex flex-col gap-1.5">

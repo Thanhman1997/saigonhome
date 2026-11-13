@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Massage Reviews in Ho Chi Minh City | Lotus Wellness",
   description: "Read real guest experiences from Lotus Wellness mobile massage visits in Ho Chi Minh City.",
   alternates: { canonical: "/reviews" },
+  openGraph: { title: "Massage Reviews in Ho Chi Minh City | Lotus Wellness", description: "Read real guest experiences from Lotus Wellness mobile massage visits in Ho Chi Minh City.", url: "/reviews", type: "website" },
 }
 
 export default async function ReviewsPage() {

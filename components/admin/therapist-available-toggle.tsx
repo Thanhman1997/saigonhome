@@ -17,7 +17,7 @@ export function TherapistAvailableToggle({ therapistId, available }: { therapist
         onCheckedChange={(checked) => startTransition(() => toggleTherapistAvailable(therapistId, checked))}
       />
       <Label htmlFor={`therapist-${therapistId}`} className="text-xs text-muted-foreground">
-        {available ? "Hiện trên website" : "Đang ẩn"}
+        {available ? "Nhận đặt lịch" : "Hết lịch"}
       </Label>
     </div>
   )
