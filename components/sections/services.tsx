@@ -31,7 +31,12 @@ function imageForService(service: ServiceWithDurations) {
 function ServiceCardImage({ image, alt, icon }: { image: string | null | undefined; alt: string; icon: string }) {
   return (
     <div className="relative mb-2 aspect-video overflow-hidden rounded-[0.9rem] bg-secondary">
-      {image ? <Image src={image} alt={alt} fill loading="lazy" className="object-cover object-top" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" /> : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{icon}</span>}
+      {image ? (
+        <>
+          <Image src={image} alt="" fill loading="lazy" aria-hidden="true" className="scale-110 object-cover blur-md opacity-60" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" />
+          <Image src={image} alt={alt} fill loading="lazy" className="z-10 object-contain" sizes="(min-width: 1024px) 20vw, (min-width: 640px) 45vw, 92vw" />
+        </>
+      ) : <span className="absolute inset-0 grid place-items-center text-4xl" aria-hidden="true">{icon}</span>}
     </div>
   )
 }
