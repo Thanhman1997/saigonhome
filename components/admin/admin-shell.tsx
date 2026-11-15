@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { usePathname } from "next/navigation"
-import { BarChart3, BookOpen, CalendarDays, ChevronRight, ClipboardList, Eye, FileText, ImageIcon, Languages, LayoutDashboard, Menu, Palette, PanelsTopLeft, Settings2, Sparkles, Users, Video, X } from "lucide-react"
+import { BarChart3, BookOpen, CalendarDays, ChevronRight, ClipboardList, Eye, FileText, ImageIcon, Languages, LayoutDashboard, Menu, MessageCircle, Palette, PanelsTopLeft, Settings2, Sparkles, Users, Video, X } from "lucide-react"
 import { AdminLogoutButton } from "@/components/admin/logout-button"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
@@ -13,7 +13,7 @@ const groups = [
   { label: "Website", items: [{ href: "/admin/pages", label: "All content", icon: PanelsTopLeft }, { href: "/admin/content", label: "Section styles", icon: Palette }, { href: "/admin/hero", label: "Hero", icon: Sparkles }, { href: "/admin/about", label: "About", icon: BookOpen }, { href: "/admin/services", label: "Services", icon: ClipboardList }, { href: "/admin/services/content", label: "Services Content", icon: FileText }, { href: "/admin/therapists", label: "Therapists", icon: Users }, { href: "/admin/promotions", label: "Promotions", icon: FileText }, { href: "/admin/holidays", label: "Vietnam holidays", icon: CalendarDays }, { href: "/admin/reviews", label: "Reviews", icon: BarChart3 }, { href: "/admin/faq", label: "FAQ", icon: BookOpen }] },
   { label: "Publishing", items: [{ href: "/admin/video", label: "Videos", icon: Video }] },
   { label: "Operations", items: [{ href: "/admin/bookings", label: "Bookings", icon: CalendarDays }, { href: "/admin/questions", label: "Questions", icon: ClipboardList }, { href: "/admin/membership", label: "Membership", icon: Users }] },
-  { label: "Settings", items: [{ href: "/admin/navigation", label: "Navigation menu", icon: Menu }, { href: "/admin/design", label: "Design", icon: Palette }, { href: "/admin/media", label: "Media library", icon: ImageIcon }, { href: "/admin/languages", label: "Languages", icon: Languages }, { href: "/admin/contact", label: "Contact", icon: Settings2 }, { href: "/admin/booking-settings", label: "Booking settings", icon: Settings2 }, { href: "/admin/email-templates", label: "Booking emails", icon: Settings2 }, { href: "/admin/preview", label: "Preview", icon: Eye }] },
+  { label: "Settings", items: [{ href: "/admin/navigation", label: "Navigation menu", icon: Menu }, { href: "/admin/design", label: "Design", icon: Palette }, { href: "/admin/media", label: "Media library", icon: ImageIcon }, { href: "/admin/languages", label: "Languages", icon: Languages }, { href: "/admin/contact", label: "Contact", icon: Settings2 }, { href: "/admin/kakao", label: "Kakao notifications", icon: MessageCircle }, { href: "/admin/booking-settings", label: "Booking settings", icon: Settings2 }, { href: "/admin/email-templates", label: "Booking emails", icon: Settings2 }, { href: "/admin/preview", label: "Preview", icon: Eye }] },
 ]
 
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {

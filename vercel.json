@@ -1,8 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/cron/booking-reminders",
-      "schedule": "0 0 * * *"
+      "path": "/api/cron/kakao-notifications",
+      "schedule": "0 4 * * *"
     }
   ]
 }

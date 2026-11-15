@@ -24,6 +24,7 @@ export default async function AdminQuestionsPage() {
               <div className="flex items-center gap-2">
                 <span className="font-medium text-foreground">{q.name}</span>
                 <span className="text-xs text-muted-foreground">{q.email}</span>
+                {q.phone && <span className="text-xs text-muted-foreground">{q.phone}</span>}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">
