@@ -67,16 +67,16 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
                       <div className="flex items-center justify-between gap-4">
                         <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
                         {promo.discountLabel && (
-                          <span className="border border-primary px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+                          <span className="border border-primary px-3 py-1 text-sm font-semibold uppercase tracking-wide text-primary">
                             {promo.discountLabel}
                           </span>
                         )}
                       </div>
-                      <h3 className="mt-4 font-serif text-xl text-foreground">{name}</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
+                      <h3 className="mt-4 font-serif text-2xl text-foreground">{name}</h3>
+                      <p className="mt-2 text-base leading-relaxed text-muted-foreground">{desc}</p>
                     </div>
                     {isSeasonal && promo.endDate && (
-                      <p className="mt-6 text-xs uppercase tracking-wide text-primary">
+                      <p className="mt-6 text-sm uppercase tracking-wide text-primary">
                         {t.until}{" "}
                         {formatDate(promo.endDate, locale)}
                       </p>
