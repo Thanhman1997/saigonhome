@@ -11,7 +11,7 @@ type NavigationSetting = { menuKey: string; labelEn: string; labelVi: string; la
 export function Header({ navigationSettings = [] }: { navigationSettings?: NavigationSetting[] }) {
   const [open, setOpen] = useState(false)
   const { locale, t } = useLanguage()
-  const [pathname, setPathname] = useState(() => (typeof window === "undefined" ? "/" : window.location.pathname))
+  const [pathname, setPathname] = useState("/")
   const [activeSection, setActiveSection] = useState("")
 
   useEffect(() => {

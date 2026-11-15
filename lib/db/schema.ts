@@ -8,7 +8,11 @@ import {
   date,
   numeric,
   timestamp,
+  index,
+  uniqueIndex,
+  check,
 } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
 
 export const services = pgTable("services", {
   id: serial("id").primaryKey(),
@@ -250,12 +254,16 @@ export const questions = pgTable("questions", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull(),
+  phone: text("phone"),
   question: text("question").notNull(),
+  submissionToken: text("submission_token"),
   reply: text("reply"),
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   repliedAt: timestamp("replied_at", { withTimezone: true }),
-})
+}, (table) => [
+  uniqueIndex("questions_submission_token_key").on(table.submissionToken).where(sql`${table.submissionToken} IS NOT NULL`),
+])
 
 export const siteContent = pgTable("site_content", {
   key: text("key").primaryKey(),
@@ -307,4 +315,39 @@ export const contactInfo = pgTable("contact_info", {
   hoursKo: text("hours_ko"),
   hoursVi: text("hours_vi"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const kakaoConnections = pgTable("kakao_connections", {
+  id: integer("id").primaryKey(),
+  kakaoUserId: text("kakao_user_id").notNull(),
+  nickname: text("nickname").notNull(),
+  phoneNumber: text("phone_number").notNull(),
+  accessTokenEncrypted: text("access_token_encrypted").notNull(),
+  refreshTokenEncrypted: text("refresh_token_encrypted").notNull(),
+  accessTokenExpiresAt: timestamp("access_token_expires_at", { withTimezone: true }).notNull(),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at", { withTimezone: true }),
+  scopes: text("scopes").array().notNull().default([]),
+  status: text("status").notNull().default("connected"),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [check("kakao_connections_id_check", sql`${table.id} = 1`)])
+
+export const kakaoNotifications = pgTable("kakao_notifications", {
+  id: serial("id").primaryKey(),
+  questionId: integer("question_id").unique(),
+  notificationType: text("notification_type").notNull().default("question"),
+  status: text("status").notNull().default("pending"),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  lastAttemptAt: timestamp("last_attempt_at", { withTimezone: true }),
+  nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  lastError: text("last_error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [index("kakao_notifications_retry_idx").on(table.status, table.nextAttemptAt)])
+
+export const contactSubmissionRateLimits = pgTable("contact_submission_rate_limits", {
+  ipHash: text("ip_hash").primaryKey(),
+  windowStartedAt: timestamp("window_started_at", { withTimezone: true }).notNull(),
+  requestCount: integer("request_count").notNull().default(0),
 })

@@ -18,9 +18,9 @@ export const revalidate = 0
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const service = await getServiceBySlug(slug)
-  if (!service) return { title: "Service not found | Lotus Wellness" }
+  if (!service) return { title: "Service not found" }
   return {
-    title: `${service.nameEn} in Ho Chi Minh City | Lotus Wellness`,
+    title: `${service.nameEn} in Ho Chi Minh City`,
     description: `${service.descEn} Book a professional mobile massage in Ho Chi Minh City with Lotus Wellness.`,
     alternates: { canonical: `/services/${service.slug}` },
     openGraph: { title: `${service.nameEn} | Lotus Wellness`, description: service.descEn, url: `${siteUrl}/services/${service.slug}`, type: "website" },

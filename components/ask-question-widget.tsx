@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { MessageCircleQuestion, Loader2, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,8 +20,11 @@ export function AskQuestionWidget() {
   const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
+  const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
   const [question, setQuestion] = useState("")
+  const [website, setWebsite] = useState("")
+  const submissionToken = useRef<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -29,8 +32,11 @@ export function AskQuestionWidget() {
   function resetAndClose() {
     setOpen(false)
     setName("")
+    setPhone("")
     setEmail("")
     setQuestion("")
+    setWebsite("")
+    submissionToken.current = null
     setSuccess(false)
     setError(null)
   }
@@ -39,18 +45,26 @@ export function AskQuestionWidget() {
     e.preventDefault()
     setError(null)
     setSubmitting(true)
-    const result = await askQuestion({ name, email, question })
-    setSubmitting(false)
-    if (result.success) {
-      setSuccess(true)
-    } else {
-      setError(result.error)
+    submissionToken.current ??= crypto.randomUUID()
+    try {
+      const result = await askQuestion({ name, phone, email, question, submissionToken: submissionToken.current, website })
+      if (result.success) {
+        setSuccess(true)
+        submissionToken.current = null
+      } else {
+        setError(result.error)
+      }
+    } catch {
+      setError("Something went wrong. Please try again.")
+    } finally {
+      setSubmitting(false)
     }
   }
 
   return (
     <>
       <Button
+        aria-label={t.askQuestion.trigger}
         onClick={() => setOpen(true)}
         className="fixed bottom-5 right-5 z-40 h-12 gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-accent-foreground shadow-[0_10px_30px_-16px_var(--accent)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90 sm:bottom-6 sm:right-6 sm:h-14 sm:px-5"
       >
@@ -86,6 +100,10 @@ export function AskQuestionWidget() {
                   <Input id="aq-name" value={name} onChange={(e) => setName(e.target.value)} required maxLength={200} />
                 </div>
                 <div className="flex flex-col gap-2">
+                  <Label htmlFor="aq-phone">{t.askQuestion.phone}</Label>
+                  <Input id="aq-phone" type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required maxLength={40} />
+                </div>
+                <div className="flex flex-col gap-2">
                   <Label htmlFor="aq-email">{t.askQuestion.email}</Label>
                   <Input
                     id="aq-email"
@@ -106,6 +124,10 @@ export function AskQuestionWidget() {
                     maxLength={2000}
                     rows={4}
                   />
+                </div>
+                <div aria-hidden="true" className="absolute -left-[10000px] top-auto size-px overflow-hidden">
+                  <Label htmlFor="aq-website">Website</Label>
+                  <Input id="aq-website" name="website" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <Button type="submit" disabled={submitting} className="mt-1 h-12 font-bold">

@@ -1,11 +1,13 @@
 "use server"
 
+import { createHmac } from "node:crypto"
 import { revalidatePath } from "next/cache"
-import { cookies } from "next/headers"
-import { eq } from "drizzle-orm"
+import { cookies, headers } from "next/headers"
+import { eq, lt, sql } from "drizzle-orm"
 import { Resend } from "resend"
 import { db } from "@/lib/db"
-import { questions } from "@/lib/db/schema"
+import { contactSubmissionRateLimits, questions } from "@/lib/db/schema"
+import { enqueueQuestionKakaoNotification } from "@/lib/kakao-notifications"
 import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
 import { escapeHtml } from "@/lib/security"
 
@@ -22,25 +24,80 @@ function isValidEmail(email: string): boolean {
 
 export type AskQuestionResult = { success: true } | { success: false; error: string }
 
+async function isWithinContactRateLimit(): Promise<boolean> {
+  const secret = process.env.ADMIN_SECRET
+  if (!secret) throw new Error("Contact rate limiting is not configured")
+
+  const requestHeaders = await headers()
+  const forwardedFor = requestHeaders.get("x-vercel-forwarded-for") ?? requestHeaders.get("x-forwarded-for")
+  const ipAddress = requestHeaders.get("x-real-ip") ?? forwardedFor?.split(",").at(-1)?.trim() ?? "unknown"
+  const ipHash = createHmac("sha256", secret).update(ipAddress).digest("hex")
+  const now = new Date()
+  const cutoff = new Date(now.getTime() - 15 * 60 * 1000)
+  const table = contactSubmissionRateLimits
+  await db.delete(table).where(lt(table.windowStartedAt, cutoff))
+
+  const [record] = await db
+    .insert(table)
+    .values({ ipHash, windowStartedAt: now, requestCount: 1 })
+    .onConflictDoUpdate({
+      target: table.ipHash,
+      set: {
+        windowStartedAt: sql`CASE WHEN ${table.windowStartedAt} < ${cutoff} THEN ${now} ELSE ${table.windowStartedAt} END`,
+        requestCount: sql`CASE WHEN ${table.windowStartedAt} < ${cutoff} THEN 1 ELSE ${table.requestCount} + 1 END`,
+      },
+    })
+    .returning({ requestCount: table.requestCount })
+
+  return (record?.requestCount ?? 0) <= 5
+}
+
+function isValidPhone(phone: string): boolean {
+  const digits = phone.replace(/[^0-9]/g, "")
+  return /^[+() .0-9-]{7,40}$/.test(phone) && digits.length >= 7 && digits.length <= 15
+}
+
 export async function askQuestion(input: {
   name: string
+  phone: string
   email: string
   question: string
+  submissionToken: string
+  website?: string
 }): Promise<AskQuestionResult> {
   try {
     const name = input.name?.trim()
+    const phone = input.phone?.trim()
     const email = input.email?.trim()
     const question = input.question?.trim()
+    const submissionToken = input.submissionToken?.trim()
 
-    if (!name) return { success: false, error: "Name is required" }
-    if (!isValidEmail(email ?? "")) return { success: false, error: "Please enter a valid email address" }
-    if (!question) return { success: false, error: "Please enter your question" }
-    if (question.length > 2000) return { success: false, error: "Question is too long" }
+    if (input.website?.trim()) return { success: true }
+    if (!name || name.length > 120) return { success: false, error: "Please enter your name." }
+    if (!isValidPhone(phone ?? "")) return { success: false, error: "Please enter a valid phone number." }
+    if (!isValidEmail(email ?? "") || email.length > 254) return { success: false, error: "Please enter a valid email address." }
+    if (!question) return { success: false, error: "Please enter your question." }
+    if (question.length > 2000) return { success: false, error: "Question is too long." }
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(submissionToken ?? "")) {
+      return { success: false, error: "Please refresh the form and try again." }
+    }
+    if (!(await isWithinContactRateLimit())) return { success: false, error: "Please wait before sending another question." }
 
-    await db.insert(questions).values({ name, email, question })
+    const [saved] = await db
+      .insert(questions)
+      .values({ name, phone, email, question, submissionToken })
+      .onConflictDoNothing()
+      .returning({ id: questions.id })
 
-    await sendAdminNewQuestionNotification({ name, email, question })
+    if (!saved) return { success: true }
 
+    try {
+      await enqueueQuestionKakaoNotification(saved.id)
+    } catch (error) {
+      console.error("[v0] Failed to queue Kakao question notification:", error)
+    }
+
+    await sendAdminNewQuestionNotification({ name, phone, email, question })
     return { success: true }
   } catch (error) {
     console.error("[v0] askQuestion error:", error)
@@ -79,7 +136,7 @@ export async function replyToQuestion(questionId: number, reply: string): Promis
   return { success: true }
 }
 
-async function sendAdminNewQuestionNotification(details: { name: string; email: string; question: string }) {
+async function sendAdminNewQuestionNotification(details: { name: string; phone: string; email: string; question: string }) {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
     console.error("[v0] RESEND_API_KEY not set, skipping admin question notification")
@@ -97,6 +154,7 @@ async function sendAdminNewQuestionNotification(details: { name: string; email: 
           <h2 style="margin-bottom: 4px;">New Question Received</h2>
           <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
             <tr><td style="padding: 6px 0; color: #666;">Name</td><td style="padding: 6px 0;">${escapeHtml(details.name)}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Phone</td><td style="padding: 6px 0;">${escapeHtml(details.phone)}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;">${escapeHtml(details.email)}</td></tr>
             <tr><td style="padding: 6px 0; color: #666; vertical-align: top;">Question</td><td style="padding: 6px 0; white-space: pre-wrap;">${escapeHtml(details.question)}</td></tr>
           </table>

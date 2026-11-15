@@ -8,7 +8,7 @@ import type { Metadata } from "next"
 import { getNavigationSettings } from "@/lib/admin-data"
 
 export const metadata: Metadata = {
-  title: "Mobile Massage Services in Ho Chi Minh City | Lotus Wellness",
+  title: "Mobile Massage Services in Ho Chi Minh City",
   description: "Explore professional mobile massage services delivered to your home or hotel in Ho Chi Minh City.",
   alternates: { canonical: "/services" },
 }
