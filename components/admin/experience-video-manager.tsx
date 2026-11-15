@@ -158,7 +158,7 @@ export function ExperienceVideoManager({ current, library }: { current: Current;
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Button type="button" disabled={busy !== null} onClick={() => videoInput.current?.click()} className="gap-2">
             {busy === "video" ? <Loader2 className="animate-spin" data-icon="inline-start" /> : <Upload data-icon="inline-start" />}
-            {busy === "video" ? "Uploading video…" : "Upload & publish video"}
+            <span>{busy === "video" ? "Uploading video…" : "Upload & publish video"}</span>
           </Button>
           <p className="text-xs text-muted-foreground">MP4 or WebM, up to 150 MB. Your uploaded file is saved in the video library.</p>
         </div>
@@ -197,7 +197,7 @@ export function ExperienceVideoManager({ current, library }: { current: Current;
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" disabled={busy !== null || !dirty || !videoUrl} onClick={save} className="gap-2">
               {busy === "save" ? <Loader2 className="animate-spin" data-icon="inline-start" /> : <Check data-icon="inline-start" />}
-              {busy === "save" ? "Publishing…" : "Publish selected video"}
+              <span>{busy === "save" ? "Publishing…" : "Publish selected video"}</span>
             </Button>
             {hasExplicitSelection && (
               <Button type="button" variant="outline" disabled={busy !== null} onClick={clear} className="gap-2 text-destructive">
@@ -248,7 +248,7 @@ export function ExperienceVideoManager({ current, library }: { current: Current;
               </div>
               <Button type="button" size="sm" variant="outline" disabled={busy !== null} onClick={() => imageInput.current?.click()} className="gap-2">
                 {busy === "image" ? <Loader2 className="animate-spin" data-icon="inline-start" /> : <ImagePlus data-icon="inline-start" />}
-                Upload
+                <span>{busy === "image" ? "Uploading…" : "Upload"}</span>
               </Button>
             </div>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
