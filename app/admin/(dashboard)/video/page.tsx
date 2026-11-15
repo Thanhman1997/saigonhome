@@ -2,7 +2,7 @@ import { list } from "@vercel/blob"
 import { ExperienceVideoManager, type LibraryFile } from "@/components/admin/experience-video-manager"
 import { getExperienceVideoAdmin } from "@/lib/admin-data"
 
-export const metadata = { title: "Experience video" }
+export const metadata = { title: "Video publishing" }
 
 export default async function AdminVideoPage() {
   let blobs: Awaited<ReturnType<typeof list>>["blobs"] = []
@@ -28,9 +28,9 @@ export default async function AdminVideoPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Experience video</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Video publishing</h1>
         <p className="text-sm text-muted-foreground">
-          Manage the video shown in the &ldquo;Experience video&rdquo; section of the homepage. The frame adapts to the video&apos;s own proportions.
+          Upload and publish a video to the homepage, or select a previous upload. Without an explicit selection, the latest upload is shown.
         </p>
       </div>
       {storageError && (
