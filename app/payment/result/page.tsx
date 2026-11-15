@@ -7,7 +7,7 @@ import { PaymentButton } from "@/components/booking/payment-button"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Payment Result | Lotus Wellness",
+  title: "Payment Result",
   description: "View the status of your Lotus Wellness booking payment.",
   robots: { index: false, follow: false },
 }
