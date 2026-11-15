@@ -125,7 +125,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 
     if (input.therapistId) {
       const [therapist] = await db.select().from(therapists).where(eq(therapists.id, input.therapistId)).limit(1)
-      if (!therapist || !therapist.available) {
+      if (!therapist || !therapist.available || !therapist.visible) {
         return { success: false, error: "Selected therapist is unavailable" }
       }
     }

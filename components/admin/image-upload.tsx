@@ -1,12 +1,13 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import { ImagePlus, Library, Loader2, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { uploadMedia } from "@/lib/upload-media"
 
 type LibraryImage = {
   url: string
@@ -22,12 +23,16 @@ export function ImageUpload({
   value,
   onChange,
   aspect = "aspect-[4/5]",
+  className = "w-40",
+  fit = "object-contain",
 }: {
   label: string
   name: string
   value: string | null
   onChange: (url: string | null) => void
   aspect?: string
+  className?: string
+  fit?: "object-contain" | "object-cover"
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -36,21 +41,26 @@ export function ImageUpload({
   const [libraryImages, setLibraryImages] = useState<LibraryImage[]>([])
   const [search, setSearch] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const isMountedRef = useRef(true)
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   async function handleFile(file: File) {
     setError(null)
     setUploading(true)
     try {
-      const formData = new FormData()
-      formData.append("file", file)
-      const res = await fetch("/api/admin/upload", { method: "POST", body: formData })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? "Upload failed")
-      onChange(data.url)
+      const url = await uploadMedia(file)
+      if (!isMountedRef.current) return
+      onChange(url)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed")
+      if (isMountedRef.current) setError(e instanceof Error ? e.message : "Upload failed")
     } finally {
-      setUploading(false)
+      if (isMountedRef.current) setUploading(false)
     }
   }
 
@@ -62,11 +72,11 @@ export function ImageUpload({
       const res = await fetch("/api/admin/media", { cache: "no-store" })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? "Could not load media library")
-      setLibraryImages(data.files)
+      if (isMountedRef.current) setLibraryImages(data.files)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load media library")
+      if (isMountedRef.current) setError(e instanceof Error ? e.message : "Could not load media library")
     } finally {
-      setLoadingLibrary(false)
+      if (isMountedRef.current) setLoadingLibrary(false)
     }
   }
 
@@ -76,9 +86,9 @@ export function ImageUpload({
       const query = value.trim() ? `?search=${encodeURIComponent(value.trim())}` : ""
       const res = await fetch(`/api/admin/media${query}`, { cache: "no-store" })
       const data = await res.json()
-      if (res.ok) setLibraryImages(data.files)
+      if (res.ok && isMountedRef.current) setLibraryImages(data.files)
     } catch {
-      setError("Could not search media library")
+      if (isMountedRef.current) setError("Could not search media library")
     }
   }
 
@@ -86,8 +96,8 @@ export function ImageUpload({
     <div className="flex flex-col gap-1.5">
       <Label>{label}</Label>
       <input type="hidden" name={name} value={value ?? ""} />
-      <div className={cn("relative w-40 overflow-hidden rounded-lg border border-dashed border-border bg-muted", aspect)}>
-        {value ? <Image src={value} alt="" fill className="object-contain" unoptimized /> : <div className="flex h-full items-center justify-center text-muted-foreground"><ImagePlus className="size-6" /></div>}
+      <div className={cn("relative overflow-hidden rounded-lg border border-dashed border-border bg-muted", className, aspect)}>
+        {value ? <Image src={value} alt="" fill className={fit} unoptimized /> : <div className="flex h-full items-center justify-center text-muted-foreground"><ImagePlus className="size-6" /></div>}
         {uploading && <div className="absolute inset-0 flex items-center justify-center bg-background/70"><Loader2 className="size-5 animate-spin text-foreground" /></div>}
         {value && !uploading && <button type="button" onClick={() => onChange(null)} className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm"><X className="size-3.5" /><span className="sr-only">Remove image</span></button>}
       </div>

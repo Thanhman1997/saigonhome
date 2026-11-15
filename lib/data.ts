@@ -1,6 +1,5 @@
 import { list } from "@vercel/blob"
 import { db } from "@/lib/db"
-import { dictionary } from "@/lib/i18n/dictionary"
 import {
   services,
   servicesContent,
@@ -19,14 +18,59 @@ import {
   siteContent,
   sectionStyles,
 } from "@/lib/db/schema"
-import { asc, eq, desc, sql } from "drizzle-orm"
+import { and, asc, eq, desc, sql } from "drizzle-orm"
+import { unstable_cache } from "next/cache"
+
+export const LAYOUT_DATA_TAG = "site-layout"
+
+const loadLayoutSiteData = unstable_cache(
+  async () => {
+    const [localeRows, designRows, styleRows, contactRows] = await Promise.all([
+      db.select().from(siteContent).where(eq(siteContent.key, "default_locale")).limit(1),
+      db.select().from(designSettings).limit(1),
+      db.select().from(sectionStyles),
+      db.select().from(contactInfo).limit(1),
+    ])
+    return {
+      databaseLocale: localeRows[0]?.valueEn ?? null,
+      designSettings: designRows[0] ?? null,
+      sectionStyles: styleRows,
+      contactInfo: contactRows[0] ?? null,
+    }
+  },
+  ["site-layout-data"],
+  { tags: [LAYOUT_DATA_TAG], revalidate: 300 },
+)
+
+/**
+ * Locale, design tokens, section styles, and contact info read by the root layout on every request.
+ * Cached for five minutes and expired immediately by the admin actions that change them (updateTag).
+ * Errors are not cached: a failed read falls back to defaults and retries on the next request.
+ */
+export async function getLayoutSiteData() {
+  try {
+    const data = await loadLayoutSiteData()
+    const locale = data.databaseLocale
+    return { ...data, defaultLocale: locale === "ko" || locale === "vi" ? locale : ("en" as SiteLocale) }
+  } catch {
+    return { databaseLocale: null, designSettings: null, sectionStyles: [], contactInfo: null, defaultLocale: "en" as SiteLocale }
+  }
+}
 
 export async function getLatestVideoMedia() {
+  const configured = await db.select().from(siteContent).where(eq(siteContent.key, "experience_video")).limit(1)
+  const value = configured[0]?.valueEn
+  if (value) {
+    try {
+      const parsed = JSON.parse(value) as { videoUrl?: string; thumbnailUrl?: string; aspectRatio?: number }
+      if (parsed.videoUrl) return { videoUrl: parsed.videoUrl, thumbnailUrl: parsed.thumbnailUrl ?? null, aspectRatio: parsed.aspectRatio ?? 16 / 9 }
+    } catch {
+      // Ignore legacy or malformed configuration and use the media fallback below.
+    }
+  }
   const { blobs } = await list({ prefix: "lotus-wellness/" })
-  const video = blobs
-    .filter((blob) => /\.(mp4|webm)$/i.test(blob.pathname))
-    .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0]
-  return video ? `/api/media?pathname=${encodeURIComponent(video.pathname)}` : null
+  const video = blobs.filter((blob) => /\.(mp4|webm)$/i.test(blob.pathname)).sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0]
+  return video ? { videoUrl: `/api/media?pathname=${encodeURIComponent(video.pathname)}`, thumbnailUrl: null, aspectRatio: 16 / 9 } : null
 }
 
 export async function getServicesContent() {
@@ -37,9 +81,9 @@ export async function getServicesContent() {
   // Keep legacy database rows from overwriting the canonical multilingual dictionary.
   return {
     ...row,
-    kickerEn: row.kickerEn === "Therapies for every need" ? dictionary.en.services.kicker : row.kickerEn,
-    kickerKo: row.kickerKo === "모든 니즈를 위한 테라피" ? dictionary.ko.services.kicker : row.kickerKo,
-    kickerVi: row.kickerVi === "Liệu trình cho mọi nhu cầu" ? dictionary.vi.services.kicker : row.kickerVi,
+    kickerEn: row.kickerEn,
+    kickerKo: row.kickerKo,
+    kickerVi: row.kickerVi,
   }
 }
 
@@ -66,11 +110,11 @@ export async function getServiceBySlug(slug: string) {
 }
 
 export async function getTherapists() {
-  return db.select().from(therapists).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
+  return db.select().from(therapists).where(eq(therapists.visible, true)).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getAvailableTherapists() {
-  return db.select().from(therapists).where(eq(therapists.available, true)).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
+  return db.select().from(therapists).where(and(eq(therapists.visible, true), eq(therapists.available, true))).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getApprovedReviews() {
@@ -108,8 +152,12 @@ export async function getFaqs() {
 }
 
 export async function getContactInfo() {
-  const rows = await db.select().from(contactInfo).limit(1)
-  return rows[0] ?? null
+  try {
+    const rows = await db.select().from(contactInfo).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export async function getHeroContent() {
@@ -127,12 +175,20 @@ export async function getLotusValues() {
 }
 
 export async function getSectionStyles() {
-  return db.select().from(sectionStyles)
+  try {
+    return await db.select().from(sectionStyles)
+  } catch {
+    return []
+  }
 }
 
 export async function getDesignSettings() {
-  const rows = await db.select().from(designSettings).limit(1)
-  return rows[0] ?? null
+  try {
+    const rows = await db.select().from(designSettings).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export async function getBookingSettings() {
@@ -144,7 +200,11 @@ const VALID_LOCALES = ["en", "ko", "vi"] as const
 export type SiteLocale = (typeof VALID_LOCALES)[number]
 
 export async function getDefaultLocale(): Promise<SiteLocale> {
-  const rows = await db.select().from(siteContent).where(eq(siteContent.key, "default_locale")).limit(1)
-  const value = rows[0]?.valueEn
-  return (VALID_LOCALES as readonly string[]).includes(value ?? "") ? (value as SiteLocale) : "en"
+  try {
+    const rows = await db.select().from(siteContent).where(eq(siteContent.key, "default_locale")).limit(1)
+    const value = rows[0]?.valueEn
+    return (VALID_LOCALES as readonly string[]).includes(value ?? "") ? (value as SiteLocale) : "en"
+  } catch {
+    return "en"
+  }
 }

@@ -18,27 +18,50 @@ import {
   questions,
   navigationSettings,
 } from "@/lib/db/schema"
-import { asc, desc, eq, sql } from "drizzle-orm"
+import { asc, count, desc, eq, gte, sql } from "drizzle-orm"
+
+export async function getDashboardCounts(today: string, weekStart: Date) {
+  const [[todayRow], [weekRow], [pendingQuestionsRow], [pendingReviewsRow]] = await Promise.all([
+    db.select({ total: count() }).from(bookings).where(eq(bookings.date, today)),
+    db.select({ total: count() }).from(bookings).where(gte(bookings.createdAt, weekStart)),
+    db.select({ total: count() }).from(questions).where(eq(questions.status, "pending")),
+    db.select({ total: count() }).from(reviews).where(eq(reviews.approved, false)),
+  ])
+
+  return {
+    todayBookings: todayRow?.total ?? 0,
+    weekBookings: weekRow?.total ?? 0,
+    pendingQuestions: pendingQuestionsRow?.total ?? 0,
+    pendingReviews: pendingReviewsRow?.total ?? 0,
+  }
+}
 
 export async function getAllBookingsWithRelations() {
-  const allBookings = await db.select().from(bookings).orderBy(desc(bookings.createdAt))
-  const allServices = await db.select().from(services)
-  const allTherapists = await db.select().from(therapists)
+  const [allBookings, allServices, allTherapists] = await Promise.all([
+    db.select().from(bookings).orderBy(desc(bookings.createdAt)),
+    db.select().from(services),
+    db.select().from(therapists),
+  ])
+  const serviceById = new Map(allServices.map((s) => [s.id, s]))
+  const therapistById = new Map(allTherapists.map((t) => [t.id, t]))
 
   return allBookings.map((booking) => ({
     ...booking,
-    service: allServices.find((s) => s.id === booking.serviceId) ?? null,
-    therapist: allTherapists.find((t) => t.id === booking.therapistId) ?? null,
+    service: serviceById.get(booking.serviceId) ?? null,
+    therapist: booking.therapistId ? (therapistById.get(booking.therapistId) ?? null) : null,
   }))
 }
 
 export async function getAllReviewsWithRelations() {
-  const allReviews = await db.select().from(reviews).orderBy(desc(reviews.reviewDate))
-  const allTherapists = await db.select().from(therapists)
+  const [allReviews, allTherapists] = await Promise.all([
+    db.select().from(reviews).orderBy(desc(reviews.reviewDate)),
+    db.select().from(therapists),
+  ])
+  const therapistById = new Map(allTherapists.map((t) => [t.id, t]))
 
   return allReviews.map((review) => ({
     ...review,
-    therapist: allTherapists.find((t) => t.id === review.therapistId) ?? null,
+    therapist: review.therapistId ? (therapistById.get(review.therapistId) ?? null) : null,
   }))
 }
 
@@ -63,6 +86,13 @@ export async function getAllFaqsAdmin() {
 export async function getContactInfoAdmin() {
   const rows = await db.select().from(contactInfo).limit(1)
   return rows[0] ?? null
+}
+
+export async function getExperienceVideoAdmin() {
+  const rows = await db.select().from(siteContent).where(eq(siteContent.key, "experience_video")).limit(1)
+  const value = rows[0]?.valueEn
+  if (!value) return null
+  try { return JSON.parse(value) as { videoUrl: string; thumbnailUrl: string | null; aspectRatio: number } } catch { return null }
 }
 
 export async function getAllTherapistsAdmin() {
@@ -96,8 +126,12 @@ export async function getNavigationSettings() {
 }
 
 export async function getDesignSettingsAdmin() {
-  const rows = await db.select().from(designSettings).limit(1)
-  return rows[0] ?? null
+  try {
+    const rows = await db.select().from(designSettings).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export async function getBookingSettingsAdmin() {

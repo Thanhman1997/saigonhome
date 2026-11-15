@@ -1,6 +1,7 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, updateTag } from "next/cache"
+import { LAYOUT_DATA_TAG } from "@/lib/data"
 import { eq } from "drizzle-orm"
 import { cookies } from "next/headers"
 import { db } from "@/lib/db"
@@ -104,6 +105,7 @@ export async function updateDesignSettings(
     await db.insert(designSettings).values(values)
   }
 
+  updateTag(LAYOUT_DATA_TAG)
   revalidatePath("/", "layout")
   revalidatePath("/admin/design")
   return { success: true }
@@ -128,6 +130,7 @@ export async function resetDesignSettingsToPreset(presetKey: string): Promise<De
     await db.insert(designSettings).values(values)
   }
 
+  updateTag(LAYOUT_DATA_TAG)
   revalidatePath("/", "layout")
   revalidatePath("/admin/design")
   return { success: true }
