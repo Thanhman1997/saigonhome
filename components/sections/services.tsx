@@ -67,7 +67,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
           <p className="mx-auto mt-4 max-w-3xl text-center font-sans text-lg font-normal leading-relaxed text-muted-foreground">{withServiceCount(localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi), services.length, locale)}</p>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {displayedServices.map((service) => {
             const localizedName = pickLocalized({ en: service.nameEn, ko: service.nameKo, vi: service.nameVi }, locale)
             const name = localizedName
@@ -80,7 +80,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                 <div>
                   <ServiceCardImage image={image} alt={name} icon={service.icon} />
                   <div className="px-1">
-                    <h3 className={`${luxuryFont} text-center text-[1.75rem]! font-bold leading-tight tracking-wide sm:text-[2rem]!`}>{name}</h3>
+                    <h3 className={`${luxuryFont} whitespace-nowrap text-center text-sm! font-bold leading-tight tracking-tight md:text-lg!`}>{name}</h3>
                     <p className="mt-2 text-base leading-relaxed text-muted-foreground">{desc}</p>
                     <div className="mt-3 flex flex-col gap-1.5 border-t border-border pt-3">
                       {service.durations.map((d) => <div key={d.id} className={`${luxuryFont} grid grid-cols-[6.5rem_1fr] items-baseline gap-3 text-xl leading-snug`}><span className="font-medium text-muted-foreground">{d.minutes} {locale === "en" ? "mins" : locale === "ko" ? "분" : "phút"}</span><span className="font-bold tracking-wide text-foreground">{formatServicePrice(d.priceVnd, locale)}</span></div>)}
