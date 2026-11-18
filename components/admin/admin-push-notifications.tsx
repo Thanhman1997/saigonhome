@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Bell, BellOff, BellRing, Loader2, Smartphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 type BrowserStatus = "checking" | "ready" | "subscribed" | "unsupported" | "error"
 
@@ -37,7 +38,7 @@ async function removeSubscriptionFromServer(endpoint: string) {
   })
 }
 
-export function AdminPushNotifications({ applicationServerKey }: { applicationServerKey: string | null }) {
+export function AdminPushNotifications({ applicationServerKey, className }: { applicationServerKey: string | null; className?: string }) {
   const [status, setStatus] = useState<BrowserStatus>("checking")
   const [permission, setPermission] = useState<NotificationPermission | null>(null)
   const [busy, setBusy] = useState(false)
@@ -146,7 +147,7 @@ export function AdminPushNotifications({ applicationServerKey }: { applicationSe
   const disabled = busy || status === "checking" || status === "unsupported" || status === "error" || !applicationServerKey
 
   return (
-    <section aria-labelledby="admin-push-title" className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4 sm:p-5">
+    <section aria-labelledby="admin-push-title" className={cn("flex flex-col gap-4 rounded-lg border border-border bg-card p-4 sm:p-5", className)}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex gap-3">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-primary">
