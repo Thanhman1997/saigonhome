@@ -105,6 +105,34 @@ describe("createBooking integration contract", () => {
     }
   })
 
+  it("accepts a 17:45 booking when the configured closing time is midnight", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.settings.closeTime = "00:00"
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "17:45"))
+      expect(result.success).toBe(true)
+    } finally {
+      rows.settings.closeTime = "21:00"
+      vi.useRealTimers()
+    }
+  })
+
+  it("rejects a service that would finish after a midnight closing time", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.settings.closeTime = "00:00"
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "23:30"))
+      expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
+    } finally {
+      rows.settings.closeTime = "21:00"
+      vi.useRealTimers()
+    }
+  })
+
   it("rejects malformed date and time values", async () => {
     const { createBooking } = await import("./booking")
     const result = await createBooking(validInput("2026/08/20", "noon"))

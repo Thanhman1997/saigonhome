@@ -85,7 +85,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const [openHour, openMinute] = (settingsRow?.openTime ?? "09:00").split(":").map(Number)
     const [closeHour, closeMinute] = (settingsRow?.closeTime ?? "21:00").split(":").map(Number)
     const openingMinutes = openHour * 60 + openMinute
-    const closingMinutes = closeHour * 60 + closeMinute
+    const closingMinutes = closeHour === 0 && closeMinute === 0 ? 24 * 60 : closeHour * 60 + closeMinute
     const requestedMinutes = hours * 60 + minutes
     const bookingUtcMs = zonedLocalDateTimeToUtc(input.date, input.time, VIETNAM_TIME_ZONE).getTime()
     const minBookingUtcMs = now.getTime() + 60 * 60 * 1000
@@ -98,7 +98,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       return { success: false, error: "Selected date is outside the booking window" }
     }
     if (settingsRow?.closedWeekdays?.includes(weekday)) return { success: false, error: "Selected day is unavailable" }
-    if (requestedMinutes < openingMinutes || requestedMinutes > closingMinutes || bookingUtcMs < minBookingUtcMs) {
+    if (requestedMinutes < openingMinutes || requestedMinutes >= closingMinutes || bookingUtcMs < minBookingUtcMs) {
       return { success: false, error: "Selected time is unavailable" }
     }
 
@@ -116,6 +116,9 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       .where(and(eq(serviceDurations.serviceId, input.serviceId), eq(serviceDurations.minutes, input.durationMinutes)))
       .limit(1)
     if (!duration) return { success: false, error: "Selected duration is unavailable for this service" }
+    if (requestedMinutes + duration.minutes > closingMinutes) {
+      return { success: false, error: "Selected time is unavailable" }
+    }
 
     if (input.therapistId) {
       const [therapist] = await db.select().from(therapists).where(eq(therapists.id, input.therapistId)).limit(1)
