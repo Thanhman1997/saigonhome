@@ -64,6 +64,7 @@ export const metadata: Metadata = {
     "Lotus Wellness",
   ],
   alternates: { canonical: "/" },
+  icons: { apple: "/apple-icon.png", icon: "/icon.svg" },
   openGraph: {
     title: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
     description: "Excellence, convenience, affordability, and privacy — professional massage wherever you are.",

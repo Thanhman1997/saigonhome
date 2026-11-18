@@ -351,3 +351,10 @@ export const contactSubmissionRateLimits = pgTable("contact_submission_rate_limi
   windowStartedAt: timestamp("window_started_at", { withTimezone: true }).notNull(),
   requestCount: integer("request_count").notNull().default(0),
 })
+
+export const adminPushSubscriptions = pgTable("admin_push_subscriptions", {
+  endpoint: text("endpoint").primaryKey(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})

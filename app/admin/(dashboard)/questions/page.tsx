@@ -1,12 +1,15 @@
 import { getAllQuestions } from "@/lib/admin-data"
+import { AdminPushNotifications } from "@/components/admin/admin-push-notifications"
 import { QuestionReplyForm } from "@/components/admin/question-reply-form"
 import { Badge } from "@/components/ui/badge"
+import { getAdminWebPushPublicKey } from "@/lib/admin-web-push"
 
 export const metadata = { title: "Questions" }
 
 export default async function AdminQuestionsPage() {
   const questions = await getAllQuestions()
   const pendingCount = questions.filter((q) => q.status === "pending").length
+  const applicationServerKey = getAdminWebPushPublicKey()
 
   return (
     <div className="flex flex-col gap-6">
@@ -16,6 +19,8 @@ export default async function AdminQuestionsPage() {
           {questions.length} total question{questions.length === 1 ? "" : "s"} · {pendingCount} pending reply
         </p>
       </div>
+
+      <AdminPushNotifications applicationServerKey={applicationServerKey} />
 
       <div className="flex flex-col gap-3">
         {questions.map((q) => (

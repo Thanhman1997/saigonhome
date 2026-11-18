@@ -8,6 +8,7 @@ import { Resend } from "resend"
 import { db } from "@/lib/db"
 import { contactSubmissionRateLimits, questions } from "@/lib/db/schema"
 import { enqueueQuestionKakaoNotification } from "@/lib/kakao-notifications"
+import { sendAdminPushNotification } from "@/lib/admin-web-push"
 import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
 import { escapeHtml } from "@/lib/security"
 
@@ -97,7 +98,12 @@ export async function askQuestion(input: {
       console.error("[v0] Failed to queue Kakao question notification:", error)
     }
 
-    await sendAdminNewQuestionNotification({ name, phone, email, question })
+    await Promise.all([
+      sendAdminNewQuestionNotification({ name, phone, email, question }),
+      sendAdminPushNotification().catch((error) => {
+        console.error("[v0] Failed to send admin Web Push notification:", error)
+      }),
+    ])
     return { success: true }
   } catch (error) {
     console.error("[v0] askQuestion error:", error)
