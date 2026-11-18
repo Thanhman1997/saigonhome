@@ -28,16 +28,12 @@ export async function updateBookingSettings(_prevState: { error?: string } | und
   await assertAdmin()
 
   const advanceBookingDays = Number(formData.get("advanceBookingDays") ?? 30)
-  const minNoticeHours = Number(formData.get("minNoticeHours") ?? 2)
   const maxGuests = Number(formData.get("maxGuests") ?? 20)
   const openTime = String(formData.get("openTime") ?? "09:00")
   const closeTime = String(formData.get("closeTime") ?? "21:00")
 
   if (!Number.isInteger(advanceBookingDays) || advanceBookingDays < 1 || advanceBookingDays > 365) {
     return { error: "Advance booking days must be between 1 and 365." }
-  }
-  if (!Number.isInteger(minNoticeHours) || minNoticeHours < 0 || minNoticeHours > 168) {
-    return { error: "Minimum notice hours must be between 0 and 168." }
   }
   if (!Number.isInteger(maxGuests) || maxGuests < 1 || maxGuests > 50) {
     return { error: "Max guests must be between 1 and 50." }
@@ -50,7 +46,7 @@ export async function updateBookingSettings(_prevState: { error?: string } | und
 
   const values = {
     advanceBookingDays,
-    minNoticeHours,
+    minNoticeHours: 1,
     maxGuests,
     openTime,
     closeTime,

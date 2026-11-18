@@ -141,6 +141,7 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       invalidEmail: "Please enter a valid email address",
       selectServiceFirst: "Please select a service and duration",
       selectDateTimeFirst: "Please select a date and time",
+      minimumNotice: "Please choose a time at least 1 hour from now (Vietnam time).",
     },
     footer: {
       tagline: "Professional mobile massage, delivered with discretion across Ho Chi Minh City.",
@@ -271,6 +272,7 @@ titleLine1: "웰니스 마사지",
       invalidEmail: "유효한 이메일 주소를 입력해주세요",
       selectServiceFirst: "서비스와 시간을 선택해주세요",
       selectDateTimeFirst: "날짜와 시간을 선택해주세요",
+      minimumNotice: "베트남 시간 기준 현재 시각으로부터 최소 1시간 이후를 선택해 주세요.",
     },
     footer: { tagline: "호치민시 전역에 신중하게 제공되는 전문 방문 마사지.", explore: "탐색", contact: "연락처", rights: "모든 권리 보유." },
     askQuestion: {
@@ -396,6 +398,7 @@ titleLine1: "웰니스 마사지",
       invalidEmail: "Vui lòng nhập địa chỉ email hợp lệ",
       selectServiceFirst: "Vui lòng chọn dịch vụ và thời gian",
       selectDateTimeFirst: "Vui lòng chọn ngày và giờ",
+      minimumNotice: "Vui lòng chọn giờ đặt lịch sau ít nhất 1 tiếng theo giờ Việt Nam.",
     },
     footer: { tagline: "Massage tận nơi chuyên nghiệp, phục vụ tận tâm khắp Thành phố Hồ Chí Minh.", explore: "Khám phá", contact: "Liên hệ", rights: "Đã đăng ký bản quyền." },
     askQuestion: {

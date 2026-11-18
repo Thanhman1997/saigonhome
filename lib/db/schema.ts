@@ -238,7 +238,7 @@ export const designSettings = pgTable("design_settings", {
 export const bookingSettings = pgTable("booking_settings", {
   id: serial("id").primaryKey(),
   advanceBookingDays: integer("advance_booking_days").notNull().default(30),
-  minNoticeHours: integer("min_notice_hours").notNull().default(2),
+  minNoticeHours: integer("min_notice_hours").notNull().default(1),
   maxGuests: integer("max_guests").notNull().default(20),
   openTime: text("open_time").notNull().default("09:00"),
   closeTime: text("close_time").notNull().default("21:00"),

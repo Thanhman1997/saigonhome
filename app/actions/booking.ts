@@ -49,12 +49,6 @@ function getVietnamDateString(date = new Date()): string {
   return `${values.year}-${values.month}-${values.day}`
 }
 
-function vietnamLocalToUtcMs(date: string, time: string): number {
-  const [year, month, day] = date.split("-").map(Number)
-  const [hour, minute] = time.split(":").map(Number)
-  return Date.UTC(year, month - 1, day, hour + 7, minute)
-}
-
 export async function createBooking(input: CreateBookingInput): Promise<CreateBookingResult> {
   try {
     if (!input.customerName?.trim()) return { success: false, error: "Name is required" }
@@ -93,8 +87,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const openingMinutes = openHour * 60 + openMinute
     const closingMinutes = closeHour * 60 + closeMinute
     const requestedMinutes = hours * 60 + minutes
-    const bookingUtcMs = vietnamLocalToUtcMs(input.date, input.time)
-    const minBookingUtcMs = now.getTime() + (settingsRow?.minNoticeHours ?? 2) * 60 * 60 * 1000
+    const bookingUtcMs = zonedLocalDateTimeToUtc(input.date, input.time, VIETNAM_TIME_ZONE).getTime()
+    const minBookingUtcMs = now.getTime() + 60 * 60 * 1000
 
     const maxAdvanceDays = settingsRow?.advanceBookingDays ?? 30
     const maxBookingDate = new Date(`${vietnamToday}T00:00:00Z`)

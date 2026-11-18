@@ -81,12 +81,28 @@ describe("createBooking integration contract", () => {
     expect(result).toMatchObject({ success: false, error: "Selected date is outside the booking window" })
   })
 
-  it("rejects bookings inside the minimum notice window", async () => {
-    const { createBooking } = await import("./booking")
-    const date = new Date(Date.now() + 1 * 86400000)
-    while (date.getDay() === 0) date.setDate(date.getDate() + 1)
-    const result = await createBooking(validInput(date.toISOString().slice(0, 10), "00:30"))
-    expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
+  it("accepts a booking exactly one hour ahead in Vietnam time", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T01:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-15", "09:00"))
+      expect(result.success).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("rejects a booking less than one hour ahead in Vietnam time", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T01:01:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-15", "09:00"))
+      expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it("rejects malformed date and time values", async () => {

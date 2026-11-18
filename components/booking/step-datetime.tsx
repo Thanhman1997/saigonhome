@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
 import { useBooking } from "@/lib/booking-context"
@@ -8,7 +8,18 @@ import { useLanguage } from "@/lib/i18n/language-provider"
 import { Minus, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// Booking is available from 09:00 through 24:00 in 15-minute intervals.
+const VIETNAM_TIME_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Ho_Chi_Minh",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+})
+const ONE_HOUR_MS = 60 * 60 * 1000
+const SLOT_INTERVAL_MS = 15 * 60 * 1000
+
 const TIME_SLOTS = Array.from({ length: 61 }, (_, index) => {
   const totalMinutes = 9 * 60 + index * 15
   const hours = Math.floor(totalMinutes / 60)
@@ -16,17 +27,50 @@ const TIME_SLOTS = Array.from({ length: 61 }, (_, index) => {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
 })
 
+function getVietnamTimeParts(date: Date) {
+  const values = Object.fromEntries(
+    VIETNAM_TIME_FORMATTER.formatToParts(date)
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value]),
+  )
+  return {
+    date: `${values.year}-${values.month}-${values.day}`,
+    minutes: Number(values.hour) * 60 + Number(values.minute),
+  }
+}
+
 export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
   const { draft, updateDraft } = useBooking()
   const { t } = useLanguage()
-  const [error, setError] = useState(false)
+  const [now, setNow] = useState(() => new Date())
+  const [error, setError] = useState<"selection" | "minimumNotice" | null>(null)
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => setNow(new Date()), 15_000)
+    return () => window.clearInterval(intervalId)
+  }, [])
+
+  const vietnamToday = getVietnamTimeParts(now).date
+  const earliestSlot = new Date(Math.ceil((now.getTime() + ONE_HOUR_MS) / SLOT_INTERVAL_MS) * SLOT_INTERVAL_MS)
+  const earliestVietnamTime = getVietnamTimeParts(earliestSlot)
   const selectedDate = draft.date ? new Date(draft.date + "T00:00:00") : undefined
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = new Date(`${vietnamToday}T00:00:00`)
+
+  function isTimeAllowed(time: string) {
+    if (!draft.date) return true
+    if (draft.date > earliestVietnamTime.date) return true
+    if (draft.date < earliestVietnamTime.date) return false
+    const [hours, minutes] = time.split(":").map(Number)
+    return hours * 60 + minutes >= earliestVietnamTime.minutes
+  }
+
   function handleContinue() {
     if (!draft.date || !draft.time) {
-      setError(true)
+      setError("selection")
+      return
+    }
+    if (!isTimeAllowed(draft.time)) {
+      setError("minimumNotice")
       return
     }
     onNext()
@@ -44,13 +88,13 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
             selected={selectedDate}
             onSelect={(date) => {
               if (date) {
-                setError(false)
                 const localDate = [
                   date.getFullYear(),
                   String(date.getMonth() + 1).padStart(2, "0"),
                   String(date.getDate()).padStart(2, "0"),
                 ].join("-")
-                updateDraft({ date: localDate })
+                setError(null)
+                updateDraft({ date: localDate, time: null })
               }
             }}
             disabled={{ before: today }}
@@ -60,17 +104,19 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
         <div className="flex flex-col gap-6">
           <div>
             <p className="mb-2 text-sm font-medium">{t.booking.selectTime}</p>
+            <p className="mb-3 text-sm leading-relaxed text-muted-foreground">{t.booking.minimumNotice}</p>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 lg:grid-cols-7">
               {TIME_SLOTS.map((time) => (
                 <button
                   key={time}
                   type="button"
+                  disabled={!isTimeAllowed(time)}
                   onClick={() => {
-                    setError(false)
+                    setError(null)
                     updateDraft({ time })
                   }}
                   className={cn(
-                    "flex h-9 w-14 items-center justify-center border p-0 font-sans text-sm font-medium leading-none tabular-nums transition-colors",
+                    "flex h-9 w-14 items-center justify-center border p-0 font-sans text-sm font-medium leading-none tabular-nums transition-colors disabled:cursor-not-allowed disabled:opacity-40",
                     draft.time === time
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border hover:border-primary/50",
@@ -107,7 +153,11 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
         </div>
       </div>
 
-      {error && <p className="text-sm text-destructive">{t.booking.selectDateTimeFirst}</p>}
+      {error && (
+        <p className="text-sm text-destructive">
+          {error === "minimumNotice" ? t.booking.minimumNotice : t.booking.selectDateTimeFirst}
+        </p>
+      )}
 
       <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
         <Button variant="outline" onClick={onBack} size="lg">

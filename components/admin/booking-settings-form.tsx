@@ -10,7 +10,6 @@ import { updateBookingSettings } from "@/app/actions/booking-settings"
 type BookingSettingsRow = {
   id: number
   advanceBookingDays: number
-  minNoticeHours: number
   maxGuests: number
   openTime: string
   closeTime: string
@@ -43,7 +42,8 @@ export function BookingSettingsForm({ settings }: { settings: BookingSettingsRow
 
       <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
         <h3 className="text-sm font-medium text-foreground">Availability window</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <p className="text-sm leading-relaxed text-muted-foreground">Customers can book at least 1 hour ahead, based on Vietnam time.</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="advanceBookingDays">Advance booking (days)</Label>
             <Input
@@ -53,18 +53,6 @@ export function BookingSettingsForm({ settings }: { settings: BookingSettingsRow
               min={1}
               max={365}
               defaultValue={settings?.advanceBookingDays ?? 30}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="minNoticeHours">Minimum notice (hours)</Label>
-            <Input
-              id="minNoticeHours"
-              name="minNoticeHours"
-              type="number"
-              min={0}
-              max={168}
-              defaultValue={settings?.minNoticeHours ?? 2}
               required
             />
           </div>
