@@ -55,7 +55,14 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
           <div className="grid gap-3 sm:grid-cols-3">{service.durations.map((duration) => <div key={duration.id} className="rounded-2xl border border-border bg-card p-5"><p className="text-sm text-muted-foreground">{duration.minutes} minutes</p><p className="mt-2 text-xl font-semibold">{formatVnd(duration.priceVnd)}</p></div>)}</div>
         </div>
       </section>
-      <section className="mx-auto max-w-4xl px-5 py-16 text-center lg:py-24"><h2 className="text-3xl font-semibold">Professional care, wherever you are</h2><p className="mx-auto mt-4 max-w-2xl leading-relaxed text-muted-foreground">Lotus Wellness makes it simple to arrange a calm, professional massage experience at your location. Book online and our team will follow up by email.</p><ServiceBookingCta serviceId={service.id} durationMinutes={service.durations[0]?.minutes ?? null} /></section>
+      <section aria-labelledby="service-care-heading" className="mx-auto max-w-4xl px-5 py-16 text-center lg:py-20">
+        <h2 id="service-care-heading" className="text-balance font-[Georgia,serif] text-4xl! font-medium leading-tight tracking-tight text-foreground sm:text-5xl!">
+          Professional care, <em className="inline-block">wherever you are</em>
+        </h2>
+        <p className="mx-auto mt-5 max-w-2xl text-pretty font-sans text-lg leading-relaxed text-foreground md:text-xl">
+          Lotus Wellness makes it simple to arrange a calm, professional massage experience at your location. Book online and our team will follow up by email.
+        </p>
+      </section>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "Service", name: service.nameEn, description: service.descEn, provider: { "@type": "HealthAndBeautyBusiness", name: "Lotus Wellness", url: siteUrl }, areaServed: "Ho Chi Minh City", offers: service.durations.map((d) => ({ "@type": "Offer", price: d.priceVnd, priceCurrency: "VND", description: `${d.minutes} minute session` })) }) }} />
     </main>
     <BookingDialog />
