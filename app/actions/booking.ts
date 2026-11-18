@@ -85,7 +85,10 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const [openHour, openMinute] = (settingsRow?.openTime ?? "09:00").split(":").map(Number)
     const [closeHour, closeMinute] = (settingsRow?.closeTime ?? "21:00").split(":").map(Number)
     const openingMinutes = openHour * 60 + openMinute
-    const closingMinutes = closeHour === 0 && closeMinute === 0 ? 24 * 60 : closeHour * 60 + closeMinute
+    const configuredClosingMinutes = closeHour * 60 + closeMinute
+    const closingMinutes = configuredClosingMinutes <= openingMinutes
+      ? configuredClosingMinutes + 24 * 60
+      : configuredClosingMinutes
     const requestedMinutes = hours * 60 + minutes
     const bookingUtcMs = zonedLocalDateTimeToUtc(input.date, input.time, VIETNAM_TIME_ZONE).getTime()
     const minBookingUtcMs = now.getTime() + 60 * 60 * 1000

@@ -105,14 +105,29 @@ describe("createBooking integration contract", () => {
     }
   })
 
-  it("accepts a 17:45 booking when the configured closing time is midnight", async () => {
+  it("accepts a 17:45 booking when the configured closing time is 01:00", async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
-    rows.settings.closeTime = "00:00"
+    rows.settings.closeTime = "01:00"
     try {
       const { createBooking } = await import("./booking")
       const result = await createBooking(validInput("2026-08-18", "17:45"))
       expect(result.success).toBe(true)
+    } finally {
+      rows.settings.closeTime = "21:00"
+      vi.useRealTimers()
+    }
+  })
+
+  it("accepts a 24:00 booking when a 60-minute service ends at 01:00", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.settings.closeTime = "01:00"
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "24:00"))
+      expect(result.success).toBe(true)
+      expect(insertedBooking.value?.endAt).toEqual(new Date("2026-08-18T18:00:00.000Z"))
     } finally {
       rows.settings.closeTime = "21:00"
       vi.useRealTimers()
