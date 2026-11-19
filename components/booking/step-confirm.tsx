@@ -59,6 +59,7 @@ export function StepConfirm({
         detailedAddress: customerInfo.detailedAddress,
         notes: customerInfo.notes,
         isFirstTime,
+        locale,
       })
       if (result.success) {
         track("booking_submitted", { service: service.slug, guests: String(draft.guests) })

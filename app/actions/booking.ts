@@ -9,6 +9,7 @@ import { zonedLocalDateTimeToUtc } from "@/lib/timezone"
 import { escapeHtml } from "@/lib/security"
 import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
+import { asBookingLocale, type Locale } from "@/lib/booking-management-locale"
 
 export type CreateBookingInput = {
   serviceId: number
@@ -24,6 +25,7 @@ export type CreateBookingInput = {
   detailedAddress: string
   notes: string
   isFirstTime: boolean
+  locale?: Locale
 }
 
 export type BookingReceipt = { reference: string; totalVnd: number; subtotalVnd: number; discountVnd: number; managementEmailSent: boolean }
@@ -206,9 +208,11 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       discountLabel,
     }
 
+    const locale = asBookingLocale(input.locale) ?? "en"
+    const localizedService = { en: service.nameEn, vi: service.nameVi, ko: service.nameKo }[locale]
     const [, managementEmailSent] = await Promise.all([
       sendAdminNotification(bookingDetails),
-      sendBookingManagementEmail({ ...saved, reference, date: input.date, time: input.time }, service.nameEn, "received"),
+      sendBookingManagementEmail({ ...saved, reference, date: input.date, time: input.time }, localizedService, "received", locale),
     ])
 
     return { success: true, reference, totalVnd, subtotalVnd: subtotal, discountVnd, managementEmailSent }

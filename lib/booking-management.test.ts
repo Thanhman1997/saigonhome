@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { createBookingManagementToken, getManagedBookingId, getBookingManagementUrl } from "./booking-management-token"
+import { createBookingManagementToken, getManagedBookingAccess, getManagedBookingId, getBookingManagementUrl } from "./booking-management-token"
 import { createReviewInvitation } from "./review-invitation"
 import { candidateSlots } from "./booking-availability"
 
@@ -16,6 +16,17 @@ describe("private booking links", () => {
     expect(getManagedBookingId(token, now + 45 * 86_400_000)).toBeNull()
     expect(getManagedBookingId("12345", now)).toBeNull()
     expect(getManagedBookingId(createReviewInvitation(38), now)).toBeNull()
+  })
+
+  it.each(["en", "vi", "ko"] as const)("retains %s in new links without exposing the access token in search params", (locale) => {
+    vi.stubEnv("ADMIN_SECRET", "test-secret")
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://example.com")
+    const url = new URL(getBookingManagementUrl(38, locale))
+    const access = new URLSearchParams(url.hash.slice(1)).get("access")!
+    expect(url.search).toBe(`?lang=${locale}`)
+    expect(getManagedBookingAccess(access)).toEqual({ id: 38, locale })
+    const differentLocale = locale === "ko" ? "vi" : "ko"
+    expect(getManagedBookingAccess(access.replace(`.${locale}.`, `.${differentLocale}.`))).toBeNull()
   })
 
   it("does not put access tokens in request URLs", () => {

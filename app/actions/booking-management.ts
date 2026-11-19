@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { bookingSettings, bookings, services } from "@/lib/db/schema"
-import { getManagedBookingId } from "@/lib/booking-management-token"
+import { getManagedBookingAccess, getManagedBookingId } from "@/lib/booking-management-token"
 import { availableBookingSlots, bookingDateRange, lockBookingSchedule } from "@/lib/booking-availability"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 
@@ -33,11 +33,11 @@ async function getSummary(booking: Booking, now: Date) {
 }
 
 export async function readManagedBooking(token: string) {
-  const id = getManagedBookingId(token)
-  if (!id) return invalid
-  const [booking] = await db.select().from(bookings).where(eq(bookings.id, id)).limit(1)
+  const access = getManagedBookingAccess(token)
+  if (!access) return invalid
+  const [booking] = await db.select().from(bookings).where(eq(bookings.id, access.id)).limit(1)
   if (!booking) return invalid
-  return { ok: true, booking: await getSummary(booking, new Date()) } as const
+  return { ok: true, booking: await getSummary(booking, new Date()), locale: access.locale } as const
 }
 
 export async function readManagedBookingSlots(token: string, date: string) {
@@ -51,8 +51,9 @@ export async function readManagedBookingSlots(token: string, date: string) {
 }
 
 export async function changeManagedBooking(token: string, request: { kind: "cancel" } | { kind: "reschedule"; date: string; time: string }) {
-  const id = getManagedBookingId(token)
-  if (!id || !request || (request.kind !== "cancel" && request.kind !== "reschedule")) return invalid
+  const access = getManagedBookingAccess(token)
+  if (!access || !request || (request.kind !== "cancel" && request.kind !== "reschedule")) return invalid
+  const { id, locale } = access
   if (request.kind === "reschedule" && (typeof request.date !== "string" || request.date.length !== 10 || typeof request.time !== "string" || request.time.length !== 5)) return unavailable
 
   const result = await db.transaction(async (tx) => {
@@ -75,6 +76,7 @@ export async function changeManagedBooking(token: string, request: { kind: "canc
 
   revalidatePath("/admin/bookings")
   const booking = await getSummary(result.updated, new Date())
-  const emailed = await sendBookingManagementEmail(result.updated, booking.service?.en ?? "Massage", request.kind === "cancel" ? "cancelled" : "rescheduled")
+  const service = booking.service?.[locale ?? "en"] || booking.service?.en || null
+  const emailed = await sendBookingManagementEmail(result.updated, service, request.kind === "cancel" ? "cancelled" : "rescheduled", locale)
   return { ok: true, booking, emailed } as const
 }

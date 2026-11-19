@@ -60,10 +60,12 @@ describe("booking management actions", () => {
     expect(mocks.update).not.toHaveBeenCalled()
   })
 
-  it("cancels eligible bookings without exposing the email address", async () => {
-    const result = await changeManagedBooking(token(), { kind: "cancel" })
+  it("uses the signed locale for summaries and emails without exposing the customer address", async () => {
+    const localizedToken = createBookingManagementToken(1, Date.now(), "ko")
+    expect(await readManagedBooking(localizedToken)).toMatchObject({ ok: true, locale: "ko" })
+    const result = await changeManagedBooking(localizedToken, { kind: "cancel" })
     expect(result).toMatchObject({ ok: true, booking: { status: "cancelled", canCancel: false } })
     expect(JSON.stringify(result)).not.toContain(record.email)
-    expect(mocks.email).toHaveBeenCalledOnce()
+    expect(mocks.email).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: 1 }), "마사지", "cancelled", "ko")
   })
 })
