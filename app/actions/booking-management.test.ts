@@ -49,31 +49,48 @@ describe("booking management actions", () => {
     expect(mocks.transaction).not.toHaveBeenCalled()
   })
 
-  it("updates the existing appointment only if the new time is available", async () => {
+  it("records a change request only if the new time is available and leaves the appointment untouched", async () => {
     const request = { kind: "reschedule", date: "2026-08-19", time: "11:00" } as const
     mocks.slots.mockResolvedValueOnce([])
     expect(await changeManagedBooking(token(), request)).toEqual({ ok: false, error: "unavailable" })
     expect(mocks.update).not.toHaveBeenCalled()
     mocks.slots.mockResolvedValueOnce([{ time: "11:00", start: new Date("2026-08-19T04:00:00Z"), end: new Date("2026-08-19T05:00:00Z") }])
-    expect(await changeManagedBooking(token(), request)).toMatchObject({ ok: true, booking: { reference: "12345", date: "2026-08-19", time: "11:00" } })
-    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ reminderEmailSentAt: null, date: request.date }))
+    expect(await changeManagedBooking(token(), request)).toMatchObject({
+      ok: true,
+      booking: { reference: "12345", date: "2026-08-18", time: "10:00", status: "confirmed", pending: { kind: "reschedule", date: "2026-08-19", time: "11:00" } },
+    })
+    const patch = mocks.update.mock.calls[0][0]
+    expect(patch).not.toHaveProperty("date")
+    expect(patch).not.toHaveProperty("startAt")
+    expect(patch).not.toHaveProperty("status")
+    expect(patch.activity.at(-1)).toMatchObject({ kind: "reschedule_requested", requestedDate: "2026-08-19", requestedTime: "11:00" })
   })
 
-  it("emails the admin with the previous and new time when a customer reschedules", async () => {
+  it("rejects a second request while one is already waiting for the admin", async () => {
+    booking = { ...record, activity: [{ kind: "cancel_requested", at: "2026-08-15T00:00:00.000Z", date: "2026-08-18", time: "10:00" }] } as typeof booking
+    expect(await changeManagedBooking(token(), { kind: "cancel" })).toEqual({ ok: false, error: "support" })
+    expect(mocks.update).not.toHaveBeenCalled()
+    expect(mocks.adminEmail).not.toHaveBeenCalled()
+  })
+
+  it("asks the admin to confirm a reschedule and does not email the guest", async () => {
     mocks.slots.mockResolvedValueOnce([{ time: "11:00", start: new Date("2026-08-19T04:00:00Z"), end: new Date("2026-08-19T05:00:00Z") }])
     await changeManagedBooking(token(), { kind: "reschedule", date: "2026-08-19", time: "11:00" })
     expect(mocks.adminEmail).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ reference: "12345", date: "2026-08-19", time: "11:00" }),
-      expect.objectContaining({ kind: "rescheduled", previous: { date: "2026-08-18", time: "10:00" } }),
+      expect.objectContaining({ reference: "12345", date: "2026-08-18", time: "10:00" }),
+      expect.objectContaining({ kind: "reschedule_requested", requested: { date: "2026-08-19", time: "11:00" } }),
     )
+    expect(mocks.email).not.toHaveBeenCalled()
   })
 
-  it("emails the admin when a customer cancels", async () => {
+  it("asks the admin to confirm a cancellation and does not email the guest", async () => {
     await changeManagedBooking(token(), { kind: "cancel" })
     expect(mocks.adminEmail).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({ reference: "12345" }),
-      expect.objectContaining({ kind: "cancelled", previous: { date: "2026-08-18", time: "10:00" } }),
+      expect.objectContaining({ kind: "cancel_requested" }),
     )
+    expect(mocks.update.mock.calls[0][0]).not.toHaveProperty("status")
+    expect(mocks.email).not.toHaveBeenCalled()
   })
 
   it("does not email the admin when nothing changed or the request is rejected", async () => {
@@ -114,8 +131,8 @@ describe("booking management actions", () => {
     const localizedToken = createBookingManagementToken(1, Date.now(), "ko")
     expect(await readManagedBooking(localizedToken)).toMatchObject({ ok: true, locale: "ko" })
     const result = await changeManagedBooking(localizedToken, { kind: "cancel" })
-    expect(result).toMatchObject({ ok: true, booking: { status: "cancelled", canCancel: false } })
+    expect(result).toMatchObject({ ok: true, booking: { status: "confirmed", pending: { kind: "cancel" } } })
     expect(JSON.stringify(result)).not.toContain(record.email)
-    expect(mocks.email).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id: 1 }), "마사지", "cancelled", "ko", { therapist: null, token: undefined })
+    expect(mocks.email).not.toHaveBeenCalled()
   })
 })

@@ -4,7 +4,8 @@ import { db } from "@/lib/db"
 import { bookings, reviews, services, siteContent, therapists } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
-import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
+import { availableBookingSlots, lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
+import { pendingChangeRequest } from "@/lib/booking-change-request"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
@@ -75,6 +76,54 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
       // A failed invitation email must not block the status change.
     }
   }
+  revalidatePath("/admin/bookings")
+}
+
+export async function approveBookingChange(id: number) {
+  await assertAdmin()
+  if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) throw new Error("Invalid booking")
+  const applied = await db.transaction(async (tx) => {
+    await lockBookingSchedule(tx)
+    const [current] = await tx.select().from(bookings).where(eq(bookings.id, id)).limit(1).for("update")
+    if (!current) throw new Error("Booking not found")
+    const request = pendingChangeRequest(current.activity)
+    if (!request || !["pending", "confirmed"].includes(current.status)) throw new Error("There is no pending change request")
+    const now = new Date()
+    const activity = [...current.activity]
+    if (request.kind === "cancel") {
+      activity.push({ kind: "cancelled", at: now.toISOString(), date: current.date, time: current.time })
+      const [updated] = await tx.update(bookings).set({ status: "cancelled", activity, updatedAt: now }).where(eq(bookings.id, id)).returning()
+      return { updated, kind: "cancelled" as const }
+    }
+    const slot = (await availableBookingSlots(tx, current, request.date, now)).find((candidate) => candidate.time === request.time)
+    if (!slot) throw new Error("The requested time is no longer available")
+    activity.push({ kind: "rescheduled", at: now.toISOString(), date: request.date, time: slot.time })
+    const [updated] = await tx.update(bookings).set({ date: request.date, time: slot.time, startAt: slot.start, endAt: slot.end, reminderEmailSentAt: null, activity, updatedAt: now }).where(eq(bookings.id, id)).returning()
+    return { updated, kind: "rescheduled" as const }
+  })
+
+  const [service] = await db.select().from(services).where(eq(services.id, applied.updated.serviceId)).limit(1)
+  const [therapist] = applied.updated.therapistId ? await db.select({ code: therapists.code }).from(therapists).where(eq(therapists.id, applied.updated.therapistId)).limit(1) : []
+  const [template] = applied.kind === "cancelled" ? await db.select().from(siteContent).where(eq(siteContent.key, "booking_cancelled_email")).limit(1) : []
+  const locale = applied.updated.locale ?? "en"
+  const emailed = await sendBookingManagementEmail(applied.updated, localizedServiceName(service, locale), applied.kind, locale, {
+    therapist: therapist?.code,
+    template: template ? { en: template.valueEn, vi: template.valueVi, ko: template.valueKo }[locale] : null,
+  })
+  revalidatePath("/admin/bookings")
+  return { emailed }
+}
+
+export async function declineBookingChange(id: number) {
+  await assertAdmin()
+  if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) throw new Error("Invalid booking")
+  await db.transaction(async (tx) => {
+    await lockBookingSchedule(tx)
+    const [current] = await tx.select().from(bookings).where(eq(bookings.id, id)).limit(1).for("update")
+    if (!current || !pendingChangeRequest(current.activity)) throw new Error("There is no pending change request")
+    const activity = [...current.activity, { kind: "change_declined", at: new Date().toISOString(), date: current.date, time: current.time }]
+    await tx.update(bookings).set({ activity, updatedAt: new Date() }).where(eq(bookings.id, id))
+  })
   revalidatePath("/admin/bookings")
 }
 

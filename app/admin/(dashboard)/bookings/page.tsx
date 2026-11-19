@@ -2,6 +2,8 @@ import { getAllBookingsWithRelations } from "@/lib/admin-data"
 import { formatVnd } from "@/lib/pricing"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { BookingStatusSelect } from "@/components/admin/booking-status-select"
+import { BookingChangeRequest } from "@/components/admin/booking-change-request"
+import { pendingChangeRequest } from "@/lib/booking-change-request"
 
 export const metadata = { title: "Bookings" }
 
@@ -57,10 +59,15 @@ export default async function AdminBookingsPage() {
                 <TableCell className="text-sm">
                   {formatDateTime(booking.date, booking.time)}
                   <p className="text-muted-foreground">Language: {booking.locale ? { en: "English", vi: "Tiếng Việt", ko: "한국어" }[booking.locale] : "Not recorded"}</p>
+                  {(() => {
+                    const request = ["pending", "confirmed"].includes(booking.status) ? pendingChangeRequest(booking.activity) : null
+                    if (!request) return null
+                    return <BookingChangeRequest bookingId={booking.id} request={request.kind === "cancel" ? { kind: "cancel" } : { kind: "reschedule", label: formatDateTime(request.date, request.time) }} />
+                  })()}
                   {booking.activity.length > 0 && <details className="mt-2">
                     <summary className="cursor-pointer">Booking history</summary>
                     <ol className="mt-2 flex list-inside list-disc flex-col gap-2">
-                      {booking.activity.map((event, index) => <li key={`${event.at}-${index}`}><span className="capitalize">{event.kind}</span> · {formatDateTime(event.date, event.time)}<br /><time dateTime={event.at} className="text-muted-foreground">{new Date(event.at).toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })} ICT</time></li>)}
+                      {booking.activity.map((event, index) => <li key={`${event.at}-${index}`}><span className="capitalize">{event.kind.replaceAll("_", " ")}</span> · {formatDateTime(event.date, event.time)}<br /><time dateTime={event.at} className="text-muted-foreground">{new Date(event.at).toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })} ICT</time></li>)}
                     </ol>
                   </details>}
                 </TableCell>

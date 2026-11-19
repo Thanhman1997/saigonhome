@@ -120,7 +120,7 @@ export const bookings = pgTable("bookings", {
   accessTokenExpiresAt: timestamp("access_token_expires_at", { withTimezone: true }),
   accessTokenRevokedAt: timestamp("access_token_revoked_at", { withTimezone: true }),
   submissionKey: uuid("submission_key").unique(),
-  activity: jsonb("activity").$type<{ kind: string; at: string; date: string; time: string }[]>().notNull().default([]),
+  activity: jsonb("activity").$type<{ kind: string; at: string; date: string; time: string; requestedDate?: string; requestedTime?: string }[]>().notNull().default([]),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   confirmationEmailSentAt: timestamp("confirmation_email_sent_at", { withTimezone: true }),
   reminderEmailSentAt: timestamp("reminder_email_sent_at", { withTimezone: true }),
