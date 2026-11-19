@@ -6,8 +6,6 @@ import {
   Cormorant_Garamond,
   JetBrains_Mono,
   Noto_Sans,
-  Noto_Sans_KR,
-  Noto_Serif_KR,
   Playfair_Display,
   DM_Serif_Display,
   Lora,
@@ -18,6 +16,8 @@ import { SiteAnalytics } from "@/components/site-analytics"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
 import { getLayoutSiteData } from "@/lib/data"
 import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
+import "@fontsource-variable/noto-sans-kr"
+import "@fontsource-variable/noto-serif-kr"
 import "./globals.css"
 
 // Primary display fonts (Latin only)
@@ -34,8 +34,6 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jet
 // globals.css so the browser only falls back per-glyph when a character is
 // missing (e.g. Hangul or Vietnamese diacritics).
 const notoSans = Noto_Sans({ subsets: ["latin", "vietnamese"], variable: "--font-noto-sans", weight: ["300", "400", "500", "600", "700"] })
-const notoSansKr = Noto_Sans_KR({ variable: "--font-noto-sans-kr", weight: ["300", "400", "500", "600", "700"], preload: false })
-const notoSerifKr = Noto_Serif_KR({ variable: "--font-noto-serif-kr", weight: ["300", "400", "500", "600", "700"], preload: false })
 
 // Vetted, Admin-selectable Design Settings font pool. Preloaded here (never
 // injected as arbitrary CSS) so the Design Settings module can only switch
@@ -104,7 +102,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={defaultLocale} data-scroll-behavior="smooth" className="bg-background" suppressHydrationWarning>
       <body
-        className={`${dmSans.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${notoSans.variable} ${notoSansKr.variable} ${notoSerifKr.variable} ${playfair.variable} ${dmSerifDisplay.variable} ${lora.variable} ${manrope.variable} ${inter.variable} font-sans antialiased`}
+        className={`${dmSans.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${notoSans.variable} ${playfair.variable} ${dmSerifDisplay.variable} ${lora.variable} ${manrope.variable} ${inter.variable} font-sans antialiased`}
       >
         <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
         <style id="section-styles" dangerouslySetInnerHTML={{ __html: sectionStyleCss }} />

@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@fontsource-variable/noto-sans-kr':
+        specifier: ^5.3.1
+        version: 5.3.1
+      '@fontsource-variable/noto-serif-kr':
+        specifier: ^5.3.1
+        version: 5.3.1
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.83.0(react@19.2.0))
@@ -392,6 +398,12 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@fontsource-variable/noto-sans-kr@5.3.1':
+    resolution: {integrity: sha512-f5aty6Qgk2LVU5TjCtXHxiYHqUWYW8f75ll0Chn8ucCqoOlIomcACUwf1V47yUt6wTdWZiGr3dcbQk+zlOspMA==}
+
+  '@fontsource-variable/noto-serif-kr@5.3.1':
+    resolution: {integrity: sha512-cf29V+FWfw7/9dyzwCK6zKmf0z7XkdPPoq5UxgczmjZkV3RW1mr02/1LbEsRtiCKagRgVCb9/wQ+uYci1KzRMg==}
 
   '@hookform/resolvers@3.10.0':
     resolution: {integrity: sha512-79Dv+3mDF7i+2ajj7SkypSKHhl1cbln1OGavqrsF7p6mbUv11xpqpacPsGDCTRvCSjEEIez2ef1NveSVL3b0Ag==}
@@ -4127,6 +4139,10 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@fontsource-variable/noto-sans-kr@5.3.1': {}
+
+  '@fontsource-variable/noto-serif-kr@5.3.1': {}
 
   '@hookform/resolvers@3.10.0(react-hook-form@7.83.0(react@19.2.0))':
     dependencies:
