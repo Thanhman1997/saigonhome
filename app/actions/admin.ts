@@ -52,12 +52,10 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
   })
   if ((status === "confirmed" || status === "cancelled") && current.status !== status) {
     const [template] = await db.select().from(siteContent).where(eq(siteContent.key, `booking_${status}_email`)).limit(1)
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://lotuswellness.app"
     const locale = current.locale ?? "en"
     await sendBookingManagementEmail({ ...current, status }, localizedServiceName(booking.service, locale), status, locale, {
       therapist: booking.therapist?.code,
       token: access?.token,
-      paymentUrl: status === "confirmed" ? `${siteUrl}/payment/result?reference=${encodeURIComponent(current.reference)}` : undefined,
       template: template ? { en: template.valueEn, vi: template.valueVi, ko: template.valueKo }[locale] : null,
     })
   }
