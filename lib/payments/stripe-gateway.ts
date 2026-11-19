@@ -21,8 +21,8 @@ export const stripeGateway: PaymentGateway = {
       metadata: { orderId: order.orderId, bookingId: String(order.bookingId) },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/payment/result?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/payment/result?cancelled=1&order_id=${encodeURIComponent(order.orderId)}`,
-      integration_identifier: `saigonhome_${Math.random().toString(36).slice(2, 10)}`,
-    })
+      integration_identifier: `saigonhome_${order.bookingId}`,
+    }, { idempotencyKey: `lotus-booking-${order.bookingId}` })
     if (!session.url) throw new Error("Stripe did not return a checkout URL")
     return { redirectUrl: session.url, providerOrderId: session.id }
   },

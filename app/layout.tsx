@@ -14,7 +14,7 @@ import {
   Manrope,
   Inter,
 } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
+import { SiteAnalytics } from "@/components/site-analytics"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
 import { getLayoutSiteData } from "@/lib/data"
 import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
@@ -123,7 +123,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }
         ]) }} />
         <LanguageProvider defaultLocale={defaultLocale}>{children}</LanguageProvider>
-        <Analytics />
+        <SiteAnalytics />
       </body>
     </html>
   )

@@ -50,19 +50,19 @@ function withServiceCount(text: string, count: number, locale: "en" | "ko" | "vi
   return text.replace(/Nine|Eleven|\d+/i, String(count))
 }
 
-export function ServicesSection({ services, featured = services.slice(0, 3), fullPage = false, content }: { services: ServiceWithDurations[]; featured?: ServiceWithDurations[]; fullPage?: boolean; content?: ServicesContent | null }) {
+export function ServicesSection({ services, featured = services.slice(0, 3), fullPage = false, content, headingLevel }: { services: ServiceWithDurations[]; featured?: ServiceWithDurations[]; fullPage?: boolean; content?: ServicesContent | null; headingLevel?: "h1" | "h2" }) {
   const { t, locale } = useLanguage()
   const [showAll, setShowAll] = useState(false)
   const displayedServices = fullPage ? services : showAll ? services : featured
   const { openBooking } = useBooking()
   const servicesContent = content ?? { kickerEn: t.services.kicker, kickerKo: t.services.kicker, kickerVi: t.services.kicker, titleEn: t.services.title, titleKo: t.services.title, titleVi: t.services.title, subtitleEn: t.services.subtitle, subtitleKo: t.services.subtitle, subtitleVi: t.services.subtitle }
   const localizedContent = (en: string, ko: string, vi: string) => pickLocalized({ en, ko, vi }, locale)
-  const SectionTitle = fullPage ? "h1" : "h2"
+  const SectionTitle = headingLevel ?? (fullPage ? "h1" : "h2")
   const detailsLabel = locale === "ko" ? "서비스 자세히 보기" : locale === "vi" ? "Xem chi tiết" : "View details"
   const luxuryFont = locale === "ko" ? "font-korean-serif" : "font-[family-name:var(--font-cormorant),Georgia,serif] [font-variant-numeric:lining-nums]"
 
   return (
-    <section id="services" className="bg-header-background py-12 lg:py-16">
+    <section id="services" className="scroll-mt-24 bg-header-background py-12 lg:py-16">
       <div className="mx-auto max-w-[80rem] px-8 lg:px-20">
         <div className="mx-auto max-w-3xl text-center">
           {t.services.kicker ? <p className="section-heading text-center text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}

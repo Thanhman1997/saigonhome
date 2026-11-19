@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { useBooking } from "@/lib/booking-context"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { formatVnd, getGroupDiscountRate } from "@/lib/pricing"
-import { createBooking } from "@/app/actions/booking"
+import { createBooking, type BookingReceipt } from "@/app/actions/booking"
+import Link from "next/link"
 import { checkIsFirstTimeCustomer } from "@/app/actions/customer"
 import type { CustomerInfo } from "./step-details"
 
@@ -19,10 +20,10 @@ export function StepConfirm({
 }: {
   customerInfo: CustomerInfo
   onBack: () => void
-  bookingResult: { reference: string; totalVnd: number; subtotalVnd: number; discountVnd: number } | null
-  setBookingResult: (r: { reference: string; totalVnd: number; subtotalVnd: number; discountVnd: number } | null) => void
+  bookingResult: BookingReceipt | null
+  setBookingResult: (r: BookingReceipt | null) => void
 }) {
-  const { draft, services, therapists } = useBooking()
+  const { draft, services, therapists, closeBooking } = useBooking()
   const { t, locale } = useLanguage()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -66,6 +67,7 @@ export function StepConfirm({
           totalVnd: result.totalVnd,
           subtotalVnd: result.subtotalVnd,
           discountVnd: result.discountVnd,
+          managementEmailSent: result.managementEmailSent,
         })
       } else {
         setError(result.error)
@@ -89,7 +91,10 @@ export function StepConfirm({
           <p className="mt-1 font-mono text-lg">{bookingResult.reference}</p>
         </div>
         <p className="font-sans text-2xl font-semibold tracking-tight">{formatVnd(bookingResult.totalVnd)}</p>
-        <p className="max-w-md text-sm leading-relaxed text-muted-foreground">{t.booking.successMessage}</p>
+        <p className="max-w-md text-sm leading-relaxed text-muted-foreground">{bookingResult.managementEmailSent
+          ? { en: "Check your inbox or spam folder for the private link to manage this appointment.", vi: "Kiểm tra hộp thư hoặc thư rác để mở liên kết riêng quản lý lịch này.", ko: "예약 관리를 위한 전용 링크는 받은 편지함 또는 스팸 편지함에서 확인하세요." }[locale]
+          : { en: "Your request was saved, but we couldn’t send the management email. Contact Lotus Wellness with the reference above.", vi: "Đã lưu yêu cầu nhưng chưa gửi được email quản lý. Vui lòng liên hệ Lotus Wellness và cung cấp mã lịch hẹn trên.", ko: "예약 요청은 저장되었지만 관리 이메일을 보내지 못했습니다. 위 예약 번호로 문의해 주세요." }[locale]}</p>
+        <Link href="/booking#manage" onClick={closeBooking} className="text-sm font-semibold text-foreground underline underline-offset-4">{{ en: "Booking management help", vi: "Hướng dẫn quản lý lịch hẹn", ko: "예약 관리 안내" }[locale]}</Link>
       </div>
     )
   }

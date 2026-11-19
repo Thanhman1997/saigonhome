@@ -8,7 +8,7 @@ const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.verce
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date()
   const services = await getServicesWithDurations()
-  const paths = ["/", "/services", ...services.map((service) => `/services/${service.slug}`), "/reviews", "/privacy", "/terms"]
+  const paths = ["/", "/booking", "/services", ...services.map((service) => `/services/${service.slug}`), "/reviews", "/privacy", "/terms"]
   return paths.map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified,

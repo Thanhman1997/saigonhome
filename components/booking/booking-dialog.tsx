@@ -27,7 +27,7 @@ export function BookingDialog() {
     detailedAddress: "",
     notes: "",
   })
-  const [bookingResult, setBookingResult] = useState<{ reference: string; totalVnd: number; subtotalVnd: number; discountVnd: number } | null>(null)
+  const [bookingResult, setBookingResult] = useState<import("@/app/actions/booking").BookingReceipt | null>(null)
 
   const step = STEP_KEYS[stepIndex]
 

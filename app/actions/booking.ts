@@ -7,6 +7,8 @@ import { getGroupDiscountRate, getGroupDiscountLabel, DEFAULT_DISCOUNT_RATES, ty
 import { Resend } from "resend"
 import { zonedLocalDateTimeToUtc } from "@/lib/timezone"
 import { escapeHtml } from "@/lib/security"
+import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
+import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 
 export type CreateBookingInput = {
   serviceId: number
@@ -24,8 +26,10 @@ export type CreateBookingInput = {
   isFirstTime: boolean
 }
 
+export type BookingReceipt = { reference: string; totalVnd: number; subtotalVnd: number; discountVnd: number; managementEmailSent: boolean }
+
 export type CreateBookingResult =
-  | { success: true; reference: string; totalVnd: number; subtotalVnd: number; discountVnd: number }
+  | ({ success: true } & BookingReceipt)
   | { success: false; error: string }
 
 function generateReference(): string {
@@ -154,28 +158,34 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const startAt = zonedLocalDateTimeToUtc(input.date, input.time, "Asia/Ho_Chi_Minh")
     const endAt = new Date(startAt.getTime() + input.durationMinutes * 60 * 1000)
 
-    await db.insert(bookings).values({
-      reference,
-      serviceId: input.serviceId,
-      durationMinutes: input.durationMinutes,
-      therapistId: input.therapistId,
-      date: input.date,
-      time: input.time,
-      guests: input.guests,
-      customerName: input.customerName.trim(),
-      email: input.email.trim(),
-      phone: input.phone.trim(),
-      address: input.address.trim(),
-      detailedAddress: input.detailedAddress?.trim() || null,
-      notes: input.notes?.trim() || null,
-      subtotalVnd: subtotal,
-      discountVnd,
-      totalVnd,
-      discountLabel,
-      status: "pending",
-      startAt,
-      endAt,
+    const saved = await db.transaction(async (tx) => {
+      await lockBookingSchedule(tx)
+      if ((await overlappingBookings(tx, input, startAt, endAt)).length) return null
+      const [created] = await tx.insert(bookings).values({
+        reference,
+        serviceId: input.serviceId,
+        durationMinutes: input.durationMinutes,
+        therapistId: input.therapistId,
+        date: input.date,
+        time: input.time,
+        guests: input.guests,
+        customerName: input.customerName.trim(),
+        email: input.email.trim(),
+        phone: input.phone.trim(),
+        address: input.address.trim(),
+        detailedAddress: input.detailedAddress?.trim() || null,
+        notes: input.notes?.trim() || null,
+        subtotalVnd: subtotal,
+        discountVnd,
+        totalVnd,
+        discountLabel,
+        status: "pending",
+        startAt,
+        endAt,
+      }).returning({ id: bookings.id, email: bookings.email })
+      return created
     })
+    if (!saved) return { success: false, error: "Selected time is unavailable" }
 
     const bookingDetails = {
       reference,
@@ -196,9 +206,12 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       discountLabel,
     }
 
-    await sendAdminNotification(bookingDetails)
+    const [, managementEmailSent] = await Promise.all([
+      sendAdminNotification(bookingDetails),
+      sendBookingManagementEmail({ ...saved, reference, date: input.date, time: input.time }, service.nameEn, "received"),
+    ])
 
-    return { success: true, reference, totalVnd, subtotalVnd: subtotal, discountVnd }
+    return { success: true, reference, totalVnd, subtotalVnd: subtotal, discountVnd, managementEmailSent }
   } catch (error) {
     console.error("[v0] createBooking error:", error)
     return { success: false, error: "Something went wrong. Please try again." }

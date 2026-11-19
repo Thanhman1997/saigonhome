@@ -2,7 +2,9 @@
 
 import { db } from "@/lib/db"
 import { bookings, reviews, services, siteContent } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
+import { bookingManagementEmailLink, customerBookingEmailSender, sendBookingManagementEmail } from "@/lib/booking-management-email"
+import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
@@ -27,26 +29,41 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
   if (!BOOKING_STATUSES.includes(status)) throw new Error("Invalid status")
   const [booking] = await db.select({ booking: bookings, service: services }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).where(eq(bookings.id, id)).limit(1)
   if (!booking) throw new Error("Booking not found")
-  await db.update(bookings).set({ status }).where(eq(bookings.id, id))
+  const current = booking.booking
+  await db.transaction(async (tx) => {
+    await lockBookingSchedule(tx)
+    if ((status === "confirmed" || status === "pending") && !["pending", "confirmed"].includes(current.status)) {
+      if ((await overlappingBookings(tx, current, current.startAt, current.endAt)).length) throw new Error("This time is no longer available")
+    }
+    const [updated] = await tx.update(bookings).set({ status }).where(and(
+      eq(bookings.id, id), eq(bookings.status, current.status), eq(bookings.startAt, current.startAt),
+    )).returning({ id: bookings.id })
+    if (!updated) throw new Error("The booking changed. Refresh and try again.")
+  })
   if ((status === "confirmed" || status === "cancelled") && booking.booking.status !== status) {
     const apiKey = process.env.RESEND_API_KEY
     if (apiKey) {
       const resend = new Resend(apiKey)
       const confirmed = status === "confirmed"
       const [template] = await db.select().from(siteContent).where(eq(siteContent.key, confirmed ? "booking_confirmed_email" : "booking_cancelled_email")).limit(1)
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://lotuswellness.app"
       const paymentUrl = `${siteUrl}/payment/result?reference=${encodeURIComponent(booking.booking.reference)}`
       const defaultSubject = confirmed ? `Booking confirmed — ${booking.booking.reference}` : `Booking update — ${booking.booking.reference}`
       const defaultBody = confirmed ? `Your booking has been confirmed.\n\nPayment options:\n1. Pay directly at the spa or by bank transfer.\n2. Pay by Visa or Mastercard: ${paymentUrl}` : "Unfortunately, we cannot confirm this booking. Please contact us to choose another time."
       const replaceTokens = (value: string) => value.replaceAll("{{customerName}}", booking.booking.customerName).replaceAll("{{reference}}", booking.booking.reference).replaceAll("{{paymentUrl}}", paymentUrl).replaceAll("{{service}}", booking.service?.nameEn ?? "Massage").replaceAll("{{date}}", booking.booking.date).replaceAll("{{time}}", booking.booking.time).replaceAll("{{duration}}", String(booking.booking.durationMinutes))
       const subject = replaceTokens(template?.valueEn?.split("\n")[0] || defaultSubject)
-      const body = replaceTokens(template?.valueEn?.split("\n").slice(1).join("\n") || defaultBody).replaceAll("\n", "<br />")
-      await resend.emails.send({
-        from: "Lotus Wellness <onboarding@resend.dev>",
-        to: booking.booking.email,
-        subject,
-        html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#24312d"><h2>${confirmed ? "Booking confirmed" : "Booking update"}</h2><p>Dear ${booking.booking.customerName},</p><p>${body}</p><p><strong>Reference:</strong> ${booking.booking.reference}</p><p><strong>Service:</strong> ${booking.service?.nameEn ?? "Massage"} (${booking.booking.durationMinutes} min)</p><p><strong>Date &amp; time:</strong> ${booking.booking.date} at ${booking.booking.time}</p></div>`,
-      })
+      const body = escapeHtml(replaceTokens(template?.valueEn?.split("\n").slice(1).join("\n") || defaultBody)).replaceAll("\n", "<br />")
+      try {
+        const { error } = await resend.emails.send({
+          from: customerBookingEmailSender(),
+          to: booking.booking.email,
+          subject,
+          html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#24312d"><h2>${confirmed ? "Booking confirmed" : "Booking update"}</h2><p>Dear ${escapeHtml(booking.booking.customerName)},</p><p>${body}</p><p><strong>Reference:</strong> ${escapeHtml(booking.booking.reference)}</p><p><strong>Service:</strong> ${escapeHtml(booking.service?.nameEn ?? "Massage")} (${booking.booking.durationMinutes} min)</p><p><strong>Date &amp; time:</strong> ${escapeHtml(booking.booking.date)} at ${escapeHtml(booking.booking.time)}</p>${confirmed ? bookingManagementEmailLink(id) : ""}</div>`,
+        })
+        if (error) console.error("Booking status email was not accepted:", error.name)
+      } catch {
+        console.error("Booking status email could not be sent")
+      }
     }
   }
   if (status === "completed" && booking.booking.status !== "completed" && process.env.RESEND_API_KEY) {
@@ -67,6 +84,15 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
     }
   }
   revalidatePath("/admin/bookings")
+}
+
+export async function resendBookingManagementLink(id: number) {
+  await assertAdmin()
+  if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) return false
+  const [row] = await db.select({ booking: bookings, service: services.nameEn }).from(bookings)
+    .leftJoin(services, eq(bookings.serviceId, services.id)).where(eq(bookings.id, id)).limit(1)
+  if (!row || !["pending", "confirmed"].includes(row.booking.status) || row.booking.startAt.getTime() <= Date.now()) return false
+  return sendBookingManagementEmail(row.booking, row.service ?? "Massage", "link")
 }
 
 export async function saveBookingEmailTemplate(formData: FormData) {
