@@ -11,6 +11,8 @@ import {
   index,
   uniqueIndex,
   check,
+  uuid,
+  jsonb,
 } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
@@ -82,6 +84,9 @@ export const reviews = pgTable("reviews", {
   commentVi: text("comment_vi"),
   reviewDate: date("review_date").notNull(),
   approved: boolean("approved").notNull().default(false),
+  adminReply: text("admin_reply"),
+  adminEdited: boolean("admin_edited").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
 export const bookings = pgTable("bookings", {
@@ -110,6 +115,13 @@ export const bookings = pgTable("bookings", {
   paymentProvider: text("payment_provider").default("stripe"),
   startAt: timestamp("start_at").notNull(),
   endAt: timestamp("end_at").notNull(),
+  locale: text("locale").$type<"en" | "vi" | "ko">(),
+  accessTokenHash: text("access_token_hash").unique(),
+  accessTokenExpiresAt: timestamp("access_token_expires_at", { withTimezone: true }),
+  accessTokenRevokedAt: timestamp("access_token_revoked_at", { withTimezone: true }),
+  submissionKey: uuid("submission_key").unique(),
+  activity: jsonb("activity").$type<{ kind: string; at: string; date: string; time: string }[]>().notNull().default([]),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   confirmationEmailSentAt: timestamp("confirmation_email_sent_at", { withTimezone: true }),
   reminderEmailSentAt: timestamp("reminder_email_sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -238,7 +250,7 @@ export const designSettings = pgTable("design_settings", {
 export const bookingSettings = pgTable("booking_settings", {
   id: serial("id").primaryKey(),
   advanceBookingDays: integer("advance_booking_days").notNull().default(30),
-  minNoticeHours: integer("min_notice_hours").notNull().default(2),
+  minNoticeHours: integer("min_notice_hours").notNull().default(1),
   maxGuests: integer("max_guests").notNull().default(20),
   openTime: text("open_time").notNull().default("09:00"),
   closeTime: text("close_time").notNull().default("21:00"),
@@ -350,4 +362,11 @@ export const contactSubmissionRateLimits = pgTable("contact_submission_rate_limi
   ipHash: text("ip_hash").primaryKey(),
   windowStartedAt: timestamp("window_started_at", { withTimezone: true }).notNull(),
   requestCount: integer("request_count").notNull().default(0),
+})
+
+export const adminPushSubscriptions = pgTable("admin_push_subscriptions", {
+  endpoint: text("endpoint").primaryKey(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })

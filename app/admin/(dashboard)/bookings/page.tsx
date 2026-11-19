@@ -54,11 +54,20 @@ export default async function AdminBookingsPage() {
                   </div>
                 </TableCell>
                 <TableCell>{booking.therapist?.code ?? "No preference"}</TableCell>
-                <TableCell className="text-sm">{formatDateTime(booking.date, booking.time)}</TableCell>
+                <TableCell className="text-sm">
+                  {formatDateTime(booking.date, booking.time)}
+                  <p className="text-muted-foreground">Language: {booking.locale ? { en: "English", vi: "Tiếng Việt", ko: "한국어" }[booking.locale] : "Not recorded"}</p>
+                  {booking.activity.length > 0 && <details className="mt-2">
+                    <summary className="cursor-pointer">Booking history</summary>
+                    <ol className="mt-2 flex list-inside list-disc flex-col gap-2">
+                      {booking.activity.map((event, index) => <li key={`${event.at}-${index}`}><span className="capitalize">{event.kind}</span> · {formatDateTime(event.date, event.time)}<br /><time dateTime={event.at} className="text-muted-foreground">{new Date(event.at).toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })} ICT</time></li>)}
+                    </ol>
+                  </details>}
+                </TableCell>
                 <TableCell>{booking.guests}</TableCell>
                 <TableCell className="font-medium">{formatVnd(booking.totalVnd)}</TableCell>
                 <TableCell>
-                  <BookingStatusSelect bookingId={booking.id} status={booking.status} />
+                  <BookingStatusSelect bookingId={booking.id} status={booking.status} revoked={Boolean(booking.accessTokenRevokedAt)} />
                 </TableCell>
               </TableRow>
             ))}

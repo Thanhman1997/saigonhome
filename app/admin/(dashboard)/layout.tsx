@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
 import { AdminShell } from "@/components/admin/admin-shell"
+import { getAdminWebPushPublicKey } from "@/lib/admin-web-push"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const expected = await getExpectedAdminSessionToken()
@@ -13,5 +14,5 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/admin")
   }
 
-  return <AdminShell>{children}</AdminShell>
+  return <AdminShell applicationServerKey={getAdminWebPushPublicKey()}>{children}</AdminShell>
 }

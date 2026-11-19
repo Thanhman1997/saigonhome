@@ -14,7 +14,7 @@ import {
   Manrope,
   Inter,
 } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
+import { SiteAnalytics } from "@/components/site-analytics"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
 import { getLayoutSiteData } from "@/lib/data"
 import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
@@ -64,6 +64,7 @@ export const metadata: Metadata = {
     "Lotus Wellness",
   ],
   alternates: { canonical: "/" },
+  icons: { apple: "/apple-icon.png", icon: "/icon.svg" },
   openGraph: {
     title: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
     description: "Excellence, convenience, affordability, and privacy — professional massage wherever you are.",
@@ -122,7 +123,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }
         ]) }} />
         <LanguageProvider defaultLocale={defaultLocale}>{children}</LanguageProvider>
-        <Analytics />
+        <SiteAnalytics />
       </body>
     </html>
   )

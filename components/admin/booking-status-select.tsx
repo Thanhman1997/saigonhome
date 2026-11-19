@@ -1,8 +1,8 @@
 "use client"
 
-import { useTransition } from "react"
+import { useState, useTransition } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { updateBookingStatus } from "@/app/actions/admin"
+import { resendBookingManagementLink, revokeBookingManagementLink, updateBookingStatus } from "@/app/actions/admin"
 import { cn } from "@/lib/utils"
 
 const STATUS_OPTIONS = [
@@ -19,15 +19,21 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: "text-destructive",
 }
 
-export function BookingStatusSelect({ bookingId, status }: { bookingId: number; status: string }) {
+export function BookingStatusSelect({ bookingId, status, revoked }: { bookingId: number; status: string; revoked: boolean }) {
   const [isPending, startTransition] = useTransition()
+  const [notice, setNotice] = useState("")
 
   return (
-    <Select
-      value={status}
-      disabled={isPending}
-      onValueChange={(value) => startTransition(() => updateBookingStatus(bookingId, value as "pending" | "confirmed" | "completed" | "cancelled"))}
-    >
+    <div className="flex flex-col items-start gap-1">
+      <Select
+        value={status}
+        disabled={isPending}
+        onValueChange={(value) => startTransition(async () => {
+          setNotice("")
+          try { await updateBookingStatus(bookingId, value as typeof STATUS_OPTIONS[number]["value"]) }
+          catch { setNotice("Could not update. Refresh and check availability.") }
+        })}
+      >
       <SelectTrigger size="sm" className={cn("h-8 w-[130px]", STATUS_STYLES[status])}>
         <SelectValue />
       </SelectTrigger>
@@ -38,6 +44,20 @@ export function BookingStatusSelect({ bookingId, status }: { bookingId: number; 
           </SelectItem>
         ))}
       </SelectContent>
-    </Select>
+      </Select>
+      {(status === "pending" || status === "confirmed") && <button type="button" disabled={isPending} className="min-h-8 text-sm font-medium text-primary underline underline-offset-4 disabled:opacity-50" onClick={() => startTransition(async () => {
+        setNotice("")
+        try { setNotice(await resendBookingManagementLink(bookingId) ? "Management link sent to booking email." : "Link could not be sent. Check the booking and email settings.") }
+        catch { setNotice("Link could not be sent.") }
+      })}>Resend booking link</button>}
+      {revoked ? <span className="text-sm text-muted-foreground">Link revoked</span> : <button type="button" disabled={isPending} className="min-h-8 text-sm text-destructive underline underline-offset-4 disabled:opacity-50" onClick={() => {
+        if (!window.confirm("Revoke this guest’s booking link?")) return
+        startTransition(async () => {
+          try { await revokeBookingManagementLink(bookingId); setNotice("Management link revoked.") }
+          catch { setNotice("Link could not be revoked.") }
+        })
+      }}>Revoke link</button>}
+      {notice && <p role="status" className="max-w-44 text-sm text-muted-foreground">{notice}</p>}
+    </div>
   )
 }

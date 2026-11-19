@@ -39,10 +39,10 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
     <main className="bg-background">
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-16 lg:py-24">
         <div>
-          <Link href="/services" className="text-sm font-semibold text-accent hover:underline">← All services</Link>
-          <p className="mt-10 text-sm font-semibold uppercase tracking-[0.2em] text-accent">Mobile massage in Ho Chi Minh City</p>
-          <h1 className="mt-4 max-w-3xl text-balance font-sans text-5xl font-semibold tracking-tight text-foreground md:text-7xl">{service.nameEn}</h1>
-          <p className="mt-6 max-w-2xl text-pretty text-lg leading-relaxed text-muted-foreground">{service.descEn} Enjoy thoughtful, private care delivered to your home, hotel, or preferred location in Ho Chi Minh City.</p>
+          <Link href="/services" className="text-lg font-semibold text-foreground hover:underline">← All services</Link>
+          <p className="mt-10 text-base font-semibold uppercase tracking-widest text-foreground md:text-lg">Mobile massage in Ho Chi Minh City</p>
+          <h1 className="mt-4 max-w-3xl text-balance font-sans text-4xl! font-semibold leading-tight tracking-tight text-foreground sm:text-5xl! lg:text-6xl!">{service.nameEn}</h1>
+          <p className="mt-6 max-w-2xl text-pretty text-xl leading-relaxed text-muted-foreground md:text-2xl">{service.descEn} Enjoy thoughtful, private care delivered to your home, hotel, or preferred location in Ho Chi Minh City.</p>
           <ServiceBookingCta serviceId={service.id} durationMinutes={service.durations[0]?.minutes ?? null} />
         </div>
         <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] border border-border shadow-xl">
@@ -50,12 +50,19 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
         </div>
       </section>
       <section className="border-y border-border bg-muted px-5 py-16 lg:px-16">
-        <div className="mx-auto grid max-w-5xl gap-10 md:grid-cols-2">
-          <div><h2 className="text-3xl font-semibold">Choose your session</h2><p className="mt-3 leading-relaxed text-muted-foreground">Select the duration that fits your schedule. Every session is prepared with privacy, comfort, and professional care in mind.</p></div>
-          <div className="grid gap-3 sm:grid-cols-3">{service.durations.map((duration) => <div key={duration.id} className="rounded-2xl border border-border bg-card p-5"><p className="text-sm text-muted-foreground">{duration.minutes} minutes</p><p className="mt-2 text-xl font-semibold">{formatVnd(duration.priceVnd)}</p></div>)}</div>
+        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2">
+          <div><h2 className="text-3xl! font-semibold leading-tight md:text-4xl!">Choose your session</h2><p className="mt-3 text-lg leading-relaxed text-muted-foreground md:text-xl">Select the duration that fits your schedule. Every session is prepared with privacy, comfort, and professional care in mind.</p></div>
+          <div className="grid gap-3 sm:grid-cols-3">{service.durations.map((duration) => <div key={duration.id} className="rounded-2xl border border-border bg-card px-4 py-5"><p className="text-lg text-muted-foreground">{duration.minutes} minutes</p><p className="mt-2 text-2xl font-semibold tracking-tight xl:text-3xl">{formatVnd(duration.priceVnd)}</p></div>)}</div>
         </div>
       </section>
-      <section className="mx-auto max-w-4xl px-5 py-16 text-center lg:py-24"><h2 className="text-3xl font-semibold">Professional care, wherever you are</h2><p className="mx-auto mt-4 max-w-2xl leading-relaxed text-muted-foreground">Lotus Wellness makes it simple to arrange a calm, professional massage experience at your location. Book online and our team will follow up by email.</p><ServiceBookingCta serviceId={service.id} durationMinutes={service.durations[0]?.minutes ?? null} /></section>
+      <section aria-labelledby="service-care-heading" className="mx-auto max-w-4xl px-5 py-16 text-center lg:py-20">
+        <h2 id="service-care-heading" className="text-balance font-[Georgia,serif] text-4xl! font-medium leading-tight tracking-tight text-foreground sm:text-5xl!">
+          Professional care, <em className="inline-block">wherever you are</em>
+        </h2>
+        <p className="mx-auto mt-5 max-w-2xl text-pretty font-sans text-lg leading-relaxed text-foreground md:text-xl">
+          Lotus Wellness makes it simple to arrange a calm, professional massage experience at your location. Book online and our team will follow up by email.
+        </p>
+      </section>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "Service", name: service.nameEn, description: service.descEn, provider: { "@type": "HealthAndBeautyBusiness", name: "Lotus Wellness", url: siteUrl }, areaServed: "Ho Chi Minh City", offers: service.durations.map((d) => ({ "@type": "Offer", price: d.priceVnd, priceCurrency: "VND", description: `${d.minutes} minute session` })) }) }} />
     </main>
     <BookingDialog />

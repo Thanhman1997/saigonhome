@@ -4,10 +4,11 @@ import { createHmac } from "node:crypto"
 import { revalidatePath } from "next/cache"
 import { cookies, headers } from "next/headers"
 import { eq, lt, sql } from "drizzle-orm"
-import { Resend } from "resend"
+import { sendTransactionalEmail } from "@/lib/transactional-email"
 import { db } from "@/lib/db"
 import { contactSubmissionRateLimits, questions } from "@/lib/db/schema"
 import { enqueueQuestionKakaoNotification } from "@/lib/kakao-notifications"
+import { sendAdminPushNotification } from "@/lib/admin-web-push"
 import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
 import { escapeHtml } from "@/lib/security"
 
@@ -97,7 +98,12 @@ export async function askQuestion(input: {
       console.error("[v0] Failed to queue Kakao question notification:", error)
     }
 
-    await sendAdminNewQuestionNotification({ name, phone, email, question })
+    await Promise.all([
+      sendAdminNewQuestionNotification({ name, phone, email, question }),
+      sendAdminPushNotification().catch((error) => {
+        console.error("[v0] Failed to send admin Web Push notification:", error)
+      }),
+    ])
     return { success: true }
   } catch (error) {
     console.error("[v0] askQuestion error:", error)
@@ -137,17 +143,9 @@ export async function replyToQuestion(questionId: number, reply: string): Promis
 }
 
 async function sendAdminNewQuestionNotification(details: { name: string; phone: string; email: string; question: string }) {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
-    console.error("[v0] RESEND_API_KEY not set, skipping admin question notification")
-    return
-  }
-
   try {
-    const resend = new Resend(apiKey)
-    await resend.emails.send({
-      from: "Lotus Wellness <onboarding@resend.dev>",
-      to: "saigonservice2020@gmail.com",
+    await sendTransactionalEmail({
+      to: process.env.ADMIN_EMAIL ?? "saigonservice2020@gmail.com",
       subject: `New question from ${escapeHtml(details.name)}`,
       html: `
         <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
@@ -168,16 +166,8 @@ async function sendAdminNewQuestionNotification(details: { name: string; phone: 
 }
 
 async function sendReplyToCustomer(details: { email: string; name: string; question: string; reply: string }) {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
-    console.error("[v0] RESEND_API_KEY not set, skipping customer reply email")
-    return
-  }
-
   try {
-    const resend = new Resend(apiKey)
-    await resend.emails.send({
-      from: "Lotus Wellness <onboarding@resend.dev>",
+    await sendTransactionalEmail({
       to: details.email,
       subject: "We answered your question — Lotus Wellness",
       html: `
