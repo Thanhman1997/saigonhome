@@ -38,13 +38,14 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
   const [booking] = await db.select({ booking: bookings, service: services, therapist: therapists }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).leftJoin(therapists, eq(bookings.therapistId, therapists.id)).where(eq(bookings.id, id)).limit(1)
   if (!booking) throw new Error("Booking not found")
   const current = booking.booking
+  const access = status === "confirmed" && current.status !== "confirmed" ? issueBookingToken() : null
   await db.transaction(async (tx) => {
     await lockBookingSchedule(tx)
     if ((status === "confirmed" || status === "pending") && !["pending", "confirmed"].includes(current.status)) {
       if ((await overlappingBookings(tx, current, current.startAt, current.endAt)).length) throw new Error("This time is no longer available")
     }
     const activity = status === current.status ? current.activity : [...current.activity, { kind: status, at: new Date().toISOString(), date: current.date, time: current.time }]
-    const [updated] = await tx.update(bookings).set({ status, activity, updatedAt: new Date() }).where(and(
+    const [updated] = await tx.update(bookings).set({ status, activity, updatedAt: new Date(), ...(access && { accessTokenHash: access.hash, accessTokenExpiresAt: access.expires, accessTokenRevokedAt: null }) }).where(and(
       eq(bookings.id, id), eq(bookings.status, current.status), eq(bookings.startAt, current.startAt),
     )).returning({ id: bookings.id })
     if (!updated) throw new Error("The booking changed. Refresh and try again.")
@@ -55,6 +56,7 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
     const locale = current.locale ?? "en"
     await sendBookingManagementEmail({ ...current, status }, localizedServiceName(booking.service, locale), status, locale, {
       therapist: booking.therapist?.code,
+      token: access?.token,
       paymentUrl: status === "confirmed" ? `${siteUrl}/payment/result?reference=${encodeURIComponent(current.reference)}` : undefined,
       template: template ? { en: template.valueEn, vi: template.valueVi, ko: template.valueKo }[locale] : null,
     })
@@ -91,6 +93,7 @@ export async function approveBookingChange(id: number) {
 
 async function applyBookingChange(id: number) {
   if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) throw new Error("Invalid booking")
+  const access = issueBookingToken()
   const applied = await db.transaction(async (tx) => {
     await lockBookingSchedule(tx)
     const [current] = await tx.select().from(bookings).where(eq(bookings.id, id)).limit(1).for("update")
@@ -107,7 +110,7 @@ async function applyBookingChange(id: number) {
     const slot = (await availableBookingSlots(tx, current, request.date, now)).find((candidate) => candidate.time === request.time)
     if (!slot) throw new Error("The requested time is no longer available")
     activity.push({ kind: "rescheduled", at: now.toISOString(), date: request.date, time: slot.time })
-    const [updated] = await tx.update(bookings).set({ date: request.date, time: slot.time, startAt: slot.start, endAt: slot.end, reminderEmailSentAt: null, activity, updatedAt: now }).where(eq(bookings.id, id)).returning()
+    const [updated] = await tx.update(bookings).set({ date: request.date, time: slot.time, startAt: slot.start, endAt: slot.end, reminderEmailSentAt: null, activity, updatedAt: now, accessTokenHash: access.hash, accessTokenExpiresAt: access.expires, accessTokenRevokedAt: null }).where(eq(bookings.id, id)).returning()
     return { updated, kind: "rescheduled" as const }
   })
 
@@ -117,6 +120,7 @@ async function applyBookingChange(id: number) {
   const locale = applied.updated.locale ?? "en"
   const emailed = await sendBookingManagementEmail(applied.updated, localizedServiceName(service, locale), applied.kind, locale, {
     therapist: therapist?.code,
+    token: applied.kind === "rescheduled" ? access.token : undefined,
     template: template ? { en: template.valueEn, vi: template.valueVi, ko: template.valueKo }[locale] : null,
   })
   revalidatePath("/admin/bookings")
