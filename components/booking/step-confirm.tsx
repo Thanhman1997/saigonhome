@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
+import { formatBookingDate, formatBookingTime, localizeBookingError } from "@/lib/booking-management-locale"
+import { dictionary } from "@/lib/i18n/dictionary"
 import { track } from "@vercel/analytics"
 import { CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,7 +11,6 @@ import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { formatVnd, getGroupDiscountRate } from "@/lib/pricing"
 import { createBooking, type BookingReceipt } from "@/app/actions/booking"
 import Link from "next/link"
-import { checkIsFirstTimeCustomer } from "@/app/actions/customer"
 import type { CustomerInfo } from "./step-details"
 
 export function StepConfirm({
@@ -26,6 +27,8 @@ export function StepConfirm({
   const { draft, services, therapists, closeBooking } = useBooking()
   const { t, locale } = useLanguage()
   const [submitting, setSubmitting] = useState(false)
+  const inFlight = useRef(false)
+  const submissionKey = useRef<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const service = services.find((s) => s.id === draft.serviceId)
@@ -40,11 +43,11 @@ export function StepConfirm({
   const estimatedTotal = subtotal - estimatedDiscount
 
   async function handleConfirm() {
-    if (!service || !duration || !draft.date || !draft.time) return
+    if (inFlight.current || !service || !duration || !draft.date || !draft.time) return
+    inFlight.current = true
     setSubmitting(true)
     setError(null)
     try {
-      const isFirstTime = await checkIsFirstTimeCustomer(customerInfo.email)
       const result = await createBooking({
         serviceId: service.id,
         durationMinutes: duration.minutes,
@@ -58,8 +61,8 @@ export function StepConfirm({
         address: customerInfo.address,
         detailedAddress: customerInfo.detailedAddress,
         notes: customerInfo.notes,
-        isFirstTime,
         locale,
+        submissionKey: submissionKey.current ??= crypto.randomUUID(),
       })
       if (result.success) {
         track("booking_submitted", { service: service.slug, guests: String(draft.guests) })
@@ -69,6 +72,7 @@ export function StepConfirm({
           subtotalVnd: result.subtotalVnd,
           discountVnd: result.discountVnd,
           managementEmailSent: result.managementEmailSent,
+          locale: result.locale,
         })
       } else {
         setError(result.error)
@@ -76,13 +80,16 @@ export function StepConfirm({
     } catch {
       setError("Something went wrong. Please try again.")
     } finally {
+      inFlight.current = false
       setSubmitting(false)
     }
   }
 
   if (bookingResult) {
+    const locale = bookingResult.locale
+    const t = dictionary[locale]
     return (
-      <div className="flex flex-col items-center gap-5 py-6 text-center">
+      <div lang={locale} className="flex flex-col items-center gap-5 py-6 text-center">
         <span className="flex size-16 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
           <CheckCircle2 className="size-8" />
         </span>
@@ -111,8 +118,8 @@ export function StepConfirm({
       <div className="flex flex-col gap-3 border border-border p-5 text-sm">
         <Row label={t.booking.steps.service} value={`${serviceName} · ${duration.minutes} ${t.services.minutes}`} />
         {therapist && <Row label={t.booking.steps.therapist} value={therapist.code} />}
-        <Row label={t.booking.selectDate} value={draft.date ?? ""} />
-        <Row label={t.booking.selectTime} value={draft.time ?? ""} />
+        <Row label={t.booking.selectDate} value={draft.date ? formatBookingDate(draft.date, locale) : ""} />
+        <Row label={t.booking.selectTime} value={draft.time ? formatBookingTime(draft.time, locale) : ""} />
         <Row label={t.booking.guests} value={String(draft.guests)} />
         <Row label={t.booking.name} value={customerInfo.customerName} />
         <Row label={t.booking.address} value={`${customerInfo.address}${customerInfo.detailedAddress ? ", " + customerInfo.detailedAddress : ""}`} />
@@ -127,7 +134,7 @@ export function StepConfirm({
         </div>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p role="alert" className="text-sm text-destructive">{localizeBookingError(error, locale)}</p>}
 
       <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
         <Button variant="outline" onClick={onBack} size="lg" disabled={submitting}>

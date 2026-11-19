@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { createBookingManagementToken, getManagedBookingAccess, getManagedBookingId, getBookingManagementUrl } from "./booking-management-token"
+import { createBookingManagementToken, getManagedBookingAccess, getManagedBookingId, getBookingManagementUrl, hashBookingToken, issueBookingToken } from "./booking-management-token"
 import { createReviewInvitation } from "./review-invitation"
 import { candidateSlots } from "./booking-availability"
 
@@ -27,6 +27,19 @@ describe("private booking links", () => {
     expect(getManagedBookingAccess(access)).toEqual({ id: 38, locale })
     const differentLocale = locale === "ko" ? "vi" : "ko"
     expect(getManagedBookingAccess(access.replace(`.${locale}.`, `.${differentLocale}.`))).toBeNull()
+  })
+
+  it.each(["en", "vi", "ko"] as const)("issues a random hash-only link for %s", (locale) => {
+    const issued = issueBookingToken()
+    expect(issued.token).toMatch(/^[A-Za-z0-9_-]{43}$/)
+    expect(issued.token).not.toBe(issueBookingToken().token)
+    expect(issued.hash).toMatch(/^[a-f0-9]{64}$/)
+    expect(issued.hash).toBe(hashBookingToken(issued.token))
+    expect(issued.hash).not.toBe(issued.token)
+    expect(issued.expires.getTime() - Date.now()).toBeGreaterThan(44 * 86_400_000)
+    const url = new URL(getBookingManagementUrl(issued.token, locale))
+    expect(url.search).toBe(`?lang=${locale}`)
+    expect(url.hash).toBe(`#access=${issued.token}`)
   })
 
   it("does not put access tokens in request URLs", () => {

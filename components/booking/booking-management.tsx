@@ -4,8 +4,14 @@ import { useEffect, useRef, useState } from "react"
 import { ArrowLeft, CalendarDays, LockKeyhole } from "lucide-react"
 import Link from "next/link"
 import { changeManagedBooking, readManagedBooking, readManagedBookingSlots } from "@/app/actions/booking-management"
-import { pickLocalized, useLanguage } from "@/lib/i18n/language-provider"
-import { bookingManagementTitles, type Locale } from "@/lib/booking-management-locale"
+import { useLanguage } from "@/lib/i18n/language-provider"
+import { bookingManagementTitles, formatBookingDate, formatBookingTime, type Locale } from "@/lib/booking-management-locale"
+
+const detailsCopy = {
+  en: { customer: "Guest", therapist: "Therapist", unassigned: "To be assigned" },
+  vi: { customer: "Khách hàng", therapist: "Kỹ thuật viên", unassigned: "Sẽ được sắp xếp" },
+  ko: { customer: "고객", therapist: "테라피스트", unassigned: "배정 예정" },
+}
 
 const copy = {
   en: { back: "Back to booking", loading: "Opening your appointment…", locked: "Open the private link in your booking email. If your link has expired or you can’t find it, contact Lotus Wellness.", contact: "Contact Lotus Wellness", service: "Massage", date: "Appointment (Vietnam time)", guests: "Guests", duration: "Duration (minutes)", total: "Total", reschedule: "Change time", cancel: "Cancel booking", chooseDate: "Choose a new date", times: "Available times (Vietnam time)", select: "Select a time", empty: "No available times on this date. Try another date.", save: "Confirm new time", confirm: "Confirm cancellation", keep: "Keep my booking", blocked: "Contact Lotus Wellness for changes to this booking.", payment: "If you’ve paid or started online payment, contact Lotus Wellness to cancel and check refund eligibility.", cancelNotice: "This will cancel your appointment. If you paid separately, contact Lotus Wellness about a possible refund.", changed: "Your booking time has been updated.", cancelled: "Your booking has been cancelled.", mailFailed: "We couldn’t send the update email.", failed: "We couldn’t complete your request. Please try again.", taken: "That time is no longer available. Choose another time.", slotsFailed: "We couldn’t load available times.", retry: "Try again", statuses: { pending: "Pending confirmation", confirmed: "Confirmed", cancelled: "Cancelled", completed: "Completed" } },
@@ -26,10 +32,11 @@ export function BookingManagement({ linkLocale }: { linkLocale?: Locale }) {
   const locale = bookingLocale ?? linkLocale ?? siteLocale
   const t = copy[locale]
   const access = useRef("")
+  const cancellationDialog = useRef<HTMLDialogElement>(null)
   const slotRequest = useRef(0)
   const [screen, setScreen] = useState<Screen>("loading")
   const [booking, setBooking] = useState<Booking>()
-  const [mode, setMode] = useState<"reschedule" | "cancel" | null>(null)
+  const [mode, setMode] = useState<"reschedule" | null>(null)
   const [date, setDate] = useState("")
   const [time, setTime] = useState("")
   const [times, setTimes] = useState<string[] | null>(null)
@@ -110,18 +117,19 @@ export function BookingManagement({ linkLocale }: { linkLocale?: Locale }) {
     setSuccess(null)
   }
 
-  async function submit() {
-    if (busy || !mode || (mode === "reschedule" && (!date || !time))) return
+  async function submit(intent: "cancel" | "reschedule" | null = mode) {
+    if (busy || !intent || (intent === "reschedule" && (!date || !time))) return
+    if (intent === "cancel") cancellationDialog.current?.close()
     const token = access.current
     setBusy(true)
     setMessage(null)
     try {
-      const result = await changeManagedBooking(token, mode === "cancel" ? { kind: "cancel" } : { kind: "reschedule", date, time })
+      const result = await changeManagedBooking(token, intent === "cancel" ? { kind: "cancel" } : { kind: "reschedule", date, time })
       if (token !== access.current) return
       if (result.ok) {
         setBooking(result.booking)
         selectMode(null)
-        setSuccess({ type: mode === "cancel" ? "cancelled" : "changed", emailed: result.emailed })
+        setSuccess({ type: intent === "cancel" ? "cancelled" : "changed", emailed: result.emailed })
       } else if (result.error === "invalid") setScreen("locked")
       else if (result.error === "unavailable") {
         await loadTimes(date)
@@ -147,10 +155,12 @@ export function BookingManagement({ linkLocale }: { linkLocale?: Locale }) {
           {screen === "ready" && booking && (
             <>
               <div className="mt-6 rounded-xl border border-border bg-background p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-serif text-2xl font-semibold">{booking.service ? pickLocalized(booking.service, locale) : t.service}</h2><span className="font-mono text-sm text-muted-foreground">#{booking.reference}</span></div>
+                <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-serif text-2xl font-semibold">{booking.service?.[locale] || t.service}</h2><span className="font-mono text-sm text-muted-foreground">#{booking.reference}</span></div>
                 <p className="mt-1 font-semibold text-primary">{t.statuses[booking.status as keyof typeof t.statuses] ?? booking.status}</p>
                 <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                  <div><dt className="text-muted-foreground">{t.date}</dt><dd>{booking.date} · {booking.time}</dd></div>
+                  <div><dt className="text-muted-foreground">{detailsCopy[locale].customer}</dt><dd>{booking.customerName}</dd></div>
+                  <div><dt className="text-muted-foreground">{detailsCopy[locale].therapist}</dt><dd>{booking.therapist || detailsCopy[locale].unassigned}</dd></div>
+                  <div className="col-span-2"><dt className="text-muted-foreground">{t.date}</dt><dd>{formatBookingDate(booking.date, locale)} · {formatBookingTime(booking.time, locale)}</dd></div>
                   <div><dt className="text-muted-foreground">{t.guests}</dt><dd>{booking.guests}</dd></div>
                   <div><dt className="text-muted-foreground">{t.duration}</dt><dd>{booking.duration}</dd></div>
                   <div><dt className="text-muted-foreground">{t.total}</dt><dd>{new Intl.NumberFormat(locale, { style: "currency", currency: "VND" }).format(booking.total)}</dd></div>
@@ -159,23 +169,29 @@ export function BookingManagement({ linkLocale }: { linkLocale?: Locale }) {
               {success && <p role="status" className="mt-4 font-semibold text-primary">{t[success.type]} {!success.emailed && t.mailFailed}</p>}
               {message && <p role="alert" className="mt-4 text-destructive">{t[message]}</p>}
               {!mode && booking.canChange && (
-                <div className="mt-6 flex flex-wrap gap-3"><button type="button" className={primaryButton} onClick={() => selectMode("reschedule")}>{t.reschedule}</button>{booking.canCancel && <button type="button" className={secondaryButton} onClick={() => selectMode("cancel")}>{t.cancel}</button>}</div>
+                <div className="mt-6 flex flex-wrap gap-3"><button type="button" className={primaryButton} onClick={() => selectMode("reschedule")}>{t.reschedule}</button>{booking.canCancel && <button type="button" className={secondaryButton} disabled={busy} onClick={() => cancellationDialog.current?.showModal()}>{t.cancel}</button>}</div>
               )}
               {!mode && booking.canChange && !booking.canCancel && <><p className="mt-4 text-muted-foreground">{t.payment}</p>{contact}</>}
               {!mode && !booking.canChange && !["cancelled", "completed"].includes(booking.status) && <><p className="mt-4 text-muted-foreground">{t.blocked}</p>{contact}</>}
-              {mode && (
+              <dialog ref={cancellationDialog} aria-labelledby="guest-cancellation-title" aria-describedby="guest-cancellation-description" className="m-auto w-[calc(100%-2rem)] max-w-md rounded-xl border border-border bg-card p-6 text-card-foreground backdrop:bg-foreground/50">
+                <h2 id="guest-cancellation-title" className="font-serif text-2xl font-semibold">{t.cancel}</h2>
+                <p id="guest-cancellation-description" className="mt-2 text-muted-foreground">{t.cancelNotice}</p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <button type="button" className={secondaryButton} onClick={() => cancellationDialog.current?.close()}>{t.keep}</button>
+                  <button type="button" className={primaryButton} onClick={() => void submit("cancel")}>{t.confirm}</button>
+                </div>
+              </dialog>
+              {mode === "reschedule" && (
                 <form onSubmit={(event) => { event.preventDefault(); void submit() }} className="mt-6 border-t border-border pt-5">
-                  <h2 className="font-serif text-2xl font-semibold">{mode === "cancel" ? t.cancel : t.reschedule}</h2>
-                  {mode === "cancel" ? <p className="mt-2 text-muted-foreground">{t.cancelNotice}</p> : (
-                    <div className="mt-3 flex flex-col gap-3 sm:max-w-sm">
+                  <h2 className="font-serif text-2xl font-semibold">{t.reschedule}</h2>
+                  <div className="mt-3 flex flex-col gap-3 sm:max-w-sm">
                       <label className="flex flex-col gap-1">{t.chooseDate}<input className={fieldClass} type="date" min={booking.dates.min} max={booking.dates.max} value={date} onChange={(event) => void loadTimes(event.target.value)} required disabled={busy} /></label>
                       {slotState === "loading" && <p role="status">{t.loading}</p>}
                       {slotState === "error" && <p role="alert">{t.slotsFailed} <button type="button" onClick={() => void loadTimes(date)} className="underline">{t.retry}</button></p>}
                       {times?.length === 0 && <p role="status" className="text-muted-foreground">{t.empty}</p>}
-                      {!!times?.length && <label className="flex flex-col gap-1">{t.times}<select className={fieldClass} value={time} onChange={(event) => setTime(event.target.value)} required disabled={busy}><option value="">{t.select}</option>{times.map((available) => <option key={available}>{available}</option>)}</select></label>}
-                    </div>
-                  )}
-                  <div className="mt-5 flex flex-wrap gap-3"><button type="submit" className={primaryButton} disabled={busy || (mode === "reschedule" && !time)}>{mode === "cancel" ? t.confirm : t.save}</button><button type="button" className={secondaryButton} disabled={busy} onClick={() => selectMode(null)}>{t.keep}</button></div>
+                      {!!times?.length && <label className="flex flex-col gap-1">{t.times}<select className={fieldClass} value={time} onChange={(event) => setTime(event.target.value)} required disabled={busy}><option value="">{t.select}</option>{times.map((available) => <option value={available} key={available}>{formatBookingTime(available, locale)}</option>)}</select></label>}
+                  </div>
+                  <div className="mt-5 flex flex-wrap gap-3"><button type="submit" className={primaryButton} disabled={busy || !time}>{t.save}</button><button type="button" className={secondaryButton} disabled={busy} onClick={() => selectMode(null)}>{t.keep}</button></div>
                 </form>
               )}
             </>

@@ -1,14 +1,16 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { bookings, reviews, services, siteContent } from "@/lib/db/schema"
+import { bookings, reviews, services, siteContent, therapists } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
-import { bookingManagementEmailLink, customerBookingEmailSender, sendBookingManagementEmail } from "@/lib/booking-management-email"
+import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
-import { Resend } from "resend"
+import { sendTransactionalEmail } from "@/lib/transactional-email"
+import { issueBookingToken } from "@/lib/booking-management-token"
+import { localizedServiceName } from "@/lib/booking-management-locale"
 import { createReviewInvitation } from "@/lib/review-invitation"
 import { escapeHtml } from "@/lib/security"
 
@@ -27,7 +29,7 @@ async function assertAdmin() {
 export async function updateBookingStatus(id: number, status: BookingStatus) {
   await assertAdmin()
   if (!BOOKING_STATUSES.includes(status)) throw new Error("Invalid status")
-  const [booking] = await db.select({ booking: bookings, service: services }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).where(eq(bookings.id, id)).limit(1)
+  const [booking] = await db.select({ booking: bookings, service: services, therapist: therapists }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).leftJoin(therapists, eq(bookings.therapistId, therapists.id)).where(eq(bookings.id, id)).limit(1)
   if (!booking) throw new Error("Booking not found")
   const current = booking.booking
   await db.transaction(async (tx) => {
@@ -35,49 +37,39 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
     if ((status === "confirmed" || status === "pending") && !["pending", "confirmed"].includes(current.status)) {
       if ((await overlappingBookings(tx, current, current.startAt, current.endAt)).length) throw new Error("This time is no longer available")
     }
-    const [updated] = await tx.update(bookings).set({ status }).where(and(
+    const activity = status === current.status ? current.activity : [...current.activity, { kind: status, at: new Date().toISOString(), date: current.date, time: current.time }]
+    const [updated] = await tx.update(bookings).set({ status, activity, updatedAt: new Date() }).where(and(
       eq(bookings.id, id), eq(bookings.status, current.status), eq(bookings.startAt, current.startAt),
     )).returning({ id: bookings.id })
     if (!updated) throw new Error("The booking changed. Refresh and try again.")
   })
-  if ((status === "confirmed" || status === "cancelled") && booking.booking.status !== status) {
-    const apiKey = process.env.RESEND_API_KEY
-    if (apiKey) {
-      const resend = new Resend(apiKey)
-      const confirmed = status === "confirmed"
-      const [template] = await db.select().from(siteContent).where(eq(siteContent.key, confirmed ? "booking_confirmed_email" : "booking_cancelled_email")).limit(1)
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://lotuswellness.app"
-      const paymentUrl = `${siteUrl}/payment/result?reference=${encodeURIComponent(booking.booking.reference)}`
-      const defaultSubject = confirmed ? `Booking confirmed — ${booking.booking.reference}` : `Booking update — ${booking.booking.reference}`
-      const defaultBody = confirmed ? `Your booking has been confirmed.\n\nPayment options:\n1. Pay directly at the spa or by bank transfer.\n2. Pay by Visa or Mastercard: ${paymentUrl}` : "Unfortunately, we cannot confirm this booking. Please contact us to choose another time."
-      const replaceTokens = (value: string) => value.replaceAll("{{customerName}}", booking.booking.customerName).replaceAll("{{reference}}", booking.booking.reference).replaceAll("{{paymentUrl}}", paymentUrl).replaceAll("{{service}}", booking.service?.nameEn ?? "Massage").replaceAll("{{date}}", booking.booking.date).replaceAll("{{time}}", booking.booking.time).replaceAll("{{duration}}", String(booking.booking.durationMinutes))
-      const subject = replaceTokens(template?.valueEn?.split("\n")[0] || defaultSubject)
-      const body = escapeHtml(replaceTokens(template?.valueEn?.split("\n").slice(1).join("\n") || defaultBody)).replaceAll("\n", "<br />")
-      try {
-        const { error } = await resend.emails.send({
-          from: customerBookingEmailSender(),
-          to: booking.booking.email,
-          subject,
-          html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#24312d"><h2>${confirmed ? "Booking confirmed" : "Booking update"}</h2><p>Dear ${escapeHtml(booking.booking.customerName)},</p><p>${body}</p><p><strong>Reference:</strong> ${escapeHtml(booking.booking.reference)}</p><p><strong>Service:</strong> ${escapeHtml(booking.service?.nameEn ?? "Massage")} (${booking.booking.durationMinutes} min)</p><p><strong>Date &amp; time:</strong> ${escapeHtml(booking.booking.date)} at ${escapeHtml(booking.booking.time)}</p>${confirmed ? bookingManagementEmailLink(id) : ""}</div>`,
-        })
-        if (error) console.error("Booking status email was not accepted:", error.name)
-      } catch {
-        console.error("Booking status email could not be sent")
-      }
-    }
+  if ((status === "confirmed" || status === "cancelled") && current.status !== status) {
+    const [template] = await db.select().from(siteContent).where(eq(siteContent.key, `booking_${status}_email`)).limit(1)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://lotuswellness.app"
+    const locale = current.locale ?? "en"
+    await sendBookingManagementEmail({ ...current, status }, localizedServiceName(booking.service, locale), status, locale, {
+      therapist: booking.therapist?.code,
+      paymentUrl: status === "confirmed" ? `${siteUrl}/payment/result?reference=${encodeURIComponent(current.reference)}` : undefined,
+      template: template ? { en: template.valueEn, vi: template.valueVi, ko: template.valueKo }[locale] : null,
+    })
   }
-  if (status === "completed" && booking.booking.status !== "completed" && process.env.RESEND_API_KEY) {
+  if (status === "completed" && booking.booking.status !== "completed" && process.env.BREVO_API_KEY) {
     try {
       const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? (productionHost ? `https://${productionHost}` : "http://localhost:3000")
       const reviewUrl = new URL("/reviews", siteUrl)
       reviewUrl.searchParams.set("invite", createReviewInvitation(booking.booking.id))
       reviewUrl.hash = "write-review"
-      await new Resend(process.env.RESEND_API_KEY).emails.send({
-        from: "Lotus Wellness <onboarding@resend.dev>",
-        to: booking.booking.email,
-        subject: `How was your visit? — ${booking.booking.reference}`,
-        html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#24312d"><h2>Thank you for choosing Lotus Wellness</h2><p>Dear ${escapeHtml(booking.booking.customerName)},</p><p>We hope you enjoyed your ${escapeHtml(booking.service?.nameEn ?? "massage")}. Your feedback helps us care for every guest better.</p><p><a href="${escapeHtml(reviewUrl.href)}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#24312d;color:#ffffff;text-decoration:none">Write a review</a></p><p style="color:#6b7571;font-size:13px">This private link expires in 30 days.</p></div>`,
+      const locale = current.locale ?? "en"
+      const copy = {
+        en: { subject: "How was your visit?", title: "Thank you for choosing Lotus Wellness", body: "Your feedback helps us care for every guest better.", action: "Write a review", expires: "This private link expires in 30 days." },
+        vi: { subject: "Trải nghiệm của bạn thế nào?", title: "Cảm ơn bạn đã chọn Lotus Wellness", body: "Góp ý của bạn giúp chúng tôi phục vụ khách hàng tốt hơn.", action: "Viết đánh giá", expires: "Liên kết riêng này hết hạn sau 30 ngày." },
+        ko: { subject: "이용 경험은 어떠셨나요?", title: "Lotus Wellness를 이용해 주셔서 감사합니다", body: "고객님의 의견은 더 나은 서비스를 제공하는 데 도움이 됩니다.", action: "후기 작성", expires: "이 전용 링크는 30일 후 만료됩니다." },
+      }[locale]
+      await sendTransactionalEmail({
+        to: current.email,
+        subject: `${copy.subject} — ${current.reference}`,
+        html: `<div lang="${locale}" style="font-family:sans-serif;max-width:560px;margin:auto;color:#24312d"><h2>${copy.title}</h2><p>${copy.body}</p><p><a href="${escapeHtml(reviewUrl.href)}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#24312d;color:#ffffff;text-decoration:none">${copy.action}</a></p><p>${copy.expires}</p></div>`,
       })
     } catch {
       // A failed invitation email must not block the status change.
@@ -89,10 +81,29 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
 export async function resendBookingManagementLink(id: number) {
   await assertAdmin()
   if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) return false
-  const [row] = await db.select({ booking: bookings, service: services.nameEn }).from(bookings)
-    .leftJoin(services, eq(bookings.serviceId, services.id)).where(eq(bookings.id, id)).limit(1)
-  if (!row || !["pending", "confirmed"].includes(row.booking.status) || row.booking.startAt.getTime() <= Date.now()) return false
-  return sendBookingManagementEmail(row.booking, row.service ?? "Massage", "link")
+  if (!process.env.BREVO_API_KEY) return false
+  const access = issueBookingToken()
+  return db.transaction(async (tx) => {
+    const [current] = await tx.select().from(bookings).where(eq(bookings.id, id)).limit(1).for("update")
+    if (!current || !["pending", "confirmed"].includes(current.status) || +current.startAt <= Date.now()) return false
+    const [service] = await tx.select().from(services).where(eq(services.id, current.serviceId)).limit(1)
+    const [therapist] = current.therapistId ? await tx.select({ code: therapists.code }).from(therapists).where(eq(therapists.id, current.therapistId)).limit(1) : []
+    const locale = current.locale ?? "en"
+    const sent = await sendBookingManagementEmail(current, localizedServiceName(service, locale), "link", locale, { token: access.token, therapist: therapist?.code })
+    if (!sent) return false
+    await tx.update(bookings).set({ accessTokenHash: access.hash, accessTokenExpiresAt: access.expires, accessTokenRevokedAt: null }).where(eq(bookings.id, id))
+    return true
+  }).then((sent) => {
+    if (sent) revalidatePath("/admin/bookings")
+    return sent
+  })
+}
+
+export async function revokeBookingManagementLink(id: number) {
+  await assertAdmin()
+  if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) return
+  await db.update(bookings).set({ accessTokenRevokedAt: new Date() }).where(eq(bookings.id, id))
+  revalidatePath("/admin/bookings")
 }
 
 export async function saveBookingEmailTemplate(formData: FormData) {

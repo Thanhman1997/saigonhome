@@ -11,6 +11,8 @@ import {
   index,
   uniqueIndex,
   check,
+  uuid,
+  jsonb,
 } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
@@ -113,6 +115,13 @@ export const bookings = pgTable("bookings", {
   paymentProvider: text("payment_provider").default("stripe"),
   startAt: timestamp("start_at").notNull(),
   endAt: timestamp("end_at").notNull(),
+  locale: text("locale").$type<"en" | "vi" | "ko">(),
+  accessTokenHash: text("access_token_hash").unique(),
+  accessTokenExpiresAt: timestamp("access_token_expires_at", { withTimezone: true }),
+  accessTokenRevokedAt: timestamp("access_token_revoked_at", { withTimezone: true }),
+  submissionKey: uuid("submission_key").unique(),
+  activity: jsonb("activity").$type<{ kind: string; at: string; date: string; time: string }[]>().notNull().default([]),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   confirmationEmailSentAt: timestamp("confirmation_email_sent_at", { withTimezone: true }),
   reminderEmailSentAt: timestamp("reminder_email_sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

@@ -27,7 +27,8 @@ vi.mock("@/lib/db", () => ({
 }))
 
 vi.mock("@/lib/db/schema", () => ({ bookingSettings: "settings", services: "services", serviceDurations: "durations", therapists: "therapists", bookings: "bookings" }))
-vi.mock("resend", () => ({ Resend: class { emails = { send: vi.fn().mockResolvedValue({}) } } }))
+vi.mock("@/lib/booking-rate-limit", () => ({ allowBookingRequest: async () => true }))
+vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: async () => false }))
 
 const insertedBooking = vi.hoisted(() => ({ value: null as Record<string, unknown> | null }))
 const conflicts = vi.hoisted(() => ({ value: [] as unknown[] }))
