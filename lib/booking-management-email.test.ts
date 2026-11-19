@@ -28,6 +28,26 @@ describe("Resend booking emails", () => {
     expect(payload.html).not.toContain("2026-12-12")
   })
 
+  it.each([
+    ["en", "We only accept payment by cash or bank transfer."],
+    ["vi", "Chúng tôi chỉ chấp nhận thanh toán bằng tiền mặt hoặc chuyển khoản."],
+    ["ko", "결제는 현금 또는 계좌이체만 가능합니다."],
+  ] as const)("replaces payment links in %s confirmations and keeps the management button", async (locale, notice) => {
+    vi.stubEnv("RESEND_API_KEY", "test-key")
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(null, { status: 200 }))
+    vi.stubGlobal("fetch", fetch)
+    const { token } = issueBookingToken()
+    await sendBookingManagementEmail({ ...booking, status: "confirmed" }, null, "confirmed", locale, {
+      token,
+      template: "Custom subject\nCustom greeting\n\nPayment options:\n1. Pay directly at the spa or by bank transfer.\n2. Pay by Visa or Mastercard: {{paymentUrl}}",
+    })
+    const { html } = JSON.parse(String(fetch.mock.calls[0][1]?.body))
+    expect(html).toContain(notice)
+    expect(html).toContain("Custom greeting")
+    expect(html).toContain(`/booking/manage?lang=${locale}#access=${token}`)
+    expect(html).not.toMatch(/Payment options|Visa|Mastercard|paymentUrl|\/payment\/result/)
+  })
+
   it("does not claim delivery when Resend is unconfigured or rejects a send", async () => {
     vi.stubEnv("RESEND_API_KEY", "")
     const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(null, { status: 401 }))
