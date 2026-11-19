@@ -82,6 +82,9 @@ export const reviews = pgTable("reviews", {
   commentVi: text("comment_vi"),
   reviewDate: date("review_date").notNull(),
   approved: boolean("approved").notNull().default(false),
+  adminReply: text("admin_reply"),
+  adminEdited: boolean("admin_edited").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
 export const bookings = pgTable("bookings", {

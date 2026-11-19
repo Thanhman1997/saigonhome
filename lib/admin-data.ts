@@ -53,15 +53,18 @@ export async function getAllBookingsWithRelations() {
 }
 
 export async function getAllReviewsWithRelations() {
-  const [allReviews, allTherapists] = await Promise.all([
-    db.select().from(reviews).orderBy(desc(reviews.reviewDate)),
+  const [allReviews, allTherapists, bookingRefs] = await Promise.all([
+    db.select().from(reviews).orderBy(desc(reviews.reviewDate), desc(reviews.id)),
     db.select().from(therapists),
+    db.select({ id: bookings.id, reference: bookings.reference }).from(bookings),
   ])
   const therapistById = new Map(allTherapists.map((t) => [t.id, t]))
+  const referenceByBookingId = new Map(bookingRefs.map((b) => [b.id, b.reference]))
 
   return allReviews.map((review) => ({
     ...review,
     therapist: review.therapistId ? (therapistById.get(review.therapistId) ?? null) : null,
+    bookingReference: review.bookingId ? (referenceByBookingId.get(review.bookingId) ?? null) : null,
   }))
 }
 

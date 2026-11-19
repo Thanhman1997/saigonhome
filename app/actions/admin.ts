@@ -47,6 +47,20 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
       })
     }
   }
+  if (status === "completed" && booking.booking.status !== "completed" && process.env.RESEND_API_KEY) {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+    const reviewUrl = `${siteUrl}/reviews?ref=${encodeURIComponent(booking.booking.reference)}#write-review`
+    try {
+      await new Resend(process.env.RESEND_API_KEY).emails.send({
+        from: "Lotus Wellness <onboarding@resend.dev>",
+        to: booking.booking.email,
+        subject: `How was your visit? — ${booking.booking.reference}`,
+        html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#24312d"><h2>Thank you for choosing Lotus Wellness</h2><p>Dear ${booking.booking.customerName},</p><p>We hope you enjoyed your ${booking.service?.nameEn ?? "massage"}. Your feedback helps us care for every guest better.</p><p><a href="${reviewUrl}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#24312d;color:#ffffff;text-decoration:none">Write a review</a></p><p style="color:#6b7571;font-size:13px">Booking reference: ${booking.booking.reference}</p></div>`,
+      })
+    } catch {
+      // A failed invitation email must not block the status change.
+    }
+  }
   revalidatePath("/admin/bookings")
 }
 
@@ -65,6 +79,7 @@ export async function toggleReviewApproval(id: number, approved: boolean) {
   await assertAdmin()
   await db.update(reviews).set({ approved }).where(eq(reviews.id, id))
   revalidatePath("/admin/reviews")
+  revalidatePath("/reviews")
   revalidatePath("/")
 }
 
@@ -72,7 +87,41 @@ export async function deleteReview(id: number) {
   await assertAdmin()
   await db.delete(reviews).where(eq(reviews.id, id))
   revalidatePath("/admin/reviews")
+  revalidatePath("/reviews")
   revalidatePath("/")
+}
+
+export type ReviewEditInput = {
+  customerName: string
+  commentEn: string
+  commentKo: string
+  commentVi: string
+  adminReply: string
+}
+
+export async function updateReview(id: number, input: ReviewEditInput) {
+  await assertAdmin()
+  const customerName = input.customerName.trim()
+  if (!customerName || customerName.length > 120) throw new Error("Customer name is required")
+  const clean = (value: string) => {
+    const text = value.trim()
+    if (text.length > 2000) throw new Error("Text is too long (max 2000 characters)")
+    return text || null
+  }
+  const commentEn = clean(input.commentEn)
+  const commentKo = clean(input.commentKo)
+  const commentVi = clean(input.commentVi)
+  const adminReply = clean(input.adminReply)
+
+  const [current] = await db.select().from(reviews).where(eq(reviews.id, id)).limit(1)
+  if (!current) throw new Error("Review not found")
+  const textChanged = commentEn !== (current.commentEn ?? null) || commentKo !== (current.commentKo ?? null) || commentVi !== (current.commentVi ?? null) || customerName !== current.customerName
+
+  await db.update(reviews).set({ customerName, commentEn, commentKo, commentVi, adminReply, adminEdited: current.adminEdited || textChanged }).where(eq(reviews.id, id))
+  revalidatePath("/admin/reviews")
+  revalidatePath("/reviews")
+  revalidatePath("/")
+  return { ok: true }
 }
 
 
