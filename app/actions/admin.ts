@@ -7,6 +7,8 @@ import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
 import { Resend } from "resend"
+import { createReviewInvitation } from "@/lib/review-invitation"
+import { escapeHtml } from "@/lib/security"
 
 const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled"] as const
 type BookingStatus = (typeof BOOKING_STATUSES)[number]
@@ -48,14 +50,17 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
     }
   }
   if (status === "completed" && booking.booking.status !== "completed" && process.env.RESEND_API_KEY) {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-    const reviewUrl = `${siteUrl}/reviews?ref=${encodeURIComponent(booking.booking.reference)}#write-review`
     try {
+      const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? (productionHost ? `https://${productionHost}` : "http://localhost:3000")
+      const reviewUrl = new URL("/reviews", siteUrl)
+      reviewUrl.searchParams.set("invite", createReviewInvitation(booking.booking.id))
+      reviewUrl.hash = "write-review"
       await new Resend(process.env.RESEND_API_KEY).emails.send({
         from: "Lotus Wellness <onboarding@resend.dev>",
         to: booking.booking.email,
         subject: `How was your visit? — ${booking.booking.reference}`,
-        html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#24312d"><h2>Thank you for choosing Lotus Wellness</h2><p>Dear ${booking.booking.customerName},</p><p>We hope you enjoyed your ${booking.service?.nameEn ?? "massage"}. Your feedback helps us care for every guest better.</p><p><a href="${reviewUrl}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#24312d;color:#ffffff;text-decoration:none">Write a review</a></p><p style="color:#6b7571;font-size:13px">Booking reference: ${booking.booking.reference}</p></div>`,
+        html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#24312d"><h2>Thank you for choosing Lotus Wellness</h2><p>Dear ${escapeHtml(booking.booking.customerName)},</p><p>We hope you enjoyed your ${escapeHtml(booking.service?.nameEn ?? "massage")}. Your feedback helps us care for every guest better.</p><p><a href="${escapeHtml(reviewUrl.href)}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#24312d;color:#ffffff;text-decoration:none">Write a review</a></p><p style="color:#6b7571;font-size:13px">This private link expires in 30 days.</p></div>`,
       })
     } catch {
       // A failed invitation email must not block the status change.
