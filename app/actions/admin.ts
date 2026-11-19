@@ -53,7 +53,7 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
       template: template ? { en: template.valueEn, vi: template.valueVi, ko: template.valueKo }[locale] : null,
     })
   }
-  if (status === "completed" && booking.booking.status !== "completed" && process.env.BREVO_API_KEY) {
+  if (status === "completed" && booking.booking.status !== "completed" && process.env.RESEND_API_KEY) {
     try {
       const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? (productionHost ? `https://${productionHost}` : "http://localhost:3000")
@@ -81,7 +81,7 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
 export async function resendBookingManagementLink(id: number) {
   await assertAdmin()
   if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) return false
-  if (!process.env.BREVO_API_KEY) return false
+  if (!process.env.RESEND_API_KEY) return false
   const access = issueBookingToken()
   return db.transaction(async (tx) => {
     const [current] = await tx.select().from(bookings).where(eq(bookings.id, id)).limit(1).for("update")
