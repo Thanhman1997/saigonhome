@@ -1,7 +1,9 @@
 import { escapeHtml } from "@/lib/security"
 import { sendTransactionalEmail } from "@/lib/transactional-email"
+import { adminBookingReviewUrl } from "@/lib/booking-review-token"
 
 type AdminChangeBooking = {
+  id: number
   reference: string
   customerName?: string | null
   email?: string | null
@@ -21,7 +23,6 @@ export type AdminChangeRequest = {
 }
 
 const adminRecipient = () => process.env.ADMIN_EMAIL ?? "saigonservice2020@gmail.com"
-const siteUrl = () => process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://lotuswellness.app"
 
 export async function sendAdminBookingChangeEmail(booking: AdminChangeBooking, change: AdminChangeRequest) {
   try {
@@ -41,12 +42,12 @@ export async function sendAdminBookingChangeEmail(booking: AdminChangeBooking, c
       booking.phone ? row("Phone", escapeHtml(booking.phone)) : "",
       address ? row("Address", address) : "",
     ].join("")
-    const reviewUrl = `${siteUrl().replace(/\/$/, "")}/admin/bookings`
+    const reviewUrl = adminBookingReviewUrl(booking.id)
 
     return await sendTransactionalEmail({
       to: adminRecipient(),
       subject: `${rescheduling ? "Change request" : "Cancellation request"} — ${booking.reference}`,
-      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto"><h2 style="margin-bottom:4px">${title}</h2><p style="color:#666;margin-top:0">Reference: <strong>${escapeHtml(booking.reference)}</strong>. The booking stays unchanged until you confirm.</p><table style="width:100%;border-collapse:collapse;margin-top:16px">${rows}</table><p style="margin-top:20px"><a href="${escapeHtml(reviewUrl)}" style="display:inline-block;padding:12px 20px;border-radius:24px;background:#26362f;color:#fff;text-decoration:none">Review and confirm</a></p><p style="color:#666">The customer receives the confirmation email only after you confirm.</p></div>`,
+      html: `<div style="font-family:sans-serif;max-width:560px;margin:0 auto"><h2 style="margin-bottom:4px">${title}</h2><p style="color:#666;margin-top:0">Reference: <strong>${escapeHtml(booking.reference)}</strong>. The booking stays unchanged until you confirm.</p><table style="width:100%;border-collapse:collapse;margin-top:16px">${rows}</table><p style="margin-top:20px"><a href="${escapeHtml(reviewUrl)}" style="display:inline-block;padding:12px 20px;border-radius:24px;background:#26362f;color:#fff;text-decoration:none">${rescheduling ? "Confirm new time" : "Confirm cancellation"}</a></p><p style="color:#666">The button opens a secure page where you confirm or decline, with no login needed. The customer receives the confirmation email only after you confirm.</p></div>`,
     })
   } catch {
     console.error("Could not send admin booking change request")
