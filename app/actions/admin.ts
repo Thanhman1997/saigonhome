@@ -6,6 +6,7 @@ import { and, eq } from "drizzle-orm"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { availableBookingSlots, lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
 import { pendingChangeRequest } from "@/lib/booking-change-request"
+import { verifyBookingReviewToken } from "@/lib/booking-review-token"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
@@ -29,6 +30,10 @@ async function assertAdmin() {
 
 export async function updateBookingStatus(id: number, status: BookingStatus) {
   await assertAdmin()
+  return applyBookingStatus(id, status)
+}
+
+async function applyBookingStatus(id: number, status: BookingStatus) {
   if (!BOOKING_STATUSES.includes(status)) throw new Error("Invalid status")
   const [booking] = await db.select({ booking: bookings, service: services, therapist: therapists }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).leftJoin(therapists, eq(bookings.therapistId, therapists.id)).where(eq(bookings.id, id)).limit(1)
   if (!booking) throw new Error("Booking not found")
@@ -81,6 +86,10 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
 
 export async function approveBookingChange(id: number) {
   await assertAdmin()
+  return applyBookingChange(id)
+}
+
+async function applyBookingChange(id: number) {
   if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) throw new Error("Invalid booking")
   const applied = await db.transaction(async (tx) => {
     await lockBookingSchedule(tx)
@@ -116,6 +125,10 @@ export async function approveBookingChange(id: number) {
 
 export async function declineBookingChange(id: number) {
   await assertAdmin()
+  return rejectBookingChange(id)
+}
+
+async function rejectBookingChange(id: number) {
   if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) throw new Error("Invalid booking")
   await db.transaction(async (tx) => {
     await lockBookingSchedule(tx)
@@ -125,6 +138,27 @@ export async function declineBookingChange(id: number) {
     await tx.update(bookings).set({ activity, updatedAt: new Date() }).where(eq(bookings.id, id))
   })
   revalidatePath("/admin/bookings")
+}
+
+function assertReviewToken(id: number, token: string) {
+  if (!verifyBookingReviewToken(id, token)) throw new Error("Unauthorized")
+}
+
+export async function confirmBookingFromEmail(id: number, token: string) {
+  assertReviewToken(id, token)
+  const [current] = await db.select({ status: bookings.status }).from(bookings).where(eq(bookings.id, id)).limit(1)
+  if (current?.status !== "pending") throw new Error("This booking is no longer waiting for confirmation")
+  await applyBookingStatus(id, "confirmed")
+}
+
+export async function approveBookingChangeFromEmail(id: number, token: string) {
+  assertReviewToken(id, token)
+  return applyBookingChange(id)
+}
+
+export async function declineBookingChangeFromEmail(id: number, token: string) {
+  assertReviewToken(id, token)
+  return rejectBookingChange(id)
 }
 
 export async function resendBookingManagementLink(id: number) {

@@ -6,6 +6,7 @@ import { and, eq } from "drizzle-orm"
 import { getGroupDiscountRate, getGroupDiscountLabel, DEFAULT_DISCOUNT_RATES, type DiscountRates } from "@/lib/pricing"
 import { randomInt } from "node:crypto"
 import { issueBookingToken } from "@/lib/booking-management-token"
+import { adminBookingReviewUrl } from "@/lib/booking-review-token"
 import { allowBookingRequest } from "@/lib/booking-rate-limit"
 import { sendTransactionalEmail } from "@/lib/transactional-email"
 import { zonedLocalDateTimeToUtc } from "@/lib/timezone"
@@ -219,6 +220,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     }
 
     const bookingDetails = {
+      id: saved.booking.id,
       reference,
       serviceName: service.nameEn,
       durationMinutes: input.durationMinutes,
@@ -256,6 +258,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 }
 
 type BookingEmailDetails = {
+  id: number
   reference: string
   serviceName: string
   durationMinutes: number
@@ -298,8 +301,8 @@ async function sendAdminNotification(details: BookingEmailDetails) {
             ${details.discountLabel ? `<tr><td style="padding: 6px 0; color: #666;">Discount</td><td style="padding: 6px 0;">${details.discountLabel} (-${fmt(details.discountVnd)})</td></tr>` : ""}
             <tr><td style="padding: 6px 0; color: #666; font-weight: bold;">Total</td><td style="padding: 6px 0; font-weight: bold;">${fmt(details.totalVnd)}</td></tr>
           </table>
-          <p style="margin-top: 20px;"><a href="${(process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://lotuswellness.app").replace(/\/$/, "")}/admin/bookings" style="display: inline-block; padding: 12px 20px; border-radius: 24px; background: #26362f; color: #fff; text-decoration: none;">Review and confirm</a></p>
-          <p style="color: #666;">The customer receives the confirmation email only after you confirm.</p>
+          <p style="margin-top: 20px;"><a href="${escapeHtml(adminBookingReviewUrl(details.id))}" style="display: inline-block; padding: 12px 20px; border-radius: 24px; background: #26362f; color: #fff; text-decoration: none;">Confirm booking</a></p>
+          <p style="color: #666;">The button opens a secure page where you confirm the booking, with no login needed. The customer receives the confirmation email only after you confirm.</p>
         </div>
       `,
     })
