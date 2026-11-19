@@ -298,6 +298,8 @@ async function sendAdminNotification(details: BookingEmailDetails) {
             ${details.discountLabel ? `<tr><td style="padding: 6px 0; color: #666;">Discount</td><td style="padding: 6px 0;">${details.discountLabel} (-${fmt(details.discountVnd)})</td></tr>` : ""}
             <tr><td style="padding: 6px 0; color: #666; font-weight: bold;">Total</td><td style="padding: 6px 0; font-weight: bold;">${fmt(details.totalVnd)}</td></tr>
           </table>
+          <p style="margin-top: 20px;"><a href="${(process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://lotuswellness.app").replace(/\/$/, "")}/admin/bookings" style="display: inline-block; padding: 12px 20px; border-radius: 24px; background: #26362f; color: #fff; text-decoration: none;">Review and confirm</a></p>
+          <p style="color: #666;">The customer receives the confirmation email only after you confirm.</p>
         </div>
       `,
     })
