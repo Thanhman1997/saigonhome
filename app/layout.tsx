@@ -1,17 +1,15 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { cookies } from "next/headers"
-import {
-  DM_Sans,
-  Cormorant_Garamond,
-  JetBrains_Mono,
-  Noto_Sans,
-  Playfair_Display,
-  DM_Serif_Display,
-  Lora,
-  Manrope,
-  Inter,
-} from "next/font/google"
+import "@fontsource-variable/dm-sans"
+import "@fontsource-variable/cormorant-garamond"
+import "@fontsource-variable/jetbrains-mono"
+import "@fontsource-variable/noto-sans"
+import "@fontsource-variable/playfair-display"
+import "@fontsource/dm-serif-display"
+import "@fontsource-variable/lora"
+import "@fontsource-variable/manrope"
+import "@fontsource-variable/inter"
 import { SiteAnalytics } from "@/components/site-analytics"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
 import { getLayoutSiteData } from "@/lib/data"
@@ -19,30 +17,6 @@ import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
 import "@fontsource-variable/noto-sans-kr"
 import "@fontsource-variable/noto-serif-kr"
 import "./globals.css"
-
-// Primary display fonts (Latin only)
-const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", weight: ["300", "400", "500", "600", "700"] })
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin", "latin-ext", "vietnamese"],
-  variable: "--font-cormorant",
-  weight: ["300", "400", "500", "600", "700"],
-})
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains", weight: ["400", "500"] })
-
-// Fallback fonts so Korean and Vietnamese text always render, regardless of
-// the visitor's system fonts. These are chained after the primary fonts in
-// globals.css so the browser only falls back per-glyph when a character is
-// missing (e.g. Hangul or Vietnamese diacritics).
-const notoSans = Noto_Sans({ subsets: ["latin", "vietnamese"], variable: "--font-noto-sans", weight: ["300", "400", "500", "600", "700"] })
-
-// Vetted, Admin-selectable Design Settings font pool. Preloaded here (never
-// injected as arbitrary CSS) so the Design Settings module can only switch
-// between these known-safe families.
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", weight: ["400", "500", "600", "700"], preload: false })
-const dmSerifDisplay = DM_Serif_Display({ subsets: ["latin"], variable: "--font-dm-serif-display", weight: ["400"], preload: false })
-const lora = Lora({ subsets: ["latin"], variable: "--font-lora", weight: ["400", "500", "600", "700"], preload: false })
-const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", weight: ["400", "500", "600", "700"], preload: false })
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", weight: ["400", "500", "600", "700"], preload: false })
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
 
@@ -102,7 +76,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={defaultLocale} data-scroll-behavior="smooth" className="bg-background" suppressHydrationWarning>
       <body
-        className={`${dmSans.variable} ${cormorant.variable} ${jetbrainsMono.variable} ${notoSans.variable} ${playfair.variable} ${dmSerifDisplay.variable} ${lora.variable} ${manrope.variable} ${inter.variable} font-sans antialiased`}
+        className="font-sans antialiased"
       >
         <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
         <style id="section-styles" dangerouslySetInnerHTML={{ __html: sectionStyleCss }} />
