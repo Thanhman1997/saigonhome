@@ -4,12 +4,13 @@ import type { SQL } from "drizzle-orm"
 import { createBookingManagementToken, issueBookingToken } from "@/lib/booking-management-token"
 import { changeManagedBooking, readManagedBooking, readManagedBookingSlots } from "./booking-management"
 
-const mocks = vi.hoisted(() => ({ select: vi.fn(), transaction: vi.fn(), update: vi.fn(), slots: vi.fn(), email: vi.fn() }))
+const mocks = vi.hoisted(() => ({ select: vi.fn(), transaction: vi.fn(), update: vi.fn(), slots: vi.fn(), email: vi.fn(), adminEmail: vi.fn() }))
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 vi.mock("@/lib/booking-rate-limit", () => ({ allowBookingRequest: async () => true }))
 vi.mock("@/lib/db", () => ({ db: { select: mocks.select, transaction: mocks.transaction } }))
 vi.mock("@/lib/booking-availability", () => ({ availableBookingSlots: mocks.slots, bookingDateRange: () => ({ min: "2026-08-15", max: "2026-09-14" }), lockBookingSchedule: vi.fn() }))
 vi.mock("@/lib/booking-management-email", () => ({ sendBookingManagementEmail: mocks.email }))
+vi.mock("@/lib/booking-admin-email", () => ({ sendAdminBookingChangeEmail: mocks.adminEmail }))
 
 const record = {
   id: 1, reference: "12345", email: "private@example.com", serviceId: 1, therapistId: null, durationMinutes: 60,
@@ -35,6 +36,7 @@ beforeEach(() => {
   mocks.update.mockImplementation((patch) => ({ where: () => ({ returning: async () => [{ ...booking, ...patch }] }) }))
   mocks.transaction.mockImplementation(async (callback) => callback({ select, update: () => ({ set: mocks.update }) }))
   mocks.email.mockResolvedValue(true)
+  mocks.adminEmail.mockResolvedValue(true)
 })
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs() })
 
@@ -55,6 +57,30 @@ describe("booking management actions", () => {
     mocks.slots.mockResolvedValueOnce([{ time: "11:00", start: new Date("2026-08-19T04:00:00Z"), end: new Date("2026-08-19T05:00:00Z") }])
     expect(await changeManagedBooking(token(), request)).toMatchObject({ ok: true, booking: { reference: "12345", date: "2026-08-19", time: "11:00" } })
     expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ reminderEmailSentAt: null, date: request.date }))
+  })
+
+  it("emails the admin with the previous and new time when a customer reschedules", async () => {
+    mocks.slots.mockResolvedValueOnce([{ time: "11:00", start: new Date("2026-08-19T04:00:00Z"), end: new Date("2026-08-19T05:00:00Z") }])
+    await changeManagedBooking(token(), { kind: "reschedule", date: "2026-08-19", time: "11:00" })
+    expect(mocks.adminEmail).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ reference: "12345", date: "2026-08-19", time: "11:00" }),
+      expect.objectContaining({ kind: "rescheduled", previous: { date: "2026-08-18", time: "10:00" } }),
+    )
+  })
+
+  it("emails the admin when a customer cancels", async () => {
+    await changeManagedBooking(token(), { kind: "cancel" })
+    expect(mocks.adminEmail).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ reference: "12345" }),
+      expect.objectContaining({ kind: "cancelled", previous: { date: "2026-08-18", time: "10:00" } }),
+    )
+  })
+
+  it("does not email the admin when nothing changed or the request is rejected", async () => {
+    await changeManagedBooking(token(), { kind: "reschedule", date: record.date, time: record.time })
+    mocks.slots.mockResolvedValueOnce([])
+    await changeManagedBooking(token(), { kind: "reschedule", date: "2026-08-19", time: "11:00" })
+    expect(mocks.adminEmail).not.toHaveBeenCalled()
   })
 
   it("looks up only the opaque token hash and requires a non-revoked, unexpired match", async () => {

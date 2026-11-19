@@ -7,6 +7,7 @@ import { bookingSettings, bookings, services, therapists } from "@/lib/db/schema
 import { getManagedBookingAccess, hashBookingToken } from "@/lib/booking-management-token"
 import { availableBookingSlots, bookingDateRange, lockBookingSchedule } from "@/lib/booking-availability"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
+import { sendAdminBookingChangeEmail } from "@/lib/booking-admin-email"
 import { allowBookingRequest } from "@/lib/booking-rate-limit"
 
 const invalid = { ok: false, error: "invalid" } as const
@@ -82,22 +83,28 @@ export async function changeManagedBooking(token: string, request: { kind: "canc
       if (!canCancel(current, now)) return support
       history.push({ kind: "cancelled", at: now.toISOString(), date: current.date, time: current.time })
       const [updated] = await tx.update(bookings).set({ status: "cancelled", activity: history, locale, updatedAt: now }).where(eq(bookings.id, current.id)).returning()
-      return { ok: true, updated, locale, changed: true } as const
+      return { ok: true, updated, locale, changed: true, previous: { date: current.date, time: current.time } } as const
     }
-    if (request.date === current.date && request.time === current.time) return { ok: true, updated: current, locale, changed: false } as const
+    if (request.date === current.date && request.time === current.time) return { ok: true, updated: current, locale, changed: false, previous: { date: current.date, time: current.time } } as const
     const chosen = (await availableBookingSlots(tx, current, request.date, now)).find((slot) => slot.time === request.time)
     if (!chosen) return unavailable
     history.push({ kind: "rescheduled", at: now.toISOString(), date: request.date, time: chosen.time })
     const [updated] = await tx.update(bookings).set({ date: request.date, time: chosen.time, startAt: chosen.start, endAt: chosen.end, reminderEmailSentAt: null, activity: history, locale, updatedAt: now }).where(eq(bookings.id, current.id)).returning()
-    return { ok: true, updated, locale, changed: true } as const
+    return { ok: true, updated, locale, changed: true, previous: { date: current.date, time: current.time } } as const
   }).catch(() => unavailable)
   if (!result.ok) return result
 
   revalidatePath("/admin/bookings")
   const booking = await getSummary(result.updated, new Date())
   const service = booking.service?.[result.locale] || null
-  const emailed = !result.changed || await sendBookingManagementEmail(result.updated, service, request.kind === "cancel" ? "cancelled" : "rescheduled", result.locale, {
-    therapist: booking.therapist, token: request.kind === "reschedule" && hashBookingToken(token) ? token : undefined,
-  })
+  const changeKind = request.kind === "cancel" ? "cancelled" : "rescheduled"
+  const [emailed] = result.changed
+    ? await Promise.all([
+        sendBookingManagementEmail(result.updated, service, changeKind, result.locale, {
+          therapist: booking.therapist, token: request.kind === "reschedule" && hashBookingToken(token) ? token : undefined,
+        }),
+        sendAdminBookingChangeEmail(result.updated, { kind: changeKind, previous: result.previous, service: booking.service?.en ?? service, therapist: booking.therapist }),
+      ])
+    : [true]
   return { ok: true, booking, emailed } as const
 }
