@@ -166,7 +166,7 @@ export function ExperienceVideoManager({ current, library }: { current: Current;
         {notice && <p role="status" className="text-sm text-foreground">{notice}</p>}
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
+      <div className="grid gap-6 @min-[56rem]:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]">
         <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-card p-5" aria-labelledby="video-preview-title">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>

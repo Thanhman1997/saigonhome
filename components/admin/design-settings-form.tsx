@@ -95,7 +95,7 @@ export function DesignSettingsForm({ initial }: { initial: DesignSettingsValues 
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <div className="grid grid-cols-1 gap-6 @min-[60rem]:grid-cols-[minmax(0,1fr)_minmax(0,22.5rem)]">
       <form action={formAction} className="flex flex-col gap-6">
         {Object.entries(values).map(([key, value]) => (
           <input key={key} type="hidden" name={key} value={value} />
@@ -125,7 +125,7 @@ export function DesignSettingsForm({ initial }: { initial: DesignSettingsValues 
         </Card>
 
         <Tabs defaultValue="typography">
-          <TabsList>
+          <TabsList className="h-auto max-w-full flex-wrap justify-start">
             <TabsTrigger value="typography">Typography</TabsTrigger>
             <TabsTrigger value="colors">Colors</TabsTrigger>
             <TabsTrigger value="components">Components</TabsTrigger>

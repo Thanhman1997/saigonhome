@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { resendBookingManagementLink, revokeBookingManagementLink, updateBookingStatus } from "@/app/actions/admin"
+import { resendBookingManagementLink, resendBookingReviewInvitation, revokeBookingManagementLink, updateBookingStatus } from "@/app/actions/admin"
 import { cn } from "@/lib/utils"
 
 const STATUS_OPTIONS = [
@@ -30,11 +30,14 @@ export function BookingStatusSelect({ bookingId, status, revoked }: { bookingId:
         disabled={isPending}
         onValueChange={(value) => startTransition(async () => {
           setNotice("")
-          try { await updateBookingStatus(bookingId, value as typeof STATUS_OPTIONS[number]["value"]) }
-          catch { setNotice("Could not update. Refresh and check availability.") }
+          try {
+            const { reviewEmailSent } = await updateBookingStatus(bookingId, value as typeof STATUS_OPTIONS[number]["value"])
+            if (reviewEmailSent === true) setNotice("Booking completed. Review email accepted for delivery.")
+            if (reviewEmailSent === false) setNotice("Booking completed, but the review email could not be sent. Use Resend review invitation to try again.")
+          } catch { setNotice("Could not update. Refresh and check availability.") }
         })}
       >
-      <SelectTrigger size="sm" className={cn("h-8 w-[130px]", STATUS_STYLES[status])}>
+      <SelectTrigger size="sm" aria-label="Booking status" className={cn("h-8 w-36 max-w-full", STATUS_STYLES[status])}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -45,12 +48,22 @@ export function BookingStatusSelect({ bookingId, status, revoked }: { bookingId:
         ))}
       </SelectContent>
       </Select>
-      {(status === "pending" || status === "confirmed") && <button type="button" disabled={isPending} className="min-h-8 text-sm font-medium text-primary underline underline-offset-4 disabled:opacity-50" onClick={() => startTransition(async () => {
+      {(status === "pending" || status === "confirmed") && <button type="button" disabled={isPending} className="min-h-8 max-w-full text-left text-sm font-medium text-primary underline underline-offset-4 disabled:opacity-50" onClick={() => startTransition(async () => {
         setNotice("")
         try { setNotice(await resendBookingManagementLink(bookingId) ? "Management link sent to booking email." : "Link could not be sent. Check the booking and email settings.") }
         catch { setNotice("Link could not be sent.") }
       })}>Resend booking link</button>}
-      {revoked ? <span className="text-sm text-muted-foreground">Link revoked</span> : <button type="button" disabled={isPending} className="min-h-8 text-sm text-destructive underline underline-offset-4 disabled:opacity-50" onClick={() => {
+      {status === "completed" && <button type="button" disabled={isPending} className="min-h-8 max-w-full text-left text-sm font-medium text-primary underline underline-offset-4 disabled:opacity-50" onClick={() => {
+        if (!window.confirm("Send another review invitation to the email on this booking?")) return
+        startTransition(async () => {
+          setNotice("")
+          try {
+            const accepted = await resendBookingReviewInvitation(bookingId)
+            setNotice(accepted ? "Review email accepted for delivery." : "Review email could not be sent. Check the booking and email settings.")
+          } catch { setNotice("Review email could not be sent.") }
+        })
+      }}>Resend review invitation</button>}
+      {revoked ? <span className="text-sm text-muted-foreground">Link revoked</span> : <button type="button" disabled={isPending} className="min-h-8 max-w-full text-left text-sm text-destructive underline underline-offset-4 disabled:opacity-50" onClick={() => {
         if (!window.confirm("Revoke this guest’s booking link?")) return
         startTransition(async () => {
           try { await revokeBookingManagementLink(bookingId); setNotice("Management link revoked.") }

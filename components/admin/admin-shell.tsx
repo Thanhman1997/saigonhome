@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import { BarChart3, Bell, BookOpen, CalendarDays, ChevronRight, ClipboardList, Eye, FileText, ImageIcon, Languages, LayoutDashboard, Menu, MessageCircle, Palette, PanelsTopLeft, Settings2, Sparkles, Users, Video, X } from "lucide-react"
 import { AdminLogoutButton } from "@/components/admin/logout-button"
@@ -30,24 +30,47 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AdminShell({ children, applicationServerKey }: { children: React.ReactNode; applicationServerKey: string | null }) {
   const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 80rem)")
+    const closeOnDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) setOpen(false)
+    }
+    desktop.addEventListener("change", closeOnDesktop)
+    return () => desktop.removeEventListener("change", closeOnDesktop)
+  }, [])
+
   return <div className="min-h-svh bg-muted/20">
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border bg-background lg:flex">
-      <div className="flex h-20 items-center border-b border-border px-6"><Link href="/admin/dashboard" className="font-serif text-xl tracking-tight text-foreground">Lotus Wellness <span className="text-muted-foreground">Admin</span></Link></div>
-      <div className="flex-1 overflow-y-auto px-4 py-6"><Navigation /></div>
-      <div className="border-t border-border p-4"><AdminLogoutButton /></div>
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-border bg-background xl:flex">
+      <div className="flex h-20 shrink-0 items-center border-b border-border px-6"><Link href="/admin/dashboard" className="font-serif text-xl tracking-tight text-foreground">Lotus Wellness <span className="text-muted-foreground">Admin</span></Link></div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6"><Navigation /></div>
+      <div className="shrink-0 border-t border-border p-4"><AdminLogoutButton /></div>
     </aside>
-    <div className="lg:pl-64">
-      <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3"><Sheet open={open} onOpenChange={setOpen}><SheetTrigger asChild><Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open admin navigation"><Menu className="size-5" /></Button></SheetTrigger><SheetContent side="left" className="w-80 px-0"><SheetHeader className="border-b border-border px-6"><SheetTitle className="font-serif text-xl">Lotus Wellness Admin</SheetTitle></SheetHeader><div className="overflow-y-auto px-4 py-6"><Navigation onNavigate={() => setOpen(false)} /></div><div className="mt-auto border-t border-border p-4"><AdminLogoutButton /></div></SheetContent></Sheet><div><p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Content studio</p><p className="font-serif text-lg text-foreground">Manage your experience</p></div></div>
-        <div className="flex items-center gap-2">
+    <div className="min-w-0 xl:pl-60">
+      <header className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-2 border-b border-border bg-background/95 px-3 py-2 backdrop-blur sm:px-6">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild><Button variant="ghost" size="icon" className="shrink-0 xl:hidden" aria-label="Open admin navigation"><Menu className="size-5" /></Button></SheetTrigger>
+            <SheetContent side="left" aria-describedby={undefined} className="w-80 max-w-[calc(100%_-_1rem)] gap-0 px-0">
+              <SheetHeader className="shrink-0 border-b border-border pr-10 pl-5"><SheetTitle className="font-serif text-xl">Lotus Wellness Admin</SheetTitle></SheetHeader>
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4"><Navigation onNavigate={() => setOpen(false)} /></div>
+              <div className="shrink-0 border-t border-border p-4"><AdminLogoutButton /></div>
+            </SheetContent>
+          </Sheet>
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Content studio</p>
+            <p className="font-serif text-sm leading-tight text-foreground sm:text-lg">Manage your experience</p>
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
           <Popover>
             <PopoverTrigger asChild><Button variant="outline" size="sm" className="gap-2" aria-label="Message notifications"><Bell className="size-4" aria-hidden="true" /><span className="hidden sm:inline">Notifications</span></Button></PopoverTrigger>
             <PopoverContent align="end" className="w-[min(92vw,26rem)] border-0 bg-transparent p-0 shadow-none"><AdminPushNotifications applicationServerKey={applicationServerKey} className="shadow-lg" /></PopoverContent>
           </Popover>
-          <Button asChild variant="outline" size="sm" className="hidden gap-2 sm:inline-flex"><Link href="/" target="_blank"><Eye className="size-4" />View site</Link></Button>
+          <Button asChild variant="outline" size="sm"><Link href="/" target="_blank" aria-label="View site (opens in a new tab)"><Eye className="size-4" aria-hidden="true" /><span className="hidden sm:inline">View site</span></Link></Button>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-10">{children}</main>
+      <main className="@container mx-auto w-full min-w-0 max-w-7xl px-4 py-5 wrap-anywhere sm:px-6 sm:py-8">{children}</main>
     </div>
   </div>
 }

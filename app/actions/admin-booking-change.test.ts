@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { approveBookingChange, declineBookingChange } from "./admin"
+import { approveBookingChange, declineBookingChange, resendBookingReviewInvitation, updateBookingStatus } from "./admin"
+import { sendTransactionalEmail } from "@/lib/transactional-email"
+import { createReviewInvitation } from "@/lib/review-invitation"
 
 const mocks = vi.hoisted(() => ({
   rows: [] as unknown[][],
@@ -14,6 +16,7 @@ function chain() {
   const query: Record<string, unknown> = {}
   Object.assign(query, {
     from: () => query,
+    leftJoin: () => query,
     where: () => query,
     limit: () => query,
     for: async () => rows,
@@ -50,6 +53,37 @@ beforeEach(() => {
   mocks.cookie = "ok"
   mocks.update.mockImplementation((patch) => ({ where: () => ({ returning: async () => [{ ...booking([]), ...patch }] }) }))
   mocks.email.mockResolvedValue(true)
+})
+
+describe("admin review invitations", () => {
+  it("reports a failed email without undoing completion", async () => {
+    mocks.rows = [[{ booking: booking([]) }]]
+    vi.mocked(createReviewInvitation).mockReturnValue("signed-invitation")
+    vi.mocked(sendTransactionalEmail).mockResolvedValue(false)
+    expect(await updateBookingStatus(7, "completed")).toEqual({ reviewEmailSent: false })
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ status: "completed" }))
+    expect(sendTransactionalEmail).toHaveBeenCalledOnce()
+  })
+
+  it("resends a localized invitation without modifying the booking", async () => {
+    mocks.rows = [[booking([], "completed")]]
+    vi.mocked(createReviewInvitation).mockReturnValue("signed-invitation")
+    vi.mocked(sendTransactionalEmail).mockResolvedValue(true)
+    expect(await resendBookingReviewInvitation(7)).toBe(true)
+    expect(sendTransactionalEmail).toHaveBeenCalledExactlyOnceWith({
+      to: "guest@example.com",
+      subject: "Trải nghiệm của bạn thế nào? — 12345",
+      html: expect.stringContaining("/reviews?invite=signed-invitation#write-review"),
+    })
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  it("does not send for an ineligible booking or an unauthenticated caller", async () => {
+    expect(await resendBookingReviewInvitation(7)).toBe(false)
+    mocks.cookie = "forged"
+    await expect(resendBookingReviewInvitation(7)).rejects.toThrow("Unauthorized")
+    expect(sendTransactionalEmail).not.toHaveBeenCalled()
+  })
 })
 
 describe("admin confirmation of guest change requests", () => {
