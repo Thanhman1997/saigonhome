@@ -37,7 +37,7 @@ export function BookingStatusSelect({ bookingId, status, revoked }: { bookingId:
           } catch { setNotice("Could not update. Refresh and check availability.") }
         })}
       >
-      <SelectTrigger size="sm" className={cn("h-8 w-[130px]", STATUS_STYLES[status])}>
+      <SelectTrigger size="sm" aria-label="Booking status" className={cn("h-8 w-36 max-w-full", STATUS_STYLES[status])}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -48,12 +48,12 @@ export function BookingStatusSelect({ bookingId, status, revoked }: { bookingId:
         ))}
       </SelectContent>
       </Select>
-      {(status === "pending" || status === "confirmed") && <button type="button" disabled={isPending} className="min-h-8 text-sm font-medium text-primary underline underline-offset-4 disabled:opacity-50" onClick={() => startTransition(async () => {
+      {(status === "pending" || status === "confirmed") && <button type="button" disabled={isPending} className="min-h-8 max-w-full text-left text-sm font-medium text-primary underline underline-offset-4 disabled:opacity-50" onClick={() => startTransition(async () => {
         setNotice("")
         try { setNotice(await resendBookingManagementLink(bookingId) ? "Management link sent to booking email." : "Link could not be sent. Check the booking and email settings.") }
         catch { setNotice("Link could not be sent.") }
       })}>Resend booking link</button>}
-      {status === "completed" && <button type="button" disabled={isPending} className="min-h-8 text-sm font-medium text-primary underline underline-offset-4 disabled:opacity-50" onClick={() => {
+      {status === "completed" && <button type="button" disabled={isPending} className="min-h-8 max-w-full text-left text-sm font-medium text-primary underline underline-offset-4 disabled:opacity-50" onClick={() => {
         if (!window.confirm("Send another review invitation to the email on this booking?")) return
         startTransition(async () => {
           setNotice("")
@@ -63,7 +63,7 @@ export function BookingStatusSelect({ bookingId, status, revoked }: { bookingId:
           } catch { setNotice("Review email could not be sent.") }
         })
       }}>Resend review invitation</button>}
-      {revoked ? <span className="text-sm text-muted-foreground">Link revoked</span> : <button type="button" disabled={isPending} className="min-h-8 text-sm text-destructive underline underline-offset-4 disabled:opacity-50" onClick={() => {
+      {revoked ? <span className="text-sm text-muted-foreground">Link revoked</span> : <button type="button" disabled={isPending} className="min-h-8 max-w-full text-left text-sm text-destructive underline underline-offset-4 disabled:opacity-50" onClick={() => {
         if (!window.confirm("Revoke this guest’s booking link?")) return
         startTransition(async () => {
           try { await revokeBookingManagementLink(bookingId); setNotice("Management link revoked.") }
