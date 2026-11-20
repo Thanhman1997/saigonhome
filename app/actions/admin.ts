@@ -59,29 +59,41 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
       template: template ? { en: template.valueEn, vi: template.valueVi, ko: template.valueKo }[locale] : null,
     })
   }
-  if (status === "completed" && booking.booking.status !== "completed" && process.env.RESEND_API_KEY) {
-    try {
-      const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? (productionHost ? `https://${productionHost}` : "http://localhost:3000")
-      const reviewUrl = new URL("/reviews", siteUrl)
-      reviewUrl.searchParams.set("invite", createReviewInvitation(booking.booking.id))
-      reviewUrl.hash = "write-review"
-      const locale = current.locale ?? "en"
-      const copy = {
-        en: { subject: "How was your visit?", title: "Thank you for choosing Lotus Wellness", body: "Your feedback helps us care for every guest better.", action: "Write a review", expires: "This private link expires in 30 days." },
-        vi: { subject: "Trải nghiệm của bạn thế nào?", title: "Cảm ơn bạn đã chọn Lotus Wellness", body: "Góp ý của bạn giúp chúng tôi phục vụ khách hàng tốt hơn.", action: "Viết đánh giá", expires: "Liên kết riêng này hết hạn sau 30 ngày." },
-        ko: { subject: "이용 경험은 어떠셨나요?", title: "Lotus Wellness를 이용해 주셔서 감사합니다", body: "고객님의 의견은 더 나은 서비스를 제공하는 데 도움이 됩니다.", action: "후기 작성", expires: "이 전용 링크는 30일 후 만료됩니다." },
-      }[locale]
-      await sendTransactionalEmail({
-        to: current.email,
-        subject: `${copy.subject} — ${current.reference}`,
-        html: `<div lang="${locale}" style="font-family:sans-serif;max-width:560px;margin:auto;color:#24312d"><h2>${copy.title}</h2><p>${copy.body}</p><p><a href="${escapeHtml(reviewUrl.href)}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#24312d;color:#ffffff;text-decoration:none">${copy.action}</a></p><p>${copy.expires}</p></div>`,
-      })
-    } catch {
-      // A failed invitation email must not block the status change.
-    }
-  }
+  const reviewEmailSent = status === "completed" && current.status !== "completed" ? await sendReviewInvitation(current) : null
   revalidatePath("/admin/bookings")
+  return { reviewEmailSent }
+}
+
+export async function resendBookingReviewInvitation(id: number) {
+  await assertAdmin()
+  if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) throw new Error("Invalid booking")
+  const [booking] = await db.select({ id: bookings.id, locale: bookings.locale, email: bookings.email, reference: bookings.reference }).from(bookings).where(and(eq(bookings.id, id), eq(bookings.status, "completed"))).limit(1)
+  return booking ? sendReviewInvitation(booking) : false
+}
+
+async function sendReviewInvitation(booking: Pick<typeof bookings.$inferSelect, "id" | "locale" | "email" | "reference">) {
+  try {
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://lotuswellness.app"
+    const reviewUrl = new URL("/reviews", siteUrl)
+    reviewUrl.searchParams.set("invite", createReviewInvitation(booking.id))
+    reviewUrl.hash = "write-review"
+    const locale = booking.locale === "vi" || booking.locale === "ko" ? booking.locale : "en"
+    const copy = {
+      en: { subject: "How was your visit?", title: "Thank you for choosing Lotus Wellness", body: "Your feedback helps us care for every guest better.", action: "Write a review", expires: "This private link expires in 30 days." },
+      vi: { subject: "Trải nghiệm của bạn thế nào?", title: "Cảm ơn bạn đã chọn Lotus Wellness", body: "Góp ý của bạn giúp chúng tôi phục vụ khách hàng tốt hơn.", action: "Viết đánh giá", expires: "Liên kết riêng này hết hạn sau 30 ngày." },
+      ko: { subject: "이용 경험은 어떠셨나요?", title: "Lotus Wellness를 이용해 주셔서 감사합니다", body: "고객님의 의견은 더 나은 서비스를 제공하는 데 도움이 됩니다.", action: "후기 작성", expires: "이 전용 링크는 30일 후 만료됩니다." },
+    }[locale]
+    const accepted = await sendTransactionalEmail({
+      to: booking.email,
+      subject: `${copy.subject} — ${booking.reference}`,
+      html: `<div lang="${locale}" style="font-family:sans-serif;max-width:560px;margin:auto;color:#24312d"><h2>${copy.title}</h2><p>${copy.body}</p><p><a href="${escapeHtml(reviewUrl.href)}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#24312d;color:#ffffff;text-decoration:none">${copy.action}</a></p><p>${copy.expires}</p></div>`,
+    })
+    if (!accepted) console.error("Review invitation was not accepted", { bookingId: booking.id })
+    return accepted
+  } catch {
+    console.error("Review invitation could not be prepared or sent", { bookingId: booking.id })
+    return false
+  }
 }
 
 export async function approveBookingChange(id: number) {
