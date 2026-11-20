@@ -18,21 +18,39 @@ import {
   questions,
   navigationSettings,
 } from "@/lib/db/schema"
-import { asc, count, desc, eq, gte, sql } from "drizzle-orm"
+import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm"
+import { pendingChangeRequest } from "@/lib/booking-change-request"
 
-export async function getDashboardCounts(today: string, weekStart: Date) {
-  const [[todayRow], [weekRow], [pendingQuestionsRow], [pendingReviewsRow]] = await Promise.all([
-    db.select({ total: count() }).from(bookings).where(eq(bookings.date, today)),
-    db.select({ total: count() }).from(bookings).where(gte(bookings.createdAt, weekStart)),
+const activeBookingStatuses = ["pending", "confirmed"] as const
+
+export async function getDashboardOverview(today: string) {
+  const [[todayRow], [pendingBookingsRow], [pendingQuestionsRow], [pendingReviewsRow], activeBookings, todayAppointments] = await Promise.all([
+    db.select({ total: count() }).from(bookings).where(and(eq(bookings.date, today), inArray(bookings.status, activeBookingStatuses))),
+    db.select({ total: count() }).from(bookings).where(eq(bookings.status, "pending")),
     db.select({ total: count() }).from(questions).where(eq(questions.status, "pending")),
     db.select({ total: count() }).from(reviews).where(eq(reviews.approved, false)),
+    db.select({ status: bookings.status, activity: bookings.activity }).from(bookings).where(inArray(bookings.status, activeBookingStatuses)),
+    db.select({
+      id: bookings.id,
+      reference: bookings.reference,
+      customerName: bookings.customerName,
+      time: bookings.time,
+      status: bookings.status,
+      serviceName: services.nameEn,
+    }).from(bookings)
+      .leftJoin(services, eq(bookings.serviceId, services.id))
+      .where(and(eq(bookings.date, today), inArray(bookings.status, activeBookingStatuses)))
+      .orderBy(asc(bookings.time))
+      .limit(6),
   ])
 
   return {
     todayBookings: todayRow?.total ?? 0,
-    weekBookings: weekRow?.total ?? 0,
+    pendingBookings: pendingBookingsRow?.total ?? 0,
     pendingQuestions: pendingQuestionsRow?.total ?? 0,
     pendingReviews: pendingReviewsRow?.total ?? 0,
+    pendingChangeRequests: activeBookings.filter((booking) => pendingChangeRequest(booking.activity) !== null).length,
+    todayAppointments,
   }
 }
 
