@@ -13,12 +13,45 @@ import "@fontsource-variable/inter"
 import { SiteAnalytics } from "@/components/site-analytics"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
 import { getLayoutSiteData } from "@/lib/data"
-import { buildDesignTokenCss, DESIGN_PRESETS } from "@/lib/design-tokens"
+import { buildDesignTokenCss, DESIGN_PRESETS, FONT_OPTIONS } from "@/lib/design-tokens"
 import "@fontsource-variable/noto-sans-kr"
 import "@fontsource-variable/noto-serif-kr"
 import "./globals.css"
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
+
+const SECTION_HEADING_SIZES: Record<string, string> = {
+  inherit: "inherit",
+  sm: "1.5rem",
+  md: "2rem",
+  lg: "3rem",
+  "1.5rem": "1.5rem",
+  "1.75rem": "1.75rem",
+  "2rem": "2rem",
+  "2.5rem": "2.5rem",
+  "3rem": "3rem",
+}
+const SECTION_BODY_SIZES: Record<string, string> = {
+  inherit: "inherit",
+  sm: "0.875rem",
+  md: "1rem",
+  lg: "1.25rem",
+  "0.875rem": "0.875rem",
+  "1rem": "1rem",
+  "1.125rem": "1.125rem",
+  "1.25rem": "1.25rem",
+  "1.5rem": "1.5rem",
+}
+
+function getSectionSize(value: string, kind: "heading" | "body") {
+  const options = kind === "heading" ? SECTION_HEADING_SIZES : SECTION_BODY_SIZES
+  return options[value] ?? "inherit"
+}
+
+function getSectionFont(value: string, fallback: string) {
+  const font = FONT_OPTIONS.find((option) => option.key === value)
+  return font ? `var(${font.cssVar})` : `var(${fallback})`
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -55,7 +88,11 @@ export const metadata: Metadata = {
   generator: "v0.app",
 }
 
-export const viewport: Viewport = { themeColor: "#FCE2C1", width: "device-width", initialScale: 1, userScalable: true }
+export async function generateViewport(): Promise<Viewport> {
+  const { designSettings } = await getLayoutSiteData()
+  const activeDesign = designSettings?.presetKey === "lotus-premium" ? DESIGN_PRESETS[0].values : (designSettings ?? DESIGN_PRESETS[0].values)
+  return { themeColor: activeDesign.colorBackground, width: "device-width", initialScale: 1, userScalable: true }
+}
 
 // Locale and design tokens come from the database, so this root layout must
 // render at runtime instead of trying to connect during static generation.
@@ -70,8 +107,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Legacy database rows may contain the previous muted palette and make the page appear broken.
   const activeDesign = designSettings?.presetKey === "lotus-premium" ? DESIGN_PRESETS[0].values : (designSettings ?? DESIGN_PRESETS[0].values)
   const designTokenCss = buildDesignTokenCss(activeDesign)
-  const safe = (value: string | null) => value && /^[#(),.%\- a-zA-Z0-9]+$/.test(value) ? value : "inherit"
-  const sectionStyleCss = sectionStyles.map((style) => `#${style.sectionKey} h1,#${style.sectionKey} h2,#${style.sectionKey} h3{color:${safe(style.titleColor)};font-size:${safe(style.titleSize === "sm" ? "1.5rem" : style.titleSize === "lg" ? "3rem" : "2rem")};text-align:${style.sectionKey === "services" || style.sectionKey === "experts" ? "center" : "inherit"}}#${style.sectionKey} p{color:${safe(style.bodyColor)};font-size:${safe(style.bodySize === "sm" ? "0.875rem" : style.bodySize === "lg" ? "1.25rem" : "1rem")}}`).join("")
+  const sectionStyleCss = sectionStyles.map((style) => {
+    if (!/^[a-z-]+$/.test(style.sectionKey)) return ""
+    const titleColor = style.titleColor && /^#[0-9a-fA-F]{6}$/.test(style.titleColor) ? style.titleColor : "inherit"
+    const bodyColor = style.bodyColor && /^#[0-9a-fA-F]{6}$/.test(style.bodyColor) ? style.bodyColor : "inherit"
+    const titleSize = getSectionSize(style.titleSize, "heading")
+    const bodySize = getSectionSize(style.bodySize, "body")
+    const titleAlign = ["left", "center", "right"].includes(style.titleAlign) ? style.titleAlign : "inherit"
+    const bodyAlign = ["left", "center", "right"].includes(style.bodyAlign) ? style.bodyAlign : "inherit"
+    const titleFont = getSectionFont(style.titleFont, "--font-serif")
+    const bodyFont = getSectionFont(style.bodyFont, "--font-sans")
+    return `#${style.sectionKey} h1,#${style.sectionKey} h2,#${style.sectionKey} h3{color:${titleColor};font-size:${titleSize};font-family:${titleFont};text-align:${titleAlign}}#${style.sectionKey} p{color:${bodyColor};font-size:${bodySize};font-family:${bodyFont};text-align:${bodyAlign}}`
+  }).join("")
 
   return (
     <html lang={defaultLocale} data-scroll-behavior="smooth" className="bg-background" suppressHydrationWarning>

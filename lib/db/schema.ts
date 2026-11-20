@@ -308,6 +308,10 @@ export const sectionStyles = pgTable("section_styles", {
   titleSize: text("title_size").notNull().default("md"),
   bodyColor: text("body_color"),
   bodySize: text("body_size").notNull().default("md"),
+  titleFont: text("title_font").notNull().default("inherit"),
+  bodyFont: text("body_font").notNull().default("inherit"),
+  titleAlign: text("title_align").notNull().default("center"),
+  bodyAlign: text("body_align").notNull().default("center"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
