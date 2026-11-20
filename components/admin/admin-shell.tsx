@@ -3,29 +3,98 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
-import { BarChart3, Bell, BookOpen, CalendarDays, ChevronRight, ClipboardList, Eye, FileText, ImageIcon, Languages, LayoutDashboard, Menu, MessageCircle, Palette, PanelsTopLeft, Settings2, Sparkles, Users, Video, X } from "lucide-react"
+import { BarChart3, Bell, BookOpen, CalendarDays, ChevronDown, ChevronRight, ClipboardList, Eye, FileText, ImageIcon, Languages, LayoutDashboard, Menu, MessageCircle, Palette, PanelsTopLeft, Search, Settings2, Sparkles, Users, Video, X } from "lucide-react"
 import { AdminLogoutButton } from "@/components/admin/logout-button"
 import { AdminPushNotifications } from "@/components/admin/admin-push-notifications"
 import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { cn } from "@/lib/utils"
 
 const groups = [
   { label: "Overview", items: [{ href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard }] },
-  { label: "Website", items: [{ href: "/admin/pages", label: "All content", icon: PanelsTopLeft }, { href: "/admin/content", label: "Section styles", icon: Palette }, { href: "/admin/hero", label: "Hero", icon: Sparkles }, { href: "/admin/about", label: "About", icon: BookOpen }, { href: "/admin/services", label: "Services", icon: ClipboardList }, { href: "/admin/services/content", label: "Services Content", icon: FileText }, { href: "/admin/therapists", label: "Therapists", icon: Users }, { href: "/admin/promotions", label: "Promotions", icon: FileText }, { href: "/admin/holidays", label: "Vietnam holidays", icon: CalendarDays }, { href: "/admin/reviews", label: "Reviews", icon: BarChart3 }, { href: "/admin/faq", label: "FAQ", icon: BookOpen }] },
-  { label: "Publishing", items: [{ href: "/admin/video", label: "Videos", icon: Video }] },
-  { label: "Operations", items: [{ href: "/admin/bookings", label: "Bookings", icon: CalendarDays }, { href: "/admin/questions", label: "Questions", icon: ClipboardList }, { href: "/admin/membership", label: "Membership", icon: Users }] },
-  { label: "Settings", items: [{ href: "/admin/navigation", label: "Navigation menu", icon: Menu }, { href: "/admin/design", label: "Design", icon: Palette }, { href: "/admin/media", label: "Media library", icon: ImageIcon }, { href: "/admin/languages", label: "Languages", icon: Languages }, { href: "/admin/contact", label: "Contact", icon: Settings2 }, { href: "/admin/kakao", label: "Kakao notifications", icon: MessageCircle }, { href: "/admin/booking-settings", label: "Booking settings", icon: Settings2 }, { href: "/admin/email-templates", label: "Booking emails", icon: Settings2 }, { href: "/admin/preview", label: "Preview", icon: Eye }] },
+  { label: "Bookings & inquiries", items: [{ href: "/admin/bookings", label: "Bookings", icon: CalendarDays }, { href: "/admin/questions", label: "Questions", icon: ClipboardList }, { href: "/admin/membership", label: "Membership", icon: Users }] },
+  { label: "Website content", items: [{ href: "/admin/pages", label: "All content", icon: PanelsTopLeft }, { href: "/admin/hero", label: "Hero", icon: Sparkles }, { href: "/admin/about", label: "About", icon: BookOpen }, { href: "/admin/services", label: "Services", icon: ClipboardList }, { href: "/admin/services/content", label: "Services Content", icon: FileText }, { href: "/admin/therapists", label: "Therapists", icon: Users }, { href: "/admin/promotions", label: "Promotions", icon: FileText }, { href: "/admin/holidays", label: "Vietnam holidays", icon: CalendarDays }, { href: "/admin/reviews", label: "Reviews", icon: BarChart3 }, { href: "/admin/faq", label: "FAQ", icon: BookOpen }, { href: "/admin/video", label: "Videos", icon: Video }] },
+  { label: "Website setup", items: [{ href: "/admin/content", label: "Section styles", icon: Palette }, { href: "/admin/design", label: "Design", icon: Palette }, { href: "/admin/navigation", label: "Navigation menu", icon: Menu }, { href: "/admin/media", label: "Media library", icon: ImageIcon }, { href: "/admin/languages", label: "Languages", icon: Languages }, { href: "/admin/preview", label: "Preview", icon: Eye }] },
+  { label: "Settings & notifications", items: [{ href: "/admin/contact", label: "Contact", icon: Settings2 }, { href: "/admin/kakao", label: "Kakao notifications", icon: MessageCircle }, { href: "/admin/booking-settings", label: "Booking settings", icon: Settings2 }, { href: "/admin/email-templates", label: "Booking emails", icon: Settings2 }] },
 ]
+
+function isPathActive(pathname: string, href: string) {
+  return pathname === href || (href !== "/admin/dashboard" && pathname.startsWith(`${href}/`))
+}
 
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
-  return <nav aria-label="Admin navigation" className="flex flex-col gap-6">
-    {groups.map((group) => <div key={group.label} className="flex flex-col gap-2">
-      <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{group.label}</p>
-      <div className="flex flex-col gap-1">{group.items.map(({ href, label, icon: Icon }) => { const active = pathname === href || (href !== "/admin/dashboard" && pathname.startsWith(`${href}/`)); return <Link key={href} href={href} onClick={onNavigate} aria-current={active ? "page" : undefined} className={`group flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors ${active ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}><span className="flex items-center gap-3"><Icon className="size-4" aria-hidden="true" />{label}</span><ChevronRight className={`size-3 transition-opacity ${active ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} aria-hidden="true" /></Link> })}</div>
-    </div>)}
-  </nav>
+  const [query, setQuery] = useState("")
+  const activeHref = groups
+    .flatMap((group) => group.items.map((item) => item.href))
+    .filter((href) => isPathActive(pathname, href))
+    .sort((a, b) => b.length - a.length)[0]
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => new Set(
+    groups.filter((group) => group.items.some((item) => isPathActive(pathname, item.href))).map((group) => group.label),
+  ))
+  const searchTerm = query.trim().toLowerCase()
+  const filteredGroups = groups.map((group) => {
+    const groupMatches = group.label.toLowerCase().includes(searchTerm)
+    const items = groupMatches ? group.items : group.items.filter(({ href, label }) => `${label} ${href}`.toLowerCase().includes(searchTerm))
+    return { ...group, items }
+  }).filter((group) => group.items.length > 0)
+  const matchingGroupLabels = filteredGroups.map((group) => group.label).join("|")
+
+  useEffect(() => {
+    const activeGroup = groups.find((group) => group.items.some((item) => isPathActive(pathname, item.href)))
+    if (!activeGroup) return
+    setExpandedGroups((current) => current.has(activeGroup.label) ? current : new Set(current).add(activeGroup.label))
+  }, [pathname])
+
+  useEffect(() => {
+    if (!searchTerm) return
+    const labels = matchingGroupLabels.split("|").filter(Boolean)
+    setExpandedGroups((current) => {
+      if (labels.every((label) => current.has(label))) return current
+      const next = new Set(current)
+      labels.forEach((label) => next.add(label))
+      return next
+    })
+  }, [matchingGroupLabels, searchTerm])
+
+  return <div className="flex flex-col gap-3">
+    <div role="search" aria-label="Admin pages" className="relative">
+      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+      <Input type="search" aria-label="Search admin pages" placeholder="Search pages..." value={query} onChange={(event) => setQuery(event.target.value)} className="pl-9 pr-9" />
+      {query && <Button type="button" variant="ghost" size="icon" aria-label="Clear page search" onClick={() => setQuery("")} className="absolute top-1/2 right-1 size-7 -translate-y-1/2"><X aria-hidden="true" /></Button>}
+    </div>
+    <nav aria-label="Admin navigation" className="flex flex-col gap-3">
+      {filteredGroups.map((group) => {
+        const expanded = expandedGroups.has(group.label)
+        return <Collapsible key={group.label} open={expanded} onOpenChange={(open) => setExpandedGroups((current) => {
+          const next = new Set(current)
+          if (open) next.add(group.label)
+          else next.delete(group.label)
+          return next
+        })} className="flex flex-col gap-1">
+          <CollapsibleTrigger asChild>
+            <Button type="button" variant="ghost" size="sm" className="group h-8 w-full justify-between px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground">
+              <span>{group.label}</span>
+              <ChevronDown data-icon="inline-end" aria-hidden="true" className="group-data-[state=open]:rotate-180" />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="flex flex-col gap-1">{group.items.map(({ href, label, icon: Icon }) => {
+              const active = href === activeHref
+              return <Link key={href} href={href} onClick={onNavigate} aria-current={active ? "page" : undefined} className={cn("group flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors", active ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
+                <span className="flex items-center gap-3"><Icon className="size-4" aria-hidden="true" />{label}</span>
+                <ChevronRight className={cn("size-3 transition-opacity", active ? "opacity-100" : "opacity-0 group-hover:opacity-100")} aria-hidden="true" />
+              </Link>
+            })}</div>
+          </CollapsibleContent>
+        </Collapsible>
+      })}
+      {filteredGroups.length === 0 && <p role="status" className="px-3 py-4 text-sm text-muted-foreground">No pages found.</p>}
+    </nav>
+  </div>
 }
 
 export function AdminShell({ children, applicationServerKey }: { children: React.ReactNode; applicationServerKey: string | null }) {
