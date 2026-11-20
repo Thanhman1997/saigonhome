@@ -172,7 +172,7 @@ export async function retryFailedKakaoNotifications(): Promise<number> {
 export async function requeueBlockedKakaoNotifications(): Promise<void> {
   await db
     .update(kakaoNotifications)
-    .set({ status: "pending", nextAttemptAt: null, lastError: null, updatedAt: new Date() })
+    .set({ status: "pending", attemptCount: 0, nextAttemptAt: null, lastError: null, updatedAt: new Date() })
     .where(eq(kakaoNotifications.status, "blocked"))
 }
 

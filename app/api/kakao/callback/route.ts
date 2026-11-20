@@ -10,7 +10,7 @@ import {
   saveVerifiedKakaoConnection,
 } from "@/lib/kakao"
 import { isKakaoAdminAuthenticated } from "@/lib/kakao-admin"
-import { requeueBlockedKakaoNotifications } from "@/lib/kakao-notifications"
+import { processDueKakaoNotifications, requeueBlockedKakaoNotifications } from "@/lib/kakao-notifications"
 
 export const runtime = "nodejs"
 const OAUTH_STATE_COOKIE = "lw_kakao_oauth_state"
@@ -78,6 +78,11 @@ export async function GET(request: NextRequest) {
       tokens,
     })
     await requeueBlockedKakaoNotifications()
+    try {
+      await processDueKakaoNotifications()
+    } catch (error) {
+      console.error("[v0] Kakao connected, but pending notifications could not be processed:", error)
+    }
 
     return redirectAdmin(request, "/admin/kakao?connected=1")
   } catch {
