@@ -5,8 +5,6 @@ import {
   exchangeKakaoAuthorizationCode,
   getKakaoConfiguration,
   getKakaoIdentity,
-  LOTUS_ADMIN,
-  normalizeKoreanPhone,
   saveVerifiedKakaoConnection,
 } from "@/lib/kakao"
 import { isKakaoAdminAuthenticated } from "@/lib/kakao-admin"
@@ -61,19 +59,10 @@ export async function GET(request: NextRequest) {
   try {
     const tokens = await exchangeKakaoAuthorizationCode(code)
     const identity = await getKakaoIdentity(tokens.access_token)
-    const expectedNickname = LOTUS_ADMIN.name.trim().replace(/\s+/g, " ").toLocaleUpperCase("en-US")
-    const actualNickname = identity.nickname.trim().replace(/\s+/g, " ").toLocaleUpperCase("en-US")
-    const expectedPhone = normalizeKoreanPhone(LOTUS_ADMIN.phone)
-    const actualPhone = normalizeKoreanPhone(identity.phoneNumber)
-
-    if (!identity.userId || actualNickname !== expectedNickname || actualPhone !== expectedPhone) {
-      return redirectAdmin(request, "/admin/kakao?error=identity_mismatch")
-    }
+    if (!identity.userId) return redirectAdmin(request, "/admin/kakao?error=authorization_failed")
 
     await saveVerifiedKakaoConnection({
       userId: identity.userId,
-      nickname: identity.nickname,
-      phoneNumber: identity.phoneNumber,
       scopes: identity.scopes,
       tokens,
     })

@@ -351,6 +351,7 @@ export const kakaoConnections = pgTable("kakao_connections", {
 export const kakaoNotifications = pgTable("kakao_notifications", {
   id: serial("id").primaryKey(),
   questionId: integer("question_id").unique(),
+  bookingId: integer("booking_id").unique(),
   notificationType: text("notification_type").notNull().default("question"),
   status: text("status").notNull().default("pending"),
   attemptCount: integer("attempt_count").notNull().default(0),

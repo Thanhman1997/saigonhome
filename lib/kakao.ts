@@ -1,16 +1,14 @@
+import "server-only"
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto"
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { kakaoConnections } from "@/lib/db/schema"
 
 export const LOTUS_ADMIN = {
-  name: "LOTUS WELLNESS",
-  phone: "01026451934",
   email: "saigonservice2020@gmail.com",
-  dashboardUrl: "https://lotuswellness.app/admin",
 } as const
 
-const REQUIRED_SCOPES = ["talk_message", "phone_number", "profile_nickname"] as const
+const REQUIRED_SCOPES = ["talk_message"] as const
 const KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
 
 export type KakaoTokenResponse = {
@@ -90,11 +88,6 @@ type KakaoScopesResponse = {
 
 type KakaoUserResponse = {
   id?: string | number
-  properties?: { nickname?: string }
-  kakao_account?: {
-    profile?: { nickname?: string }
-    phone_number?: string
-  }
 }
 
 export async function getKakaoIdentity(accessToken: string) {
@@ -111,7 +104,7 @@ export async function getKakaoIdentity(accessToken: string) {
     .filter((scope): scope is string => Boolean(scope))
 
   if (!REQUIRED_SCOPES.every((scope) => grantedScopes.includes(scope))) {
-    throw new Error("Kakao has not granted all required permissions")
+    throw new Error("Kakao has not granted the talk_message permission")
   }
 
   const userResponse = await fetch("https://kapi.kakao.com/v2/user/me", {
@@ -120,15 +113,8 @@ export async function getKakaoIdentity(accessToken: string) {
   })
   const user = await readJsonResponse<KakaoUserResponse>(userResponse, "Kakao account verification")
   const userId = user.id === undefined ? "" : String(user.id)
-  const nickname = user.kakao_account?.profile?.nickname ?? user.properties?.nickname ?? ""
-  const phoneNumber = user.kakao_account?.phone_number ?? ""
 
-  return { userId, nickname, phoneNumber, scopes: grantedScopes }
-}
-
-export function normalizeKoreanPhone(value: string): string {
-  const digits = value.replace(/[^0-9]/g, "")
-  return digits.startsWith("82") ? `0${digits.slice(2)}` : digits
+  return { userId, scopes: grantedScopes }
 }
 
 function getEncryptionKey(): Buffer {
@@ -155,8 +141,6 @@ function decryptToken(value: string): string {
 
 export async function saveVerifiedKakaoConnection(input: {
   userId: string
-  nickname: string
-  phoneNumber: string
   scopes: string[]
   tokens: KakaoTokenResponse
 }) {
@@ -168,8 +152,8 @@ export async function saveVerifiedKakaoConnection(input: {
   const values = {
     id: 1,
     kakaoUserId: input.userId,
-    nickname: input.nickname,
-    phoneNumber: normalizeKoreanPhone(input.phoneNumber),
+    nickname: "",
+    phoneNumber: "",
     accessTokenEncrypted: encryptToken(input.tokens.access_token),
     refreshTokenEncrypted: encryptToken(input.tokens.refresh_token!),
     accessTokenExpiresAt,
@@ -259,7 +243,7 @@ function truncate(value: string, maxLength: number): string {
 }
 
 function getAdminDashboardUrl(): string {
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://lotuswellness.app").replace(/\/+$/, "")
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://lotuswellness.app").replace(/\/+$/, "")
   return new URL("/admin", baseUrl).toString()
 }
 
@@ -289,6 +273,27 @@ export function createCustomerNotificationText(input: {
   const timestamp = `\nAt: ${localTime}`
   const remaining = 200 - Array.from(fixed + messagePrefix + timestamp).length
   return `${fixed}${messagePrefix}${truncate(input.question, remaining)}${timestamp}`
+}
+
+export function createBookingNotificationText(input: {
+  reference: string
+  customerName: string
+  phone: string
+  serviceName: string
+  durationMinutes: number
+  date: string
+  time: string
+  guests: number
+}): string {
+  const lines = [
+    "LOTUS WELLNESS — NEW BOOKING",
+    `Ref: ${truncate(input.reference, 12)}`,
+    `Name: ${truncate(input.customerName, 20)}`,
+    `Phone: ${truncate(input.phone, 16)}`,
+    `Service: ${truncate(input.serviceName, 24)} (${input.durationMinutes}m)`,
+    `When: ${input.date} ${input.time} · ${input.guests} guest(s)`,
+  ]
+  return truncate(lines.join("\n"), 200)
 }
 
 export function createTestNotificationText(receivedAt: Date): string {

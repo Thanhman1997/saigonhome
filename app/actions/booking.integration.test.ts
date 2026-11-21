@@ -32,6 +32,9 @@ vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: async () =
 
 const insertedBooking = vi.hoisted(() => ({ value: null as Record<string, unknown> | null }))
 const conflicts = vi.hoisted(() => ({ value: [] as unknown[] }))
+const kakaoNotificationMock = vi.hoisted(() => ({ enqueueBooking: vi.fn(async () => undefined) }))
+
+vi.mock("@/lib/kakao-notifications", () => ({ enqueueBookingKakaoNotification: kakaoNotificationMock.enqueueBooking }))
 
 const localDateString = (date: Date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-")
 
@@ -45,6 +48,7 @@ describe("createBooking integration contract", () => {
   beforeEach(() => {
     insertedBooking.value = null
     conflicts.value = []
+    kakaoNotificationMock.enqueueBooking.mockClear()
     vi.resetModules()
   })
 
@@ -57,6 +61,19 @@ describe("createBooking integration contract", () => {
       expect(result.success).toBe(true)
       expect(insertedBooking.value?.startAt).toEqual(new Date("2026-08-18T03:00:00.000Z"))
       expect(insertedBooking.value?.endAt).toEqual(new Date("2026-08-18T04:00:00.000Z"))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("queues one Kakao notification after a new booking is saved", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "10:00"))
+      expect(result.success).toBe(true)
+      expect(kakaoNotificationMock.enqueueBooking).toHaveBeenCalledWith(42)
     } finally {
       vi.useRealTimers()
     }
