@@ -99,7 +99,7 @@ type KakaoUserResponse = {
 
 export async function getKakaoIdentity(accessToken: string) {
   const scopesUrl = new URL("https://kapi.kakao.com/v2/user/scopes")
-  scopesUrl.searchParams.set("scopes", JSON.stringify(REQUIRED_SCOPES))
+  scopesUrl.searchParams.set("scopes", REQUIRED_SCOPES.join(","))
   const scopesResponse = await fetch(scopesUrl, {
     headers: { Authorization: `Bearer ${accessToken}` },
     signal: AbortSignal.timeout(10_000),

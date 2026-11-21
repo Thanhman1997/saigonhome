@@ -244,7 +244,7 @@ export function ExperienceVideoManager({ current, library }: { current: Current;
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 id="video-cover-title" className="font-semibold text-foreground">Cover image</h2>
-                <p className="text-sm text-muted-foreground">Optional image shown before the video plays.</p>
+                <p className="text-sm text-muted-foreground">Shown before playback and again when the video ends.</p>
               </div>
               <Button type="button" size="sm" variant="outline" disabled={busy !== null} onClick={() => imageInput.current?.click()} className="gap-2">
                 {busy === "image" ? <Loader2 className="animate-spin" data-icon="inline-start" /> : <ImagePlus data-icon="inline-start" />}

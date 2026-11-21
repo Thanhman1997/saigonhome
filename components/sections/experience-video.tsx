@@ -27,7 +27,10 @@ export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbna
   }
 
   function handlePlay() {
-    void videoRef.current?.play()
+    const videoElement = videoRef.current
+    if (!videoElement) return
+    if (videoElement.ended) videoElement.currentTime = 0
+    void videoElement.play().catch(() => {})
   }
 
   return (
@@ -63,8 +66,9 @@ export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbna
             {video?.videoUrl ? (
               <video
                 ref={videoRef}
-                className="absolute inset-0 h-full w-full bg-foreground object-contain"
-                controls
+                className={`absolute inset-0 h-full w-full bg-foreground object-contain transition-opacity duration-300 ${started ? "opacity-100" : "pointer-events-none opacity-0"}`}
+                controls={started}
+                tabIndex={started ? 0 : -1}
                 playsInline
                 preload="metadata"
                 poster={poster}
