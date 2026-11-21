@@ -34,7 +34,7 @@ import {
   getLatestVideoMedia,
 } from "@/lib/data"
 
-const SHOW_ASK_QUESTION_WIDGET = false
+const SHOW_ASK_QUESTION_WIDGET = true
 
 export default async function Home() {
   const [services, servicesContent, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews, videoMedia] =
