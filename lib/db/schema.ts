@@ -348,9 +348,17 @@ export const kakaoConnections = pgTable("kakao_connections", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [check("kakao_connections_id_check", sql`${table.id} = 1`)])
 
+export const kakaoOAuthStates = pgTable("kakao_oauth_states", {
+  stateHash: text("state_hash").primaryKey(),
+  returnToOrigin: text("return_to_origin").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [index("kakao_oauth_states_expires_at_idx").on(table.expiresAt)])
+
 export const kakaoNotifications = pgTable("kakao_notifications", {
   id: serial("id").primaryKey(),
   questionId: integer("question_id").unique(),
+  bookingId: integer("booking_id").unique(),
   notificationType: text("notification_type").notNull().default("question"),
   status: text("status").notNull().default("pending"),
   attemptCount: integer("attempt_count").notNull().default(0),

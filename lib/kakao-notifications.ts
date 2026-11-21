@@ -1,7 +1,9 @@
+import "server-only"
 import { and, asc, count, desc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
-import { kakaoConnections, kakaoNotifications, questions } from "@/lib/db/schema"
+import { bookings, kakaoConnections, kakaoNotifications, questions, services } from "@/lib/db/schema"
 import {
+  createBookingNotificationText,
   createCustomerNotificationText,
   createTestNotificationText,
   KakaoDeliveryError,
@@ -61,7 +63,7 @@ async function processKakaoNotification(notificationId: number): Promise<KakaoDe
     let text: string
     if (claimed.notificationType === "test") {
       text = createTestNotificationText(now)
-    } else {
+    } else if (claimed.notificationType === "question") {
       if (!claimed.questionId) throw new Error("Customer question is missing")
       const [question] = await db
         .select({
@@ -83,6 +85,28 @@ async function processKakaoNotification(notificationId: number): Promise<KakaoDe
         question: question.question,
         receivedAt: question.createdAt,
       })
+    } else if (claimed.notificationType === "booking") {
+      if (!claimed.bookingId) throw new Error("Customer booking is missing")
+      const [booking] = await db
+        .select({
+          reference: bookings.reference,
+          customerName: bookings.customerName,
+          phone: bookings.phone,
+          serviceName: services.nameEn,
+          durationMinutes: bookings.durationMinutes,
+          date: bookings.date,
+          time: bookings.time,
+          guests: bookings.guests,
+        })
+        .from(bookings)
+        .innerJoin(services, eq(bookings.serviceId, services.id))
+        .where(eq(bookings.id, claimed.bookingId))
+        .limit(1)
+      if (!booking) throw new Error("Customer booking is no longer available")
+
+      text = createBookingNotificationText(booking)
+    } else {
+      throw new Error("Unsupported Kakao notification type")
     }
 
     await sendKakaoMemo(text)
@@ -112,6 +136,16 @@ export async function enqueueQuestionKakaoNotification(questionId: number): Prom
   const [notification] = await db
     .insert(kakaoNotifications)
     .values({ questionId, notificationType: "question", status: "pending" })
+    .onConflictDoNothing()
+    .returning({ id: kakaoNotifications.id })
+
+  if (notification) await processKakaoNotification(notification.id)
+}
+
+export async function enqueueBookingKakaoNotification(bookingId: number): Promise<void> {
+  const [notification] = await db
+    .insert(kakaoNotifications)
+    .values({ bookingId, notificationType: "booking", status: "pending" })
     .onConflictDoNothing()
     .returning({ id: kakaoNotifications.id })
 
@@ -189,9 +223,6 @@ export async function disconnectKakaoAccount(): Promise<void> {
 export async function getKakaoSettingsSnapshot() {
   const [connection] = await db
     .select({
-      kakaoUserId: kakaoConnections.kakaoUserId,
-      nickname: kakaoConnections.nickname,
-      phoneNumber: kakaoConnections.phoneNumber,
       scopes: kakaoConnections.scopes,
       status: kakaoConnections.status,
       verifiedAt: kakaoConnections.verifiedAt,

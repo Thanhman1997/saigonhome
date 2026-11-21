@@ -13,6 +13,7 @@ import { zonedLocalDateTimeToUtc } from "@/lib/timezone"
 import { escapeHtml } from "@/lib/security"
 import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
+import { enqueueBookingKakaoNotification } from "@/lib/kakao-notifications"
 import { asBookingLocale, type Locale } from "@/lib/booking-management-locale"
 
 export type CreateBookingInput = {
@@ -243,6 +244,9 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const [, managementEmailSent] = await Promise.all([
       sendAdminNotification(bookingDetails),
       sendBookingManagementEmail({ ...saved.booking, reference, date: input.date, time: input.time, status: "pending" }, localizedService, "received", locale, { token: access.token, therapist: therapistCode }),
+      enqueueBookingKakaoNotification(saved.booking.id).catch((error) => {
+        console.error("[v0] Failed to queue Kakao booking notification:", error)
+      }),
     ])
     if (managementEmailSent) {
       await db.update(bookings).set({ confirmationEmailSentAt: new Date() }).where(eq(bookings.id, saved.booking.id)).catch(() => {

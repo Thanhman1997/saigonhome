@@ -14,9 +14,6 @@ import {
 
 type SettingsSnapshot = {
   connection: {
-    kakaoUserId: string
-    nickname: string
-    phoneNumber: string
     scopes: string[]
     status: string
     verifiedAt: Date
@@ -35,9 +32,10 @@ type SettingsSnapshot = {
 
 const ERROR_MESSAGES: Record<string, string> = {
   not_configured: "Kakao credentials and redirect URI must be configured in Vercel before connecting.",
-  state: "The Kakao authorization expired or could not be verified. Please connect again.",
+  state: "This Kakao authorization expired or was already used. Start a new connection.",
+  state_storage: "The secure Kakao authorization session could not be saved. Please try again.",
+  return_origin: "This site address is not allowed to finish Kakao authorization. Open the admin page from the configured site or preview URL, then try again.",
   cancelled: "Kakao authorization was cancelled.",
-  identity_mismatch: "The Kakao profile name and consented phone number did not match LOTUS WELLNESS. No tokens were saved and notifications remain disabled.",
   authorization_failed: "Kakao authorization or permission verification failed. Check the Kakao app scopes, then try again.",
 }
 
@@ -63,7 +61,7 @@ export function KakaoNotificationSettings({
 }) {
   const router = useRouter()
   const [busyAction, setBusyAction] = useState<string | null>(null)
-  const [feedback, setFeedback] = useState<string | null>(connected ? "The Kakao account was verified and connected." : null)
+  const [feedback, setFeedback] = useState<string | null>(connected ? "The admin Kakao account was authorized and connected." : null)
   const [feedbackIsError, setFeedbackIsError] = useState(false)
   const connection = snapshot.connection
 
@@ -109,7 +107,7 @@ export function KakaoNotificationSettings({
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Settings / notifications</p>
         <h1 className="text-2xl font-semibold text-foreground">KakaoTalk notifications</h1>
         <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          Customer questions are saved in Neon before Kakao delivery is attempted. Messages go only to the verified account&apos;s KakaoTalk My Chatroom.
+          Customer questions and booking requests are saved before Kakao delivery is attempted. Messages go only to the connected admin account&apos;s KakaoTalk My Chatroom.
         </p>
       </header>
 
@@ -121,27 +119,29 @@ export function KakaoNotificationSettings({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <CardTitle>Admin account</CardTitle>
-              <CardDescription className="mt-1">The OAuth profile must match the configured name and phone before a token is saved.</CardDescription>
+              <CardDescription className="mt-1">Only an authenticated website admin can start OAuth. The requested Kakao permission is talk_message.</CardDescription>
             </div>
-            <Badge variant={connection ? "default" : "secondary"}>{connection ? "Connected · verified" : "Not connected"}</Badge>
+            <Badge variant={connection ? "default" : "secondary"}>{connection ? "Connected · admin authorized" : "Not connected"}</Badge>
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <dl className="grid gap-4 sm:grid-cols-2">
-            <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Admin name</dt><dd className="mt-1 text-sm text-foreground">LOTUS WELLNESS</dd></div>
-            <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Admin phone</dt><dd className="mt-1 text-sm text-foreground">01026451934</dd></div>
-            <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Admin email</dt><dd className="mt-1 text-sm text-foreground">saigonservice2020@gmail.com</dd></div>
-            <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Kakao connection</dt><dd className="mt-1 text-sm text-foreground">{connection ? "Verified against Kakao profile and consented phone" : "Waiting for admin authorization"}</dd></div>
+            <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Connection owner</dt><dd className="mt-1 text-sm text-foreground">Signed-in website admin</dd></div>
+            <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Message destination</dt><dd className="mt-1 text-sm text-foreground">KakaoTalk My Chatroom (나와의 채팅)</dd></div>
+            <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">OAuth permission</dt><dd className="mt-1 text-sm text-foreground">talk_message only</dd></div>
+            <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Connection</dt><dd className="mt-1 text-sm text-foreground">{connection ? "Authorized for admin notifications" : "Waiting for admin authorization"}</dd></div>
             {connection && <>
-              <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Kakao profile</dt><dd className="mt-1 text-sm text-foreground">{connection.nickname}</dd></div>
-              <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Verified phone</dt><dd className="mt-1 text-sm text-foreground">{connection.phoneNumber}</dd></div>
-              <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Verified at (Vietnam time)</dt><dd className="mt-1 text-sm text-foreground">{formatDate(connection.verifiedAt)}</dd></div>
+              <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Connected at (Vietnam time)</dt><dd className="mt-1 text-sm text-foreground">{formatDate(connection.verifiedAt)}</dd></div>
               <div><dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Granted permissions</dt><dd className="mt-1 break-words text-sm text-foreground">{connection.scopes.join(", ")}</dd></div>
             </>}
           </dl>
 
+          {connection && connection.scopes.some((scope) => scope !== "talk_message") && <p role="status" className="rounded-md border border-border bg-muted/40 p-3 text-sm leading-relaxed text-muted-foreground">
+            This saved authorization includes older permissions. Disconnect and reconnect KakaoTalk to replace it with the current talk_message-only authorization.
+          </p>}
+
           {!canConnect && <p className="rounded-md bg-muted/50 p-3 text-sm leading-relaxed text-muted-foreground">
-            Add <code className="font-mono text-foreground">KAKAO_REST_API_KEY</code>, <code className="font-mono text-foreground">KAKAO_CLIENT_SECRET</code>, <code className="font-mono text-foreground">KAKAO_REDIRECT_URI</code>, and <code className="font-mono text-foreground">KAKAO_TOKEN_ENCRYPTION_KEY</code> to the Vercel project. The Kakao redirect URI must exactly match the URL registered in Kakao Developers. Scheduled retries also require <code className="font-mono text-foreground">CRON_SECRET</code>.
+            Set <code className="font-mono text-foreground">KAKAO_REST_API_KEY</code>, <code className="font-mono text-foreground">KAKAO_CLIENT_SECRET</code>, <code className="font-mono text-foreground">KAKAO_REDIRECT_URI</code>, and <code className="font-mono text-foreground">KAKAO_TOKEN_ENCRYPTION_KEY</code> as server-side Vercel environment variables; do not prefix Kakao credentials with <code className="font-mono text-foreground">NEXT_PUBLIC_</code>. The redirect URI must exactly match the value registered in Kakao Developers. Scheduled retries also require <code className="font-mono text-foreground">CRON_SECRET</code>.
           </p>}
 
           <div className="flex flex-wrap gap-3">
@@ -167,7 +167,7 @@ export function KakaoNotificationSettings({
       <Card>
         <CardHeader>
           <CardTitle>Latest notification</CardTitle>
-          <CardDescription>Delivery status is recorded for each question and test message.</CardDescription>
+          <CardDescription>Delivery status is recorded for each customer question, booking request, and test message.</CardDescription>
         </CardHeader>
         <CardContent>
           {latest ? (
@@ -184,7 +184,7 @@ export function KakaoNotificationSettings({
       </Card>
 
       <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground">
-        Kakao&apos;s text memo is limited to 200 characters. The notification includes a short message preview and a dashboard link; the complete customer message remains in Admin → Questions. A successful API response must still be confirmed in My Chatroom with the test button. Scheduled retries run daily by default to remain compatible with Vercel Hobby; plans that permit more frequent cron jobs can increase the schedule in vercel.json.
+        Kakao&apos;s text memo is limited to 200 characters. Question notices include a short preview; booking notices include the reference, service, date, and time. Full customer details remain in the admin dashboard. A successful API response means Kakao accepted the message; confirm arrival in My Chatroom with the test button. Scheduled retries follow the cron schedule in vercel.json.
       </p>
 
     </div>
