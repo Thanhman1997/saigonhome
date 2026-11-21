@@ -32,7 +32,9 @@ type SettingsSnapshot = {
 
 const ERROR_MESSAGES: Record<string, string> = {
   not_configured: "Kakao credentials and redirect URI must be configured in Vercel before connecting.",
-  state: "The Kakao authorization expired or could not be verified. Please connect again.",
+  state: "This Kakao authorization expired or was already used. Start a new connection.",
+  state_storage: "The secure Kakao authorization session could not be saved. Please try again.",
+  return_origin: "This site address is not allowed to finish Kakao authorization. Open the admin page from the configured site or preview URL, then try again.",
   cancelled: "Kakao authorization was cancelled.",
   authorization_failed: "Kakao authorization or permission verification failed. Check the Kakao app scopes, then try again.",
 }

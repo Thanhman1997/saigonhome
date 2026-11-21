@@ -1,14 +1,19 @@
 import { createCipheriv, createHash, randomBytes } from "node:crypto"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-const dbMock = vi.hoisted(() => ({ select: vi.fn() }))
+const dbMock = vi.hoisted(() => ({ select: vi.fn(), insert: vi.fn(), delete: vi.fn() }))
 
 vi.mock("server-only", () => ({}))
 vi.mock("@/lib/db", () => ({ db: dbMock }))
-vi.mock("@/lib/db/schema", () => ({ kakaoConnections: { id: "id" } }))
-vi.mock("drizzle-orm", () => ({ eq: vi.fn(() => null) }))
+vi.mock("@/lib/db/schema", () => ({ kakaoConnections: { id: "id" }, kakaoOAuthStates: { stateHash: "stateHash", expiresAt: "expiresAt", returnToOrigin: "returnToOrigin" } }))
+vi.mock("drizzle-orm", () => ({
+  and: vi.fn((...conditions) => ({ type: "and", conditions })),
+  eq: vi.fn((...args) => ({ type: "eq", args })),
+  gt: vi.fn((...args) => ({ type: "gt", args })),
+  lt: vi.fn((...args) => ({ type: "lt", args })),
+}))
 
-import { createBookingNotificationText, createKakaoAuthorizationUrl, getKakaoIdentity, sendKakaoMemo } from "./kakao"
+import { consumeKakaoOAuthState, createBookingNotificationText, createKakaoAuthorizationUrl, createKakaoOAuthState, getKakaoIdentity, sendKakaoMemo } from "./kakao"
 
 const TEST_ENCRYPTION_SECRET = "test-encryption-key-longer-than-thirty-two-characters"
 
@@ -32,6 +37,8 @@ afterEach(() => {
   vi.unstubAllGlobals()
   vi.unstubAllEnvs()
   dbMock.select.mockReset()
+  dbMock.insert.mockReset()
+  dbMock.delete.mockReset()
 })
 
 describe("Kakao admin authorization", () => {
@@ -43,6 +50,39 @@ describe("Kakao admin authorization", () => {
     expect(authorizationUrl.searchParams.get("scope")).toBe("talk_message")
     expect(authorizationUrl.searchParams.get("redirect_uri")).toBe("https://lotuswellness.test/api/kakao/callback")
     expect(authorizationUrl.searchParams.get("state")).toBe("test-state")
+  })
+
+  it("stores only a hash of a short-lived OAuth state and its safe return origin", async () => {
+    configureKakaoEnvironment()
+    const values = vi.fn().mockResolvedValue(undefined)
+    const cleanup = vi.fn().mockResolvedValue([])
+    dbMock.delete.mockReturnValue({ where: cleanup })
+    dbMock.insert.mockReturnValue({ values })
+
+    await createKakaoOAuthState("one-time-state", "https://lotuswellness.test")
+
+    const stored = values.mock.calls[0][0] as { stateHash: string; returnToOrigin: string; expiresAt: Date }
+    expect(stored.stateHash).not.toBe("one-time-state")
+    expect(stored.stateHash).toMatch(/^[a-f0-9]{64}$/)
+    expect(stored.returnToOrigin).toBe("https://lotuswellness.test")
+    expect(stored.expiresAt.getTime()).toBeGreaterThan(Date.now())
+    expect(stored.expiresAt.getTime()).toBeLessThanOrEqual(Date.now() + 10 * 60 * 1000)
+    expect(cleanup).toHaveBeenCalledOnce()
+  })
+
+  it("consumes a matching OAuth state once and returns its originating host", async () => {
+    const returning = vi.fn()
+      .mockResolvedValueOnce([{ returnToOrigin: "https://preview.lotuswellness.test" }])
+      .mockResolvedValueOnce([])
+    const where = vi.fn().mockReturnValue({ returning })
+    dbMock.delete.mockReturnValue({ where })
+
+    await expect(consumeKakaoOAuthState("one-time-state")).resolves.toEqual({
+      returnToOrigin: "https://preview.lotuswellness.test",
+    })
+    await expect(consumeKakaoOAuthState("one-time-state")).resolves.toBeNull()
+    expect(where).toHaveBeenCalledTimes(2)
+    expect(returning).toHaveBeenCalledTimes(2)
   })
 
   it("checks only talk_message and reads only the Kakao account ID", async () => {

@@ -1,8 +1,8 @@
 import "server-only"
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto"
-import { eq } from "drizzle-orm"
+import { and, eq, gt, lt } from "drizzle-orm"
 import { db } from "@/lib/db"
-import { kakaoConnections } from "@/lib/db/schema"
+import { kakaoConnections, kakaoOAuthStates } from "@/lib/db/schema"
 
 export const LOTUS_ADMIN = {
   email: "saigonservice2020@gmail.com",
@@ -115,6 +115,31 @@ export async function getKakaoIdentity(accessToken: string) {
   const userId = user.id === undefined ? "" : String(user.id)
 
   return { userId, scopes: grantedScopes }
+}
+
+export async function createKakaoOAuthState(state: string, returnToOrigin: string): Promise<void> {
+  if (!state || state.length > 256) throw new Error("Kakao OAuth state is invalid")
+
+  const now = new Date()
+  const stateHash = createHash("sha256").update(state, "utf8").digest("hex")
+  await db.delete(kakaoOAuthStates).where(lt(kakaoOAuthStates.expiresAt, now))
+  await db.insert(kakaoOAuthStates).values({
+    stateHash,
+    returnToOrigin,
+    expiresAt: new Date(now.getTime() + 10 * 60 * 1000),
+  })
+}
+
+export async function consumeKakaoOAuthState(state: string): Promise<{ returnToOrigin: string } | null> {
+  if (!state || state.length > 256) return null
+
+  const stateHash = createHash("sha256").update(state, "utf8").digest("hex")
+  const [consumedState] = await db
+    .delete(kakaoOAuthStates)
+    .where(and(eq(kakaoOAuthStates.stateHash, stateHash), gt(kakaoOAuthStates.expiresAt, new Date())))
+    .returning({ returnToOrigin: kakaoOAuthStates.returnToOrigin })
+
+  return consumedState ?? null
 }
 
 function getEncryptionKey(): Buffer {
