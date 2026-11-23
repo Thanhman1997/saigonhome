@@ -286,6 +286,8 @@ export const questions = pgTable("questions", {
   status: text("status").notNull().default("pending"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   repliedAt: timestamp("replied_at", { withTimezone: true }),
+  replyEmailStatus: text("reply_email_status").notNull().default("not_sent"),
+  replyEmailSentAt: timestamp("reply_email_sent_at", { withTimezone: true }),
 }, (table) => [
   uniqueIndex("questions_submission_token_key").on(table.submissionToken).where(sql`${table.submissionToken} IS NOT NULL`),
 ])

@@ -1,6 +1,6 @@
 import { getAllQuestions } from "@/lib/admin-data"
 import { AdminPushNotifications } from "@/components/admin/admin-push-notifications"
-import { QuestionReplyForm } from "@/components/admin/question-reply-form"
+import { QuestionReplyForm, ResendReplyEmailButton } from "@/components/admin/question-reply-form"
 import { Badge } from "@/components/ui/badge"
 import { getAdminWebPushPublicKey } from "@/lib/admin-web-push"
 
@@ -50,6 +50,14 @@ export default async function AdminQuestionsPage() {
             )}
 
             {q.status === "pending" && <QuestionReplyForm questionId={q.id} />}
+            {q.status === "answered" && q.reply && q.replyEmailStatus !== "sent" && (
+              <div className="flex flex-col gap-2">
+                <p role="alert" className="text-sm text-destructive">
+                  The reply email has not been delivered to the customer.
+                </p>
+                <ResendReplyEmailButton questionId={q.id} />
+              </div>
+            )}
           </div>
         ))}
         {questions.length === 0 && (
