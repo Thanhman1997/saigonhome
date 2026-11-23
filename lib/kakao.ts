@@ -3,6 +3,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:
 import { and, eq, gt, lt } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { kakaoConnections, kakaoOAuthStates } from "@/lib/db/schema"
+import { getSiteUrl } from "@/lib/site-url"
 
 export const LOTUS_ADMIN = {
   email: "saigonservice2020@gmail.com",
@@ -268,8 +269,7 @@ function truncate(value: string, maxLength: number): string {
 }
 
 function getAdminDashboardUrl(): string {
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://lotuswellness.app").replace(/\/+$/, "")
-  return new URL("/admin", baseUrl).toString()
+  return new URL("/admin", getSiteUrl()).toString()
 }
 
 export function createCustomerNotificationText(input: {

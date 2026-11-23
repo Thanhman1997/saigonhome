@@ -15,6 +15,7 @@ import { issueBookingToken } from "@/lib/booking-management-token"
 import { localizedServiceName } from "@/lib/booking-management-locale"
 import { createReviewInvitation } from "@/lib/review-invitation"
 import { escapeHtml } from "@/lib/security"
+import { getSiteUrl } from "@/lib/site-url"
 
 const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled"] as const
 type BookingStatus = (typeof BOOKING_STATUSES)[number]
@@ -84,8 +85,7 @@ export async function resendBookingReviewInvitation(id: number) {
 
 async function sendReviewInvitation(booking: Pick<typeof bookings.$inferSelect, "id" | "locale" | "email" | "reference">) {
   try {
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://lotuswellness.app"
-    const reviewUrl = new URL("/reviews", siteUrl)
+    const reviewUrl = new URL("/reviews", getSiteUrl())
     reviewUrl.searchParams.set("invite", createReviewInvitation(booking.id))
     reviewUrl.hash = "write-review"
     const locale = booking.locale === "vi" || booking.locale === "ko" ? booking.locale : "en"

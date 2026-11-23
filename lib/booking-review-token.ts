@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto"
+import { getSiteUrl } from "@/lib/site-url"
 
 const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -25,8 +26,7 @@ export function verifyBookingReviewToken(bookingId: number, token: string | null
 }
 
 export function siteBaseUrl() {
-  const production = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? (production ? `https://${production}` : "https://lotuswellness.app")).replace(/\/$/, "")
+  return getSiteUrl()
 }
 
 // Falls back to the admin booking list when no signing secret is configured.
