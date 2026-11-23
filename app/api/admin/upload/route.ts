@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
       if (!isJpeg && !isPng && !isGif && !isWebp) return NextResponse.json({ error: "Invalid image file" }, { status: 400 })
     }
 
-    const blob = await put(`lotus-wellness/${Date.now()}-${file.name}`, file, {
+    const safeName = file.name.replace(/[^\w.\-]+/g, "-").slice(-80)
+    const blob = await put(`lotus-wellness/${Date.now()}-${safeName}`, file, {
       access: "private",
       addRandomSuffix: true,
     })

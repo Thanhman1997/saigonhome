@@ -27,8 +27,11 @@ export async function POST(request: Request) {
       body,
       request,
       onBeforeGenerateToken: async (pathname) => {
-        if (!pathname.startsWith(UPLOAD_PREFIX) || pathname.includes("..")) {
+        if (!pathname.startsWith(UPLOAD_PREFIX) || !/^[\w.\-/]+$/.test(pathname) || pathname.includes("..")) {
           throw new Error("Invalid upload path")
+        }
+        if (!/\.(jpe?g|png|gif|webp|mp4|webm)$/i.test(pathname)) {
+          throw new Error("Unsupported file type")
         }
         const isVideo = /\.(mp4|webm)$/i.test(pathname)
         return {
