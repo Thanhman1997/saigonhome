@@ -15,6 +15,7 @@ import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availabi
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { enqueueBookingKakaoNotification } from "@/lib/kakao-notifications"
 import { asBookingLocale, type Locale } from "@/lib/booking-management-locale"
+import { isPaymentMethod, type PaymentMethod } from "@/lib/payments/methods"
 
 export type CreateBookingInput = {
   serviceId: number
@@ -30,6 +31,7 @@ export type CreateBookingInput = {
   detailedAddress: string
   notes: string
   isFirstTime?: boolean
+  paymentMethod?: PaymentMethod
   locale?: Locale
   submissionKey?: string
 }
@@ -73,6 +75,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     if (input.notes != null && (typeof input.notes !== "string" || input.notes.length > 2000)) return { success: false, error: "Something went wrong. Please try again." }
     const submissionKey = input.submissionKey ?? null
     if (submissionKey !== null && (typeof submissionKey !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(submissionKey))) return { success: false, error: "Something went wrong. Please try again." }
+    const paymentMethod = input.paymentMethod ?? "CASH"
+    if (!isPaymentMethod(paymentMethod)) return { success: false, error: "Something went wrong. Please try again." }
     if (!(await allowBookingRequest("create"))) return { success: false, error: "Please wait before trying again." }
     const locale = asBookingLocale(input.locale) ?? "en"
 
@@ -203,6 +207,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         discountVnd,
         totalVnd,
         discountLabel,
+        paymentMethod,
         status: "pending",
         locale,
         submissionKey,

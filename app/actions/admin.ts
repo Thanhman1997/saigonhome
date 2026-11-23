@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { bookings, reviews, services, siteContent, therapists } from "@/lib/db/schema"
-import { and, eq } from "drizzle-orm"
+import { and, eq, inArray } from "drizzle-orm"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { availableBookingSlots, lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
 import { pendingChangeRequest } from "@/lib/booking-change-request"
@@ -62,6 +62,17 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
   const reviewEmailSent = status === "completed" && current.status !== "completed" ? await sendReviewInvitation(current) : null
   revalidatePath("/admin/bookings")
   return { reviewEmailSent }
+}
+
+export async function markBookingPaid(id: number) {
+  await assertAdmin()
+  if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) throw new Error("Invalid booking")
+  const [updated] = await db.update(bookings)
+    .set({ paymentStatus: "PAID", paymentConfirmedAt: new Date(), updatedAt: new Date() })
+    .where(and(eq(bookings.id, id), eq(bookings.paymentStatus, "PENDING_PAYMENT"), inArray(bookings.status, ["confirmed", "completed"])))
+    .returning({ id: bookings.id })
+  revalidatePath("/admin/bookings")
+  return { updated: Boolean(updated) }
 }
 
 export async function resendBookingReviewInvitation(id: number) {
