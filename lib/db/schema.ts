@@ -13,6 +13,7 @@ import {
   check,
   uuid,
   jsonb,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
@@ -47,7 +48,7 @@ export const servicesContent = pgTable("services_content", {
 
 export const serviceDurations = pgTable("service_durations", {
   id: serial("id").primaryKey(),
-  serviceId: integer("service_id").notNull(),
+  serviceId: integer("service_id").notNull().references(() => services.id, { onDelete: "cascade" }),
   minutes: integer("minutes").notNull(),
   priceVnd: bigint("price_vnd", { mode: "number" }).notNull(),
 })
@@ -74,8 +75,8 @@ export const therapists = pgTable("therapists", {
 
 export const reviews = pgTable("reviews", {
   id: serial("id").primaryKey(),
-  bookingId: integer("booking_id"),
-  therapistId: integer("therapist_id"),
+  bookingId: integer("booking_id").references((): AnyPgColumn => bookings.id, { onDelete: "set null" }),
+  therapistId: integer("therapist_id").references(() => therapists.id, { onDelete: "set null" }),
   customerName: text("customer_name").notNull(),
   rating: integer("rating").notNull(),
   comment: text("comment").notNull(),
@@ -87,14 +88,18 @@ export const reviews = pgTable("reviews", {
   adminReply: text("admin_reply"),
   adminEdited: boolean("admin_edited").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-})
+}, (table) => [
+  uniqueIndex("reviews_booking_id_key").on(table.bookingId).where(sql`${table.bookingId} IS NOT NULL`),
+  index("reviews_approved_date_idx").on(table.approved, table.reviewDate.desc()),
+  check("reviews_rating_range", sql`${table.rating} BETWEEN 1 AND 5`),
+])
 
 export const bookings = pgTable("bookings", {
   id: serial("id").primaryKey(),
   reference: text("reference").notNull().unique(),
-  serviceId: integer("service_id").notNull(),
+  serviceId: integer("service_id").notNull().references(() => services.id, { onDelete: "restrict" }),
   durationMinutes: integer("duration_minutes").notNull(),
-  therapistId: integer("therapist_id"),
+  therapistId: integer("therapist_id").references(() => therapists.id, { onDelete: "set null" }),
   date: date("date").notNull(),
   time: text("time").notNull(),
   guests: integer("guests").notNull().default(1),
@@ -127,7 +132,13 @@ export const bookings = pgTable("bookings", {
   confirmationEmailSentAt: timestamp("confirmation_email_sent_at", { withTimezone: true }),
   reminderEmailSentAt: timestamp("reminder_email_sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-})
+}, (table) => [
+  index("bookings_status_start_idx").on(table.status, table.startAt),
+  index("bookings_therapist_start_idx").on(table.therapistId, table.startAt),
+  check("bookings_guests_range", sql`${table.guests} BETWEEN 1 AND 10`),
+  check("bookings_time_order", sql`${table.endAt} > ${table.startAt}`),
+  check("bookings_amounts_nonnegative", sql`${table.subtotalVnd} >= 0 AND ${table.discountVnd} >= 0 AND ${table.totalVnd} >= 0`),
+])
 
 export const vietnamHolidays = pgTable("vietnam_holidays", {
   id: serial("id").primaryKey(),
