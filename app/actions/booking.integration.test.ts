@@ -139,6 +139,32 @@ describe("createBooking integration contract", () => {
     }
   })
 
+  it("rejects times that are not offered on the 15-minute schedule", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "10:07"))
+      expect(result).toMatchObject({ success: false, error: "Invalid date or time" })
+      expect(insertedBooking.value).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("enforces the database guest limit even when older settings allow more", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking({ ...validInput("2026-08-18", "10:00"), guests: 11 })
+      expect(result).toMatchObject({ success: false, error: "Invalid number of guests (max 10)" })
+      expect(insertedBooking.value).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("accepts a 17:45 booking when the configured closing time is 01:00", async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))

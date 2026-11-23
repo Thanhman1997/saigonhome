@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, type ReactNode } from "react"
+import { MAX_BOOKING_GUESTS } from "@/lib/booking-rules"
 
 export type ServiceWithDurations = {
   id: number
@@ -49,6 +50,7 @@ type BookingContextValue = {
   draft: BookingDraft
   services: ServiceWithDurations[]
   therapists: TherapistRow[]
+  maxGuests: number
   openBooking: (preset?: Partial<BookingDraft>) => void
   closeBooking: () => void
   updateDraft: (patch: Partial<BookingDraft>) => void
@@ -70,12 +72,17 @@ export function BookingProvider({
   children,
   services,
   therapists,
+  maxGuests,
 }: {
   children: ReactNode
   services: ServiceWithDurations[]
   therapists: TherapistRow[]
+  maxGuests?: number
 }) {
   const [isOpen, setIsOpen] = useState(false)
+  const guestLimit = typeof maxGuests === "number" && Number.isSafeInteger(maxGuests)
+    ? Math.min(Math.max(maxGuests, 1), MAX_BOOKING_GUESTS)
+    : MAX_BOOKING_GUESTS
   const [draft, setDraft] = useState<BookingDraft>(emptyDraft)
 
   function openBooking(preset?: Partial<BookingDraft>) {
@@ -97,7 +104,7 @@ export function BookingProvider({
 
   return (
     <BookingContext.Provider
-      value={{ isOpen, draft, services, therapists, openBooking, closeBooking, updateDraft, resetDraft }}
+      value={{ isOpen, draft, services, therapists, maxGuests: guestLimit, openBooking, closeBooking, updateDraft, resetDraft }}
     >
       {children}
     </BookingContext.Provider>

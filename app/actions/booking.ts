@@ -16,6 +16,7 @@ import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { enqueueBookingKakaoNotification } from "@/lib/kakao-notifications"
 import { asBookingLocale, type Locale } from "@/lib/booking-management-locale"
 import { isPaymentMethod, type PaymentMethod } from "@/lib/payments/methods"
+import { MAX_BOOKING_GUESTS, MIN_BOOKING_NOTICE_MS } from "@/lib/booking-rules"
 
 export type CreateBookingInput = {
   serviceId: number
@@ -89,7 +90,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
           firstTimeDiscount: Number(settingsRow.firstTimeDiscount),
         }
       : DEFAULT_DISCOUNT_RATES
-    const maxGuests = settingsRow?.maxGuests ?? 20
+    const maxGuests = Math.min(settingsRow?.maxGuests ?? MAX_BOOKING_GUESTS, MAX_BOOKING_GUESTS)
     if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(input.date) || !/^[0-9]{2}:[0-9]{2}$/.test(input.time)) {
       return { success: false, error: "Invalid date or time" }
     }
@@ -101,7 +102,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const isCalendarDateValid = parsedDate.getUTCFullYear() === year && parsedDate.getUTCMonth() === month - 1 && parsedDate.getUTCDate() === day
     const [hours, minutes] = input.time.split(":").map(Number)
     const isMidnight = hours === 24 && minutes === 0
-    const isClockTimeValid = (hours < 24 && minutes < 60) || isMidnight
+    const isClockTimeValid = (hours < 24 && minutes < 60 && minutes % 15 === 0) || isMidnight
     if (!isCalendarDateValid || !isClockTimeValid) return { success: false, error: "Invalid date or time" }
 
     const weekday = parsedDate.getUTCDay()
@@ -114,7 +115,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       : configuredClosingMinutes
     const requestedMinutes = hours * 60 + minutes
     const bookingUtcMs = zonedLocalDateTimeToUtc(input.date, input.time, VIETNAM_TIME_ZONE).getTime()
-    const minBookingUtcMs = now.getTime() + 60 * 60 * 1000
+    const minBookingUtcMs = now.getTime() + MIN_BOOKING_NOTICE_MS
 
     const maxAdvanceDays = settingsRow?.advanceBookingDays ?? 30
     const maxBookingDate = new Date(`${vietnamToday}T00:00:00Z`)
@@ -188,6 +189,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
           .from(bookings).where(and(eq(bookings.submissionKey, submissionKey), eq(bookings.email, input.email.trim()))).limit(1)
         if (previous) return { kind: "duplicate", receipt: previous } as const
       }
+      if (startAt.getTime() < Date.now() + MIN_BOOKING_NOTICE_MS) return null
       if ((await overlappingBookings(tx, input, startAt, endAt)).length) return null
       const [created] = await tx.insert(bookings).values({
         reference,

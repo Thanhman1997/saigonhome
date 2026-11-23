@@ -5,7 +5,7 @@ import { ServicesSection } from "@/components/sections/services"
 import { BookingDialog } from "@/components/booking/booking-dialog"
 import { BookingLanding } from "@/components/booking/booking-landing"
 import { BookingProvider } from "@/lib/booking-context"
-import { getAvailableTherapists, getContactInfo, getServicesWithDurations, getServicesContent } from "@/lib/data"
+import { getAvailableTherapists, getBookingSettings, getContactInfo, getServicesWithDurations, getServicesContent } from "@/lib/data"
 import { getNavigationSettings } from "@/lib/admin-data"
 
 export const metadata: Metadata = {
@@ -15,12 +15,12 @@ export const metadata: Metadata = {
 }
 
 export default async function BookingPage() {
-  const [services, therapists, contactInfo, navigationSettings, servicesContent] = await Promise.all([
-    getServicesWithDurations(), getAvailableTherapists(), getContactInfo(), getNavigationSettings(), getServicesContent(),
+  const [services, therapists, contactInfo, navigationSettings, servicesContent, bookingSettings] = await Promise.all([
+    getServicesWithDurations(), getAvailableTherapists(), getContactInfo(), getNavigationSettings(), getServicesContent(), getBookingSettings(),
   ])
 
   return (
-    <BookingProvider services={services} therapists={therapists}>
+    <BookingProvider services={services} therapists={therapists} maxGuests={bookingSettings?.maxGuests}>
       <Header navigationSettings={navigationSettings} />
       <main>
         <BookingLanding />

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { updateBookingSettings } from "@/app/actions/booking-settings"
+import { MAX_BOOKING_GUESTS } from "@/lib/booking-rules"
 
 type BookingSettingsRow = {
   id: number
@@ -63,8 +64,8 @@ export function BookingSettingsForm({ settings }: { settings: BookingSettingsRow
               name="maxGuests"
               type="number"
               min={1}
-              max={50}
-              defaultValue={settings?.maxGuests ?? 20}
+              max={MAX_BOOKING_GUESTS}
+              defaultValue={Math.min(settings?.maxGuests ?? MAX_BOOKING_GUESTS, MAX_BOOKING_GUESTS)}
               required
             />
           </div>

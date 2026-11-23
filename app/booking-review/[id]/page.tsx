@@ -77,8 +77,8 @@ export default async function BookingReviewPage({ params, searchParams }: { para
         <BookingEmailReview
           bookingId={booking.id}
           tokens={{
-            confirm: createBookingReviewToken(booking.id, Date.now(), request ? "approve-change" : "confirm") ?? "",
-            decline: createBookingReviewToken(booking.id, Date.now(), "decline-change") ?? "",
+            confirm: createBookingReviewToken(booking.id, undefined, request ? "approve-change" : "confirm") ?? "",
+            decline: createBookingReviewToken(booking.id, undefined, "decline-change") ?? "",
           }}
           mode={request ? "change" : "new"}
           confirmLabel={confirmLabel}

@@ -32,10 +32,11 @@ import {
   getLotusValues,
   getApprovedReviews,
   getLatestVideoMedia,
+  getBookingSettings,
 } from "@/lib/data"
 
 export default async function Home() {
-  const [services, servicesContent, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews, videoMedia] =
+  const [services, servicesContent, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews, videoMedia, bookingSettings] =
     await Promise.all([
       getServicesWithDurations(),
       getServicesContent(),
@@ -52,10 +53,11 @@ export default async function Home() {
       getLotusValues(),
       getApprovedReviews(),
       getLatestVideoMedia(),
+      getBookingSettings(),
     ])
 
   return (
-    <BookingProvider services={services} therapists={availableTherapists}>
+    <BookingProvider services={services} therapists={availableTherapists} maxGuests={bookingSettings?.maxGuests}>
       <main className="min-h-screen bg-background">
         <Header navigationSettings={navigationSettings} />
         <HeroSection hero={hero} />
