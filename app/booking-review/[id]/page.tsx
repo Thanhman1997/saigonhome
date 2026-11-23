@@ -3,7 +3,7 @@ import Link from "next/link"
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { bookings, services, therapists } from "@/lib/db/schema"
-import { verifyBookingReviewToken } from "@/lib/booking-review-token"
+import { createBookingReviewToken, verifyBookingReviewToken } from "@/lib/booking-review-token"
 import { pendingChangeRequest } from "@/lib/booking-change-request"
 import { formatVnd } from "@/lib/pricing"
 import { BookingEmailReview } from "@/components/admin/booking-email-review"
@@ -74,7 +74,15 @@ export default async function BookingReviewPage({ params, searchParams }: { para
         <Row label="Status" value={booking.status} />
       </dl>
       {request || awaitingConfirmation ? (
-        <BookingEmailReview bookingId={booking.id} token={token} mode={request ? "change" : "new"} confirmLabel={confirmLabel} />
+        <BookingEmailReview
+          bookingId={booking.id}
+          tokens={{
+            confirm: createBookingReviewToken(booking.id, Date.now(), request ? "approve-change" : "confirm") ?? "",
+            decline: createBookingReviewToken(booking.id, Date.now(), "decline-change") ?? "",
+          }}
+          mode={request ? "change" : "new"}
+          confirmLabel={confirmLabel}
+        />
       ) : (
         <p className="text-sm text-muted-foreground">This booking is {booking.status}, so there is nothing to confirm.</p>
       )}

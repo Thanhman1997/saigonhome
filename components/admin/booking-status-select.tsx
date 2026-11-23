@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { resendBookingManagementLink, resendBookingReviewInvitation, revokeBookingManagementLink, updateBookingStatus } from "@/app/actions/admin"
+import { allowedBookingStatuses } from "@/lib/booking-status"
 import { cn } from "@/lib/utils"
 
 const STATUS_OPTIONS = [
@@ -41,7 +42,7 @@ export function BookingStatusSelect({ bookingId, status, revoked }: { bookingId:
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {STATUS_OPTIONS.map((option) => (
+        {STATUS_OPTIONS.filter((option) => allowedBookingStatuses(status).includes(option.value)).map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>

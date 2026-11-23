@@ -2,11 +2,12 @@ import { createHmac } from "node:crypto"
 import { headers } from "next/headers"
 import { sql } from "drizzle-orm"
 import { db } from "@/lib/db"
+import { clientIpFromHeaders } from "@/lib/client-ip"
 import { contactSubmissionRateLimits as limits } from "@/lib/db/schema"
 
 export async function getClientIp(): Promise<string> {
   const h = await headers()
-  return h.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown"
+  return clientIpFromHeaders(h)
 }
 
 /**

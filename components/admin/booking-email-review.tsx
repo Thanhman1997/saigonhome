@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation"
 import { approveBookingChangeFromEmail, confirmBookingFromEmail, declineBookingChangeFromEmail } from "@/app/actions/admin"
 import { Button } from "@/components/ui/button"
 
-type Props = { bookingId: number; token: string; mode: "new" | "change"; confirmLabel: string }
+type Props = { bookingId: number; tokens: { confirm: string; decline: string }; mode: "new" | "change"; confirmLabel: string }
 
-export function BookingEmailReview({ bookingId, token, mode, confirmLabel }: Props) {
+export function BookingEmailReview({ bookingId, tokens, mode, confirmLabel }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [notice, setNotice] = useState("")
@@ -31,10 +31,10 @@ export function BookingEmailReview({ bookingId, token, mode, confirmLabel }: Pro
           disabled={isPending}
           onClick={() => run(async () => {
             if (mode === "new") {
-              await confirmBookingFromEmail(bookingId, token)
+              await confirmBookingFromEmail(bookingId, tokens.confirm)
               return "Booking confirmed. The customer was emailed."
             }
-            const { emailed } = await approveBookingChangeFromEmail(bookingId, token)
+            const { emailed } = await approveBookingChangeFromEmail(bookingId, tokens.confirm)
             return emailed ? "Confirmed. The customer was emailed." : "Confirmed, but the customer email could not be sent."
           }, "Could not confirm. Refresh and try again.")}
         >
@@ -46,7 +46,7 @@ export function BookingEmailReview({ bookingId, token, mode, confirmLabel }: Pro
             variant="outline"
             disabled={isPending}
             onClick={() => run(async () => {
-              await declineBookingChangeFromEmail(bookingId, token)
+              await declineBookingChangeFromEmail(bookingId, tokens.decline)
               return "Request declined. The booking stays unchanged."
             }, "Could not decline. Refresh and try again.")}
           >
