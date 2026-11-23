@@ -8,8 +8,14 @@ vi.mock("next/navigation", () => ({ redirect: redirectMock }))
 vi.mock("@/lib/admin-auth", () => ({
   ADMIN_SESSION_COOKIE: "admin",
   getAdminSessionCookieOptions: vi.fn(async () => ({ secure: false })),
-  getExpectedAdminSessionToken: vi.fn(async () => "expected"),
+  ADMIN_SESSION_MAX_AGE_SECONDS: 8 * 60 * 60,
+  createAdminSessionToken: vi.fn(async () => "expected"),
   verifyAdminCredentials: vi.fn(async (email: string, password: string) => email === "admin@example.com" && password === "secret"),
+}))
+
+vi.mock("@/lib/rate-limit", () => ({
+  consumeRateLimit: vi.fn(async () => true),
+  getClientIp: vi.fn(async () => "127.0.0.1"),
 }))
 
 import { loginAdmin } from "./admin-auth"

@@ -5,17 +5,7 @@ import { siteContent } from "@/lib/db/schema"
 import { sql } from "drizzle-orm"
 import { revalidatePath, updateTag } from "next/cache"
 import { LAYOUT_DATA_TAG } from "@/lib/data"
-import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) {
-    throw new Error("Unauthorized")
-  }
-}
+import { assertAdmin } from "@/lib/admin-auth"
 
 const VALID_LOCALES = ["en", "ko", "vi"] as const
 

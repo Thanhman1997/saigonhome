@@ -8,8 +8,7 @@ import { availableBookingSlots, lockBookingSchedule, overlappingBookings } from 
 import { pendingChangeRequest } from "@/lib/booking-change-request"
 import { verifyBookingReviewToken } from "@/lib/booking-review-token"
 import { revalidatePath } from "next/cache"
-import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
+import { assertAdmin } from "@/lib/admin-auth"
 import { sendTransactionalEmail } from "@/lib/transactional-email"
 import { issueBookingToken } from "@/lib/booking-management-token"
 import { localizedServiceName } from "@/lib/booking-management-locale"
@@ -19,15 +18,6 @@ import { getSiteUrl } from "@/lib/site-url"
 
 const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled"] as const
 type BookingStatus = (typeof BOOKING_STATUSES)[number]
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) {
-    throw new Error("Unauthorized")
-  }
-}
 
 export async function updateBookingStatus(id: number, status: BookingStatus) {
   await assertAdmin()

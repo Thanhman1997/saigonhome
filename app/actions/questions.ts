@@ -9,15 +9,8 @@ import { db } from "@/lib/db"
 import { contactSubmissionRateLimits, questions } from "@/lib/db/schema"
 import { enqueueQuestionKakaoNotification } from "@/lib/kakao-notifications"
 import { sendAdminPushNotification } from "@/lib/admin-web-push"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
+import { assertAdmin } from "@/lib/admin-auth"
 import { escapeHtml } from "@/lib/security"
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) throw new Error("Unauthorized")
-}
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)

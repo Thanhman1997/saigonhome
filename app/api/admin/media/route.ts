@@ -1,14 +1,6 @@
 import { list } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
-import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
-
-async function isAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  return Boolean(expected) && token === expected
-}
+import { isAdminAuthenticated as isAdmin } from "@/lib/admin-auth"
 
 export async function GET(request: NextRequest) {
   if (!(await isAdmin())) {

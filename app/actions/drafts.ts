@@ -3,8 +3,7 @@
 import { db } from "@/lib/db"
 import { siteContent } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
-import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
+import { assertAdmin } from "@/lib/admin-auth"
 
 type DraftEnvelope = {
   editor: string
@@ -12,12 +11,6 @@ type DraftEnvelope = {
   values: Record<string, unknown>
   savedAt: string
   serverUpdatedAt?: string | null
-}
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const token = (await cookies()).get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) throw new Error("Unauthorized")
 }
 
 function draftKey(editor: string, identity: string) {

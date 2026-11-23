@@ -4,20 +4,10 @@ import { db } from "@/lib/db"
 import { events } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
+import { assertAdmin } from "@/lib/admin-auth"
 
 const PROMOTION_TYPES = ["first_time", "combo", "seasonal"] as const
 export type PromotionType = (typeof PROMOTION_TYPES)[number]
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) {
-    throw new Error("Unauthorized")
-  }
-}
 
 function readPromotionForm(formData: FormData) {
   const nameEn = String(formData.get("nameEn") ?? "").trim()

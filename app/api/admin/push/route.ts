@@ -1,18 +1,11 @@
-import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { adminPushSubscriptions } from "@/lib/db/schema"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
+import { isAdminAuthenticated } from "@/lib/admin-auth"
 import { sendAdminPushNotification } from "@/lib/admin-web-push"
 
 export const runtime = "nodejs"
-
-async function isAdminAuthenticated() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  return Boolean(expected && cookieStore.get(ADMIN_SESSION_COOKIE)?.value === expected)
-}
 
 function isSameOrigin(request: Request) {
   const origin = request.headers.get("origin")

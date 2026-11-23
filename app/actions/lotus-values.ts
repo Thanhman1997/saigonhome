@@ -4,15 +4,8 @@ import { db } from "@/lib/db"
 import { lotusValues } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
+import { assertAdmin } from "@/lib/admin-auth"
 import { LOTUS_VALUE_ICONS } from "@/lib/lotus-values"
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const token = (await cookies()).get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) throw new Error("Unauthorized")
-}
 
 function readLotusValueForm(formData: FormData) {
   const textEn = String(formData.get("textEn") ?? "").trim()
