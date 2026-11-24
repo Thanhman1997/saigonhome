@@ -90,11 +90,11 @@ export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbna
                   aria-label={t.experienceVideo.watchLabel}
                   className="absolute inset-0 grid place-items-center focus-visible:outline-none"
                 >
-                  <span className="grid h-20 w-20 place-items-center rounded-full border border-primary-foreground/70 bg-primary/90 text-primary-foreground shadow-xl transition duration-300 group-hover:scale-110 group-focus-within:ring-2 group-focus-within:ring-ring">
+                  <span className="grid h-20 w-20 place-items-center rounded-full border border-primary-foreground/70 bg-primary/90 text-header-background shadow-xl transition duration-300 group-hover:scale-110 group-focus-within:ring-2 group-focus-within:ring-ring">
                     <Play className="ml-1 h-7 w-7 fill-current" aria-hidden="true" />
                   </span>
                 </button>
-                <span className="pointer-events-none absolute bottom-5 left-5 right-5 text-sm font-medium tracking-wide text-primary-foreground">{t.experienceVideo.watchLabel}</span>
+                <span className="pointer-events-none absolute bottom-5 left-5 right-5 text-sm font-medium tracking-wide text-header-background">{t.experienceVideo.watchLabel}</span>
               </>
             ) : null}
           </div>
