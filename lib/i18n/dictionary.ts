@@ -16,7 +16,7 @@ export const dictionary = {
       subtitle: "Professional massage services delivered directly to your hotel room, apartment, or accommodation.",
       cta: "BOOKING",
       ctaSecondary: "Explore services",
-      hours: "Booking Hours 9am–1am",
+      hours: "Booking Hours 9am–midnight",
     },
     about: {
       kicker: "OUR GUIDING VALUES",

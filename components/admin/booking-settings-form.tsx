@@ -77,7 +77,7 @@ export function BookingSettingsForm({ settings }: { settings: BookingSettingsRow
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="closeTime">Closing time</Label>
-            <Input id="closeTime" name="closeTime" type="time" defaultValue={settings?.closeTime ?? "21:00"} required />
+            <Input id="closeTime" name="closeTime" type="time" defaultValue={settings?.closeTime ?? "00:00"} required />
           </div>
         </div>
         <div className="flex flex-col gap-2">

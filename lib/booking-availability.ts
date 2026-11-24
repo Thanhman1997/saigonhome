@@ -29,10 +29,10 @@ export function candidateSlots(date: string, duration: number, settings: Setting
     return hour * 60 + minute
   }
   const open = toMinutes(settings?.openTime ?? "09:00")
-  const close = toMinutes(settings?.closeTime ?? "21:00")
+  const close = toMinutes(settings?.closeTime ?? "00:00")
   const end = close <= open ? close + 1440 : close
   const slots: { time: string; start: Date; end: Date }[] = []
-  for (let minutes = Math.ceil(open / 15) * 15; minutes <= 1440 && minutes + duration <= end && minutes < end; minutes += 15) {
+  for (let minutes = Math.ceil(open / 15) * 15; minutes <= 1440 && (close === 0 ? minutes + duration < end : minutes + duration <= end) && minutes < end; minutes += 15) {
     const time = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`
     const start = zonedLocalDateTimeToUtc(date, time, timezone)
     if (start.getTime() < now.getTime() + MIN_BOOKING_NOTICE_MS) continue

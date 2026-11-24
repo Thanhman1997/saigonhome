@@ -117,7 +117,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 
     const weekday = parsedDate.getUTCDay()
     const [openHour, openMinute] = (settingsRow?.openTime ?? "09:00").split(":").map(Number)
-    const [closeHour, closeMinute] = (settingsRow?.closeTime ?? "21:00").split(":").map(Number)
+    const [closeHour, closeMinute] = (settingsRow?.closeTime ?? "00:00").split(":").map(Number)
     const openingMinutes = openHour * 60 + openMinute
     const configuredClosingMinutes = closeHour * 60 + closeMinute
     const closingMinutes = configuredClosingMinutes <= openingMinutes
@@ -153,7 +153,9 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       .where(and(eq(serviceDurations.serviceId, input.serviceId), eq(serviceDurations.minutes, input.durationMinutes)))
       .limit(1)
     if (!duration) return { success: false, error: "Selected duration is unavailable for this service" }
-    if (requestedMinutes + duration.minutes > closingMinutes) {
+    if (closeHour === 0 && closeMinute === 0
+      ? requestedMinutes + duration.minutes >= closingMinutes
+      : requestedMinutes + duration.minutes > closingMinutes) {
       return { success: false, error: "Selected time is unavailable" }
     }
 

@@ -18,7 +18,7 @@ function makeForm(overrides: { maxGuests?: string; openTime?: string; closeTime?
   form.set("advanceBookingDays", "30")
   form.set("maxGuests", overrides.maxGuests ?? "10")
   form.set("openTime", overrides.openTime ?? "09:00")
-  form.set("closeTime", overrides.closeTime ?? "21:00")
+  form.set("closeTime", overrides.closeTime ?? "00:00")
   form.set("groupDiscount2", "2")
   form.set("groupDiscount3", "3")
   form.set("groupDiscount4", "5")
@@ -46,7 +46,7 @@ describe("updateBookingSettings", () => {
 
   it("saves matching booking limits and refreshes all public booking entry points", async () => {
     await expect(updateBookingSettings(undefined, makeForm())).resolves.toEqual({ error: undefined })
-    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({ maxGuests: 10, openTime: "09:00", closeTime: "21:00" }))
+    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({ maxGuests: 10, openTime: "09:00", closeTime: "00:00" }))
     expect(revalidatePath).toHaveBeenCalledWith("/booking")
     expect(revalidatePath).toHaveBeenCalledWith("/services")
     expect(revalidatePath).toHaveBeenCalledWith("/services/[slug]", "page")

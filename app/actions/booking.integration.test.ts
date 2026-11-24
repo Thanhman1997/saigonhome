@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const rows = {
-  settings: { advanceBookingDays: 30, minNoticeHours: 2, maxGuests: 20, openTime: "09:00", closeTime: "21:00", closedWeekdays: [0] },
+  settings: { advanceBookingDays: 30, minNoticeHours: 2, maxGuests: 20, openTime: "09:00", closeTime: "00:00", closedWeekdays: [0] },
   service: { id: 1, nameEn: "Massage", active: true },
   duration: { serviceId: 1, minutes: 60, priceVnd: 500000 },
   therapist: { id: 1, available: true, visible: true },
@@ -205,7 +205,7 @@ describe("createBooking integration contract", () => {
       const result = await createBooking(validInput("2026-08-18", "17:45"))
       expect(result.success).toBe(true)
     } finally {
-      rows.settings.closeTime = "21:00"
+      rows.settings.closeTime = "00:00"
       vi.useRealTimers()
     }
   })
@@ -220,7 +220,7 @@ describe("createBooking integration contract", () => {
       expect(result.success).toBe(true)
       expect(insertedBooking.value?.endAt).toEqual(new Date("2026-08-18T18:00:00.000Z"))
     } finally {
-      rows.settings.closeTime = "21:00"
+      rows.settings.closeTime = "00:00"
       vi.useRealTimers()
     }
   })
@@ -234,7 +234,21 @@ describe("createBooking integration contract", () => {
       const result = await createBooking(validInput("2026-08-18", "23:30"))
       expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
     } finally {
-      rows.settings.closeTime = "21:00"
+      rows.settings.closeTime = "00:00"
+      vi.useRealTimers()
+    }
+  })
+
+  it("rejects a service that would finish exactly at midnight", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.settings.closeTime = "00:00"
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "23:00"))
+      expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
+    } finally {
+      rows.settings.closeTime = "00:00"
       vi.useRealTimers()
     }
   })

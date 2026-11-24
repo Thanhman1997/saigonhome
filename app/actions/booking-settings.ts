@@ -21,7 +21,7 @@ export async function updateBookingSettings(_prevState: { error?: string } | und
   const advanceBookingDays = Number(formData.get("advanceBookingDays") ?? 30)
   const maxGuests = Number(formData.get("maxGuests") ?? MAX_BOOKING_GUESTS)
   const openTime = String(formData.get("openTime") ?? "09:00")
-  const closeTime = String(formData.get("closeTime") ?? "21:00")
+  const closeTime = String(formData.get("closeTime") ?? "00:00")
 
   if (!Number.isInteger(advanceBookingDays) || advanceBookingDays < 1 || advanceBookingDays > 365) {
     return { error: "Advance booking days must be between 1 and 365." }

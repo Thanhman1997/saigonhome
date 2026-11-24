@@ -1,7 +1,21 @@
 import { describe, expect, it } from "vitest"
 import { PgDialect } from "drizzle-orm/pg-core"
 import type { SQL } from "drizzle-orm"
-import { bookingIntervalsConflict, overlappingBookings } from "./booking-availability"
+import { bookingIntervalsConflict, candidateSlots, overlappingBookings } from "./booking-availability"
+
+describe("midnight booking boundary", () => {
+  it("only offers services that finish before midnight", () => {
+    const slots = candidateSlots("2026-08-18", 60, {
+      openTime: "09:00",
+      closeTime: "00:00",
+      closedWeekdays: [],
+      advanceBookingDays: 30,
+    }, new Date("2026-08-17T16:00:00.000Z"))
+
+    expect(slots.at(-1)?.time).toBe("22:45")
+    expect(slots.some((slot) => slot.time === "23:00")).toBe(false)
+  })
+})
 
 describe("therapist booking buffers", () => {
   it("requires a full hour between service intervals in either direction", () => {
