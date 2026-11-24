@@ -18,8 +18,10 @@ export function BookingCtaButton({ className, children, ...props }: BookingCtaBu
       type="button"
       className={cn(
         className,
-        "h-[42px] w-[130px] shrink-0 rounded-full bg-lotus-pink px-4 py-0 font-bold uppercase leading-none !tracking-wide text-lotus-pink-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-lotus-pink/90",
-        locale === "ko" ? "h-12 w-38 px-6 font-korean-sans text-xl font-bold tracking-wide" : "!font-sans text-sm",
+        "h-[42px] w-[130px] shrink-0 rounded-full bg-lotus-pink px-4 py-0 font-bold uppercase leading-none text-lotus-pink-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-lotus-pink/90",
+        locale === "ko"
+          ? "h-12 w-[120px] px-4 font-korean-serif text-xl font-bold tracking-[0.16em]"
+          : "!font-sans text-sm",
       )}
     >
       {children}
