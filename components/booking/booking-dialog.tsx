@@ -50,7 +50,7 @@ export function BookingDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-6xl overflow-x-hidden overflow-y-auto p-0 sm:max-h-[calc(100dvh-2rem)]" showCloseButton>
+      <DialogContent className="max-h-[calc(100dvh-0.5rem)] w-[calc(100vw-0.5rem)] max-w-6xl overflow-x-hidden overflow-y-auto p-0 sm:max-h-[calc(100dvh-2rem)]" showCloseButton>
         <DialogTitle className="sr-only">{t.booking.title}</DialogTitle>
         <DialogDescription className="sr-only">
           {t.booking.step} {stepIndex + 1} {t.booking.of} {STEP_KEYS.length}
@@ -65,7 +65,7 @@ export function BookingDialog() {
                 height={64}
                 className="size-10 shrink-0 rounded-full object-contain sm:size-12 md:size-14"
               />
-              <p className="min-w-0 flex-1 whitespace-nowrap pr-5 text-right text-xs font-semibold uppercase leading-none tracking-[0.04em] text-accent sm:text-xl sm:tracking-[0.1em] md:text-2xl lg:text-3xl">
+              <p className="min-w-0 flex-1 whitespace-nowrap pr-9 text-right text-[11px] font-semibold uppercase leading-none tracking-[0.04em] text-accent sm:pr-5 sm:text-xl sm:tracking-[0.1em] md:text-2xl lg:text-3xl">
                 {t.booking.title}
               </p>
             </div>
@@ -90,7 +90,7 @@ export function BookingDialog() {
             )}
           </div>
 
-          <div className="px-3 py-3 sm:px-6 sm:py-6">
+          <div className="px-2 py-2 sm:px-6 sm:py-6">
             {step === "service" && <StepService onNext={goNext} />}
             {step === "therapist" && <StepTherapist onNext={goNext} onBack={goBack} />}
             {step === "datetime" && <StepDateTime onNext={goNext} onBack={goBack} />}
