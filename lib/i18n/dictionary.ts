@@ -308,7 +308,7 @@ titleLine1: "웰니스 마사지",
       subtitle: "Dịch vụ massage chuyên nghiệp tận nơi, đến thẳng phòng khách sạn, căn hộ hoặc nơi lưu trú của bạn.",
       cta: "Đ��T L���CH NGAY",
       ctaSecondary: "Khám phá dịch v����",
-      hours: "Giờ nhận đặt lịch: 9h sáng–1h sáng",
+      hours: "Giờ nhận đặt lịch: 09:00–00:00",
     },
     about: {
       kicker: "TRIẾT LÝ CHĂM SÓC",
