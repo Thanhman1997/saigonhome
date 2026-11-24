@@ -14,7 +14,7 @@ export function BookingActionButton({ className, ...props }: BookingActionButton
     <Button
       {...props}
       variant="booking"
-      className={cn(locale === "ko" && "font-korean-sans text-base font-semibold", className)}
+      className={cn(locale === "ko" && "h-11 px-7 font-korean-serif text-lg font-semibold", className)}
     />
   )
 }
