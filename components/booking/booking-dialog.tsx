@@ -50,32 +50,32 @@ export function BookingDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[98vh] max-w-6xl overflow-y-auto p-0" showCloseButton>
+      <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-6xl overflow-x-hidden overflow-y-auto p-0 sm:max-h-[calc(100dvh-2rem)]" showCloseButton>
         <DialogTitle className="sr-only">{t.booking.title}</DialogTitle>
         <DialogDescription className="sr-only">
           {t.booking.step} {stepIndex + 1} {t.booking.of} {STEP_KEYS.length}
         </DialogDescription>
         <div className="flex flex-col">
-          <div className="border-b border-border px-6 py-5">
+          <div className="border-b border-border px-4 py-3 sm:px-6 sm:py-5">
             <div className="flex min-w-0 items-center justify-between gap-3">
               <Image
                 src="/images/lotus-round-logo.png"
                 alt="Lotus Wellness"
                 width={64}
                 height={64}
-                className="size-12 shrink-0 rounded-full object-contain sm:size-14"
+                className="size-10 shrink-0 rounded-full object-contain sm:size-12 md:size-14"
               />
-              <p className="min-w-0 flex-1 whitespace-nowrap text-right text-lg font-semibold uppercase leading-none tracking-[0.08em] text-accent sm:text-xl sm:tracking-[0.1em] md:text-2xl lg:text-3xl">
+              <p className="min-w-0 flex-1 whitespace-nowrap pr-5 text-right text-xs font-semibold uppercase leading-none tracking-[0.04em] text-accent sm:text-xl sm:tracking-[0.1em] md:text-2xl lg:text-3xl">
                 {t.booking.title}
               </p>
             </div>
             {step !== "confirm" && (
-              <div className="mt-4 flex items-center gap-2">
+              <div className="mt-3 flex items-center gap-1.5 sm:mt-4 sm:gap-2">
                 {STEP_KEYS.slice(0, 4).map((key, idx) => (
                   <div key={key} className="flex flex-1 items-center gap-2">
                     <div
                       className={cn(
-                        "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-medium",
+                        "flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium sm:size-6 sm:text-xs",
                         idx <= stepIndex ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
                       )}
                     >
@@ -90,7 +90,7 @@ export function BookingDialog() {
             )}
           </div>
 
-          <div className="px-6 py-6">
+          <div className="px-3 py-3 sm:px-6 sm:py-6">
             {step === "service" && <StepService onNext={goNext} />}
             {step === "therapist" && <StepTherapist onNext={goNext} onBack={goBack} />}
             {step === "datetime" && <StepDateTime onNext={goNext} onBack={goBack} />}
