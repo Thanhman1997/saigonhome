@@ -23,17 +23,17 @@ export function StepService({ onNext }: { onNext: () => void }) {
   }
 
   return (
-    <div className="flex flex-col gap-1 sm:gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-0 sm:gap-6">
       <div>
         <h2 className="font-serif text-base sm:text-2xl">{t.booking.selectService}</h2>
       </div>
 
-      <div className="grid grid-cols-3 gap-1 sm:gap-3">
+      <div className="grid w-full min-w-0 grid-cols-3 gap-0 sm:gap-3">
         {services.map((service) => {
           const name = pickLocalized({ en: service.nameEn, ko: service.nameKo, vi: service.nameVi }, locale)
           const isSelected = draft.serviceId === service.id
           return (
-            <div key={service.id} className={cn("flex h-28 min-w-0 flex-col border p-1 transition-colors sm:h-40 sm:p-3", isSelected ? "border-primary bg-muted" : "border-border")}>
+            <div key={service.id} className={cn("flex h-27 min-w-0 flex-col border p-1 transition-colors sm:h-40 sm:p-3", isSelected ? "border-primary bg-muted" : "border-border")}>
               <button type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null }) }} className="flex h-6 w-full min-w-0 items-center gap-1 text-left sm:gap-2 sm:h-10">
                 <ServiceIcon slug={service.slug} icon={service.icon} />
                 <span className="flex min-w-0 flex-col">
@@ -47,11 +47,11 @@ export function StepService({ onNext }: { onNext: () => void }) {
                     if (!duration) return null
                     const selected = draft.serviceId === service.id && draft.durationMinutes === minutes
                     return (
-                      <button key={duration.id} type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: minutes }) }} className="flex min-h-6 items-center gap-1 text-[10px] leading-3 sm:gap-1.5 sm:text-sm sm:leading-normal" aria-pressed={selected} aria-label={`${minutes} ${t.services.minutes}`}>
+                      <button key={duration.id} type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: minutes }) }} className="flex min-h-6 min-w-0 items-center gap-1 text-[10px] leading-3 sm:gap-1.5 sm:text-sm sm:leading-normal" aria-pressed={selected} aria-label={`${minutes} ${t.services.minutes}`}>
                         <span className={cn("grid size-3 shrink-0 place-items-center rounded-full border sm:size-4", selected ? "border-primary" : "border-muted-foreground/50")} aria-hidden="true">
                           {selected && <span className="size-1.5 rounded-full bg-primary sm:size-2" />}
                         </span>
-                        <span className={cn("whitespace-nowrap text-[9px] leading-3 sm:text-[11px] sm:leading-4", selected ? "font-semibold text-foreground" : "text-muted-foreground")}>{minutes} {t.services.minutes} / {formatVnd(duration.priceVnd)}</span>
+                        <span className={cn("min-w-0 whitespace-normal break-words text-[9px] leading-3 sm:whitespace-nowrap sm:text-[11px] sm:leading-4", selected ? "font-semibold text-foreground" : "text-muted-foreground")}>{minutes} {t.services.minutes} / {formatVnd(duration.priceVnd)}</span>
                       </button>
                     )
                   })}
@@ -65,7 +65,7 @@ export function StepService({ onNext }: { onNext: () => void }) {
 
       {error && <p className="text-sm text-destructive">{t.booking.selectServiceFirst}</p>}
 
-      <div className="flex justify-center border-t border-border pt-2 sm:pt-5">
+      <div className="flex justify-center border-t border-border pt-1 sm:pt-5">
         <Button onClick={handleContinue}>
           {t.booking.next}
         </Button>

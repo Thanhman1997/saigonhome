@@ -50,12 +50,12 @@ export function BookingDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[calc(100dvh-0.5rem)] w-screen max-w-6xl overflow-x-hidden overflow-y-auto p-0 sm:max-h-[calc(100dvh-2rem)]" showCloseButton>
+      <DialogContent className="max-h-[calc(100dvh-0.5rem)] w-screen min-w-0 min-h-0 max-w-6xl overflow-x-hidden overflow-y-auto p-0 sm:max-h-[calc(100dvh-2rem)]" showCloseButton>
         <DialogTitle className="sr-only">{t.booking.title}</DialogTitle>
         <DialogDescription className="sr-only">
           {t.booking.step} {stepIndex + 1} {t.booking.of} {STEP_KEYS.length}
         </DialogDescription>
-        <div className="flex flex-col">
+        <div className="flex min-h-0 min-w-0 flex-col">
           <div className="border-b border-border px-4 py-3 sm:px-6 sm:py-5">
             <div className="flex min-w-0 items-center justify-between gap-3">
               <Image
@@ -90,7 +90,7 @@ export function BookingDialog() {
             )}
           </div>
 
-          <div className="px-1 py-1 sm:px-6 sm:py-6">
+          <div className="min-h-0 min-w-0 px-1 py-0 sm:px-6 sm:py-6">
             {step === "service" && <StepService onNext={goNext} />}
             {step === "therapist" && <StepTherapist onNext={goNext} onBack={goBack} />}
             {step === "datetime" && <StepDateTime onNext={goNext} onBack={goBack} />}
