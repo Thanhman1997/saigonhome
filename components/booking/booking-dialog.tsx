@@ -50,13 +50,13 @@ export function BookingDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="flex h-[min(47.5rem,calc(100dvh-1rem))] max-h-[calc(100dvh-0.5rem)] w-screen min-w-0 min-h-0 max-w-6xl flex-col overflow-hidden p-0 sm:max-h-[calc(100dvh-1rem)]" showCloseButton>
+      <DialogContent className="max-h-[calc(100dvh-0.5rem)] w-screen min-w-0 min-h-0 max-w-6xl overflow-x-hidden overflow-y-auto p-0 sm:max-h-[calc(100dvh-1rem)]" showCloseButton>
         <DialogTitle className="sr-only">{t.booking.title}</DialogTitle>
         <DialogDescription className="sr-only">
           {t.booking.step} {stepIndex + 1} {t.booking.of} {STEP_KEYS.length}
         </DialogDescription>
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <div className="shrink-0 border-b border-border px-4 py-3 sm:px-4 sm:py-2 lg:px-6 lg:py-5">
+        <div className="flex min-h-0 min-w-0 flex-col">
+          <div className="border-b border-border px-4 py-3 sm:px-4 sm:py-2 lg:px-6 lg:py-5">
             <div className="flex min-w-0 items-center justify-between gap-3">
               <Image
                 src="/images/lotus-round-logo.png"
@@ -90,7 +90,7 @@ export function BookingDialog() {
             )}
           </div>
 
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-1 py-0 sm:px-2 sm:py-0 lg:px-6 lg:py-4">
+          <div className="min-h-0 min-w-0 px-1 py-0 sm:px-2 sm:py-0 lg:px-6 lg:py-4">
             {step === "service" && <StepService onNext={goNext} />}
             {step === "therapist" && <StepTherapist onNext={goNext} onBack={goBack} />}
             {step === "datetime" && <StepDateTime onNext={goNext} onBack={goBack} />}
