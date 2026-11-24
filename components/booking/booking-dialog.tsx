@@ -63,7 +63,7 @@ export function BookingDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent ref={setContentEl} style={step === "therapist" && serviceStepHeight ? { minHeight: serviceStepHeight } : undefined} className="max-h-[calc(100dvh-0.5rem)] w-screen min-w-0 min-h-0 max-w-6xl overflow-x-hidden overflow-y-auto p-0 sm:max-h-[calc(100dvh-1rem)]" showCloseButton>
+      <DialogContent ref={setContentEl} style={step === "therapist" && serviceStepHeight ? { minHeight: serviceStepHeight } : step === "details" || (step === "confirm" && !bookingResult) ? { minHeight: "min(44.5rem, calc(100dvh - 1rem))" } : undefined} className="max-h-[calc(100dvh-0.5rem)] w-screen min-w-0 min-h-0 max-w-6xl overflow-x-hidden overflow-y-auto p-0 sm:max-h-[calc(100dvh-1rem)]" showCloseButton>
         <DialogTitle className="sr-only">{t.booking.title}</DialogTitle>
         <DialogDescription className="sr-only">
           {t.booking.step} {stepIndex + 1} {t.booking.of} {STEP_KEYS.length}
