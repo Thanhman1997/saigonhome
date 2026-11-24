@@ -6,6 +6,7 @@ import { dictionary } from "@/lib/i18n/dictionary"
 import { track } from "@vercel/analytics"
 import { CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { BookingActionButton } from "./booking-action-button"
 import { useBooking } from "@/lib/booking-context"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { formatVnd, getGroupDiscountRate } from "@/lib/pricing"
@@ -170,10 +171,10 @@ export function StepConfirm({
         <Button variant="outline" onClick={onBack} size="lg" disabled={submitting}>
           {t.booking.back}
         </Button>
-        <Button onClick={handleConfirm} size="lg" disabled={submitting}>
+        <BookingActionButton onClick={handleConfirm} size="lg" disabled={submitting}>
           {submitting && <Loader2 className="size-4 animate-spin" />}
           {t.booking.confirmBooking}
-        </Button>
+        </BookingActionButton>
       </div>
     </div>
   )

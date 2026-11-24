@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import useSWR from "swr"
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
+import { BookingActionButton } from "./booking-action-button"
 import { useBooking } from "@/lib/booking-context"
 import { useLanguage } from "@/lib/i18n/language-provider"
 import { getAvailableBookingTimes } from "@/app/actions/booking-availability"
@@ -193,9 +194,9 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
         <Button variant="outline" onClick={onBack} size="lg">
           {t.booking.back}
         </Button>
-        <Button onClick={handleContinue} size="lg">
+        <BookingActionButton onClick={handleContinue} size="lg">
           {t.booking.next}
-        </Button>
+        </BookingActionButton>
       </div>
     </div>
   )

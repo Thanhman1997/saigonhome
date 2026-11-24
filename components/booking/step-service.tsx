@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useBooking } from "@/lib/booking-context"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
-import { Button } from "@/components/ui/button"
+import { BookingActionButton } from "./booking-action-button"
 import { cn } from "@/lib/utils"
 import { formatVnd } from "@/lib/pricing"
 import { ServiceIcon } from "./service-icon"
@@ -66,9 +66,9 @@ export function StepService({ onNext }: { onNext: () => void }) {
       {error && <p className="text-sm text-destructive">{t.booking.selectServiceFirst}</p>}
 
       <div className="flex justify-center border-t border-border pt-1 lg:pt-5">
-        <Button onClick={handleContinue}>
+        <BookingActionButton onClick={handleContinue}>
           {t.booking.next}
-        </Button>
+        </BookingActionButton>
       </div>
     </div>
   )

@@ -5,6 +5,7 @@ import { Users } from "lucide-react"
 import { useBooking } from "@/lib/booking-context"
 import { useLanguage } from "@/lib/i18n/language-provider"
 import { Button } from "@/components/ui/button"
+import { BookingActionButton } from "./booking-action-button"
 import { cn } from "@/lib/utils"
 
 export function StepTherapist({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
@@ -68,9 +69,9 @@ export function StepTherapist({ onNext, onBack }: { onNext: () => void; onBack: 
         <Button variant="outline" onClick={onBack} size="lg">
           {t.booking.back}
         </Button>
-        <Button onClick={onNext} size="lg">
+        <BookingActionButton onClick={onNext} size="lg">
           {t.booking.next}
-        </Button>
+        </BookingActionButton>
       </div>
     </div>
   )
