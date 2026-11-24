@@ -57,7 +57,18 @@ export function BookingDialog() {
         </DialogDescription>
         <div className="flex flex-col">
           <div className="border-b border-border px-6 py-5">
-            <div className="flex items-center justify-between gap-4"><Image src="/images/lotus-round-logo.png" alt="Lotus Wellness" width={72} height={72} className="size-16 rounded-full object-contain" /><p className="text-right text-4xl font-semibold uppercase tracking-[0.2em] text-accent sm:text-5xl">{t.booking.title}</p></div>
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <Image
+                src="/images/lotus-round-logo.png"
+                alt="Lotus Wellness"
+                width={64}
+                height={64}
+                className="size-12 shrink-0 rounded-full object-contain sm:size-14"
+              />
+              <p className="min-w-0 flex-1 whitespace-nowrap text-right text-lg font-semibold uppercase leading-none tracking-[0.08em] text-accent sm:text-xl sm:tracking-[0.1em] md:text-2xl lg:text-3xl">
+                {t.booking.title}
+              </p>
+            </div>
             {step !== "confirm" && (
               <div className="mt-4 flex items-center gap-2">
                 {STEP_KEYS.slice(0, 4).map((key, idx) => (

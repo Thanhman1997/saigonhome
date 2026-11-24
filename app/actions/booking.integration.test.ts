@@ -19,6 +19,8 @@ vi.mock("@/lib/db", () => ({
       execute: async () => undefined,
       select: () => ({ from: () => ({ where: async () => conflicts.value }) }),
       insert: () => ({ values: (value: Record<string, unknown>) => ({ returning: async () => {
+        const error = databaseErrors.insertQueue.shift()
+        if (error) throw Object.assign(new Error("Database constraint violation"), error)
         insertedBooking.value = value
         return [{ id: 42, email: value.email }]
       } }) }),
@@ -32,6 +34,7 @@ vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: async () =
 
 const insertedBooking = vi.hoisted(() => ({ value: null as Record<string, unknown> | null }))
 const conflicts = vi.hoisted(() => ({ value: [] as unknown[] }))
+const databaseErrors = vi.hoisted(() => ({ insertQueue: [] as Array<{ code: string; constraint: string }> }))
 const kakaoNotificationMock = vi.hoisted(() => ({ enqueueBooking: vi.fn(async () => undefined) }))
 
 vi.mock("@/lib/kakao-notifications", () => ({ enqueueBookingKakaoNotification: kakaoNotificationMock.enqueueBooking }))
@@ -48,6 +51,7 @@ describe("createBooking integration contract", () => {
   beforeEach(() => {
     insertedBooking.value = null
     conflicts.value = []
+    databaseErrors.insertQueue = []
     kakaoNotificationMock.enqueueBooking.mockClear()
     vi.resetModules()
   })
@@ -74,6 +78,33 @@ describe("createBooking integration contract", () => {
       const result = await createBooking(validInput("2026-08-18", "10:00"))
       expect(result.success).toBe(true)
       expect(kakaoNotificationMock.enqueueBooking).toHaveBeenCalledWith(42)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("retries with a new reference when a generated reference already exists", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    databaseErrors.insertQueue.push({ code: "23505", constraint: "bookings_reference_key" })
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18"))
+      expect(result.success).toBe(true)
+      if (result.success) expect(insertedBooking.value?.reference).toBe(result.reference)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("returns an unavailable slot when the database rejects a therapist overlap", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    databaseErrors.insertQueue.push({ code: "23P01", constraint: "bookings_therapist_no_overlap" })
+    try {
+      const { createBooking } = await import("./booking")
+      expect(await createBooking(validInput("2026-08-18"))).toMatchObject({ success: false, error: "Selected time is unavailable" })
+      expect(insertedBooking.value).toBeNull()
     } finally {
       vi.useRealTimers()
     }

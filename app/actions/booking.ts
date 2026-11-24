@@ -47,6 +47,16 @@ function generateReference(): string {
   return String(randomInt(10000, 100000))
 }
 
+function getDatabaseErrorDetails(error: unknown) {
+  if (typeof error !== "object" || error === null) return null
+  const candidate = error as { code?: unknown; constraint?: unknown }
+  if (typeof candidate.code !== "string") return null
+  return {
+    code: candidate.code,
+    constraint: typeof candidate.constraint === "string" ? candidate.constraint : undefined,
+  }
+}
+
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
@@ -177,12 +187,12 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       discountLabel = getGroupDiscountLabel(input.guests, rates)
     }
 
-    const reference = generateReference()
+    let reference = generateReference()
     const startAt = zonedLocalDateTimeToUtc(input.date, input.time, "Asia/Ho_Chi_Minh")
     const endAt = new Date(startAt.getTime() + input.durationMinutes * 60 * 1000)
 
     const access = issueBookingToken()
-    const saved = await db.transaction(async (tx) => {
+    const save = () => db.transaction(async (tx) => {
       await lockBookingSchedule(tx)
       if (submissionKey) {
         const [previous] = await tx.select({ reference: bookings.reference, totalVnd: bookings.totalVnd, subtotalVnd: bookings.subtotalVnd, discountVnd: bookings.discountVnd, confirmation: bookings.confirmationEmailSentAt, locale: bookings.locale })
@@ -221,6 +231,25 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       }).returning({ id: bookings.id, email: bookings.email })
       return { kind: "created", booking: created } as const
     })
+    let saved: Awaited<ReturnType<typeof save>> | null = null
+    let saveCompleted = false
+    for (let attempt = 0; !saveCompleted && attempt < 3; attempt += 1) {
+      try {
+        saved = await save()
+        saveCompleted = true
+      } catch (error) {
+        const databaseError = getDatabaseErrorDetails(error)
+        if (databaseError?.code === "23P01" && databaseError.constraint === "bookings_therapist_no_overlap") {
+          return { success: false, error: "Selected time is unavailable" }
+        }
+        if (
+          databaseError?.code !== "23505" ||
+          databaseError.constraint !== "bookings_reference_key" ||
+          attempt >= 2
+        ) throw error
+        reference = generateReference()
+      }
+    }
     if (!saved) return { success: false, error: "Selected time is unavailable" }
     if (saved.kind === "duplicate") {
       const { confirmation, ...receipt } = saved.receipt
@@ -250,7 +279,10 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const localizedService = { en: service.nameEn, vi: service.nameVi, ko: service.nameKo }[locale]
     const [, managementEmailSent] = await Promise.all([
       sendAdminNotification(bookingDetails),
-      sendBookingManagementEmail({ ...saved.booking, reference, date: input.date, time: input.time, status: "pending" }, localizedService, "received", locale, { token: access.token, therapist: therapistCode }),
+      sendBookingManagementEmail({ ...saved.booking, reference, date: input.date, time: input.time, status: "pending" }, localizedService, "received", locale, { token: access.token, therapist: therapistCode }).catch(() => {
+        console.error("Could not send booking management email")
+        return false
+      }),
       enqueueBookingKakaoNotification(saved.booking.id).catch((error) => {
         console.error("[v0] Failed to queue Kakao booking notification:", error)
       }),
@@ -262,8 +294,9 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     }
 
     return { success: true, reference, totalVnd, subtotalVnd: subtotal, discountVnd, managementEmailSent, locale }
-  } catch {
-    console.error("Could not save the booking")
+  } catch (error) {
+    const databaseError = getDatabaseErrorDetails(error)
+    console.error("Could not save the booking", databaseError ?? { errorType: error instanceof Error ? error.name : "unknown" })
     return { success: false, error: "Something went wrong. Please try again." }
   }
 }
