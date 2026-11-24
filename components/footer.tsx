@@ -18,7 +18,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
       last: "Latest booking time",
       lastHours: "Varies by treatment duration",
       note: "We are always ready to\ncare for you.",
-      serviceLinks: ["Thai Massage", "Aroma Massage", "Deep Tissue Massage", "Hot Stone Massage"],
+      serviceLinks: ["Thai Massage", "Aroma Massage", "Deep Tissue Massage", "Vietnamese Massage", "Full Body Massage", "Recovery Massage"],
       aboutLinks: ["About Us", "Therapists", "Reviews", "FAQ"],
     },
     vi: {
@@ -30,7 +30,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
       last: "Lịch hẹn cuối",
       lastHours: "Tùy thời lượng dịch vụ",
       note: "Chúng tôi luôn sẵn sàng\nchăm sóc bạn.",
-      serviceLinks: ["Massage Thái", "Massage tinh dầu", "Massage mô sâu", "Massage đá nóng"],
+      serviceLinks: ["Massage Thái", "Massage tinh dầu", "Massage mô sâu", "Massage Việt Nam", "Massage toàn thân", "Massage phục hồi"],
       aboutLinks: ["Về chúng tôi", "Chuyên viên", "Đánh giá", "FAQ"],
     },
     ko: {
@@ -42,7 +42,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
       last: "마지막 예약 시간",
       lastHours: "서비스 시간에 따라 다릅니다",
       note: "언제나 고객님을\n돌볼 준비가 되어 있습니다.",
-      serviceLinks: ["타이 마사지", "아로마 마사지", "딥 티슈 마사지", "핫스톤 마사지"],
+      serviceLinks: ["타이 마사지", "아로마 마사지", "딥 티슈 마사지", "베트남 마사지", "전신 마사지", "회복 마사지"],
       aboutLinks: ["소개", "테라피스트", "후기", "FAQ"],
     },
   }[locale]
