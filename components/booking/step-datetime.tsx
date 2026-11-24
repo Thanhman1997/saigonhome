@@ -40,7 +40,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
   const { draft, updateDraft, maxGuests } = useBooking()
   const { t } = useLanguage()
   const [now, setNow] = useState(() => new Date())
-  const [error, setError] = useState<"selection" | "minimumNotice" | "slotUnavailable" | null>(null)
+  const [error, setError] = useState<"selection" | "slotUnavailable" | null>(null)
 
   useEffect(() => {
     const intervalId = window.setInterval(() => setNow(new Date()), 15_000)
@@ -80,7 +80,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
     }
     if (!isTimeAllowed(draft.time)) {
       updateDraft({ time: null })
-      setError("minimumNotice")
+      setError("slotUnavailable")
       return
     }
     if (availabilityLoading || !availability?.ok) return
@@ -120,7 +120,6 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
         <div className="flex flex-col gap-6">
           <div>
             <p className="mb-2 text-sm font-medium">{t.booking.selectTime}</p>
-            <p className="mb-3 text-sm leading-relaxed text-muted-foreground">{t.booking.minimumNotice}</p>
             {!draft.date && <p role="status" className="text-sm text-muted-foreground">{t.booking.selectDateForTimes}</p>}
             {draft.date && availabilityLoading && <p role="status" aria-live="polite" className="text-sm text-muted-foreground">{t.booking.checkingAvailability}</p>}
             {draft.date && !availabilityLoading && availabilityFailed && (
@@ -186,7 +185,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
 
       {error && (
         <p className="text-sm text-destructive">
-          {error === "minimumNotice" ? t.booking.minimumNotice : error === "slotUnavailable" ? t.booking.slotUnavailable : t.booking.selectDateTimeFirst}
+          {error === "slotUnavailable" ? t.booking.slotUnavailable : t.booking.selectDateTimeFirst}
         </p>
       )}
 
