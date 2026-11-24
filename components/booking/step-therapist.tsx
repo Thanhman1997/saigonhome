@@ -12,7 +12,7 @@ export function StepTherapist({ onNext, onBack }: { onNext: () => void; onBack: 
   const { t } = useLanguage()
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-3 lg:gap-6">
       <h2 className="font-serif text-2xl">{t.booking.selectTherapist}</h2>
 
       <button
@@ -29,7 +29,7 @@ export function StepTherapist({ onNext, onBack }: { onNext: () => void; onBack: 
         <span className="text-sm font-medium">{t.booking.anyTherapist}</span>
       </button>
 
-      <div className="grid max-h-72 gap-3 overflow-y-auto pr-1 sm:grid-cols-2">
+      <div className="grid min-h-0 flex-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2">
         {therapists.map((therapist) => {
           const isSelected = draft.therapistId === therapist.id
           return (

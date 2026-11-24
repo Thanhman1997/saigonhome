@@ -23,17 +23,17 @@ export function StepService({ onNext }: { onNext: () => void }) {
   }
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-0 sm:gap-0 lg:gap-6">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-2 sm:gap-2 lg:gap-6">
       <div>
         <h2 className="font-serif text-base sm:text-lg lg:text-2xl">{t.booking.selectService}</h2>
       </div>
 
-      <div className="grid w-full min-w-0 grid-cols-3 gap-0 sm:gap-1 lg:gap-3">
+      <div className="grid min-h-0 w-full min-w-0 flex-1 grid-cols-3 auto-rows-fr gap-2 sm:gap-1 lg:gap-3">
         {services.map((service) => {
           const name = pickLocalized({ en: service.nameEn, ko: service.nameKo, vi: service.nameVi }, locale)
           const isSelected = draft.serviceId === service.id
           return (
-            <div key={service.id} className={cn("flex h-27 min-w-0 flex-col border p-1 transition-colors sm:h-27 sm:p-1 lg:h-32 lg:p-2", isSelected ? "border-primary bg-muted" : "border-border")}>
+            <div key={service.id} className={cn("flex h-full min-h-28 min-w-0 flex-col border p-1 transition-colors sm:p-1 lg:p-2", isSelected ? "border-primary bg-muted" : "border-border")}>
               <button type="button" onClick={() => { setError(false); updateDraft({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null }) }} className="flex h-6 w-full min-w-0 items-center gap-1 text-left sm:gap-1 sm:h-6 lg:gap-2 lg:h-8">
                 <ServiceIcon slug={service.slug} icon={service.icon} />
                 <span className="flex min-w-0 flex-col">
