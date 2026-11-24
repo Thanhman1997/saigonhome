@@ -296,7 +296,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     return { success: true, reference, totalVnd, subtotalVnd: subtotal, discountVnd, managementEmailSent, locale }
   } catch (error) {
     const databaseError = getDatabaseErrorDetails(error)
-    console.error("Could not save the booking", databaseError ?? { errorType: error instanceof Error ? error.name : "unknown" })
+      console.error("Could not save the booking", databaseError ?? { errorType: error instanceof Error ? error.name : "unknown" })
     return { success: false, error: "Something went wrong. Please try again." }
   }
 }
