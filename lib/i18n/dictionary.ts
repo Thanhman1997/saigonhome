@@ -8,7 +8,7 @@ export const locales: { code: Locale; label: string; short: string; flag: string
 
 export const dictionary = {
   en: {
-    nav: { home: "Home", services: "Services", experts: "KTV", reviews: "Reviews", faq: "FAQ", contact: "Contact", book: "Book now" },
+    nav: { home: "Home", services: "Services", experts: "KTV", reviews: "Reviews", faq: "FAQ", contact: "Contact", book: "BOOK NOW" },
     hero: {
       kicker: "Professional · Convenient · Flexible · Private",
       titleLine1: "Wellness Massage",
@@ -37,7 +37,7 @@ export const dictionary = {
       subtitle: "12 signature treatments crafted for your individual needs.",
       from: "From",
       viewDurations: "View durations & prices",
-      book: "BOOK IT NOW",
+      book: "BOOK NOW",
       minutes: "min",
       viewAll: "View all services",
     },
@@ -46,7 +46,7 @@ export const dictionary = {
       title: "Meet Our Therapists",
       subtitle: "",
       years: "yrs exp.",
-      book: "Book",
+      book: "BOOK NOW",
       viewProfile: "View profile",
       available: "Available",
       unavailable: "Unavailable",
@@ -130,9 +130,9 @@ title: "If you have any questions, please feel free to contact us. We will be ha
       subtotal: "Subtotal",
       discount: "Discount",
       total: "Total",
-      confirmBooking: "Confirm booking",
+      confirmBooking: "BOOK NOW",
       back: "Back",
-      next: "BOOKING",
+      next: "BOOK NOW",
       success: "Booking request received!",
       successMessage: "Your booking request has been submitted successfully. Please check your email for our confirmation.",
       reference: "Booking reference",
