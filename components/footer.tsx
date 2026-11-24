@@ -43,7 +43,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
       lastHours: "서비스 시간에 따라 다릅니다",
       note: "언제나 고객님을\n돌볼 준비가 되어 있습니다.",
       serviceLinks: ["타이 마사지", "아로마 마사지", "베트남 마사지", "전신 마사지", "회복 마사지"],
-      aboutLinks: ["소개", "테라피스트", "후기", "FAQ"],
+      aboutLinks: ["브랜드 소개", "테라피스트", "후기", "FAQ"],
     },
   }[locale]
 
@@ -52,7 +52,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-16">
         <div className="min-w-0 text-left">
           <h2 className="font-sans text-sm font-semibold leading-5 tracking-[0.08em] text-guiding-pink">{footerCopy.about}</h2>
-          <nav className="mt-4 flex flex-col items-start gap-1.5 text-left text-base font-light leading-7 text-muted-foreground" aria-label="About navigation">
+          <nav className="mt-4 flex flex-col items-start gap-1.5 text-left text-lg font-medium leading-7 text-foreground" aria-label="About navigation">
             {footerCopy.aboutLinks.map((label, index) => <a key={label} href={["#about", "#experts", "/reviews", "#faq"][index]} className="transition-colors hover:text-accent">{label}</a>)}
           </nav>
         </div>
