@@ -64,7 +64,7 @@ export function StepService({ onNext }: { onNext: () => void }) {
 
       {error && <p className="text-sm text-destructive">{t.booking.selectServiceFirst}</p>}
 
-      <div className="flex justify-end border-t border-border pt-3 sm:pt-5">
+      <div className="flex justify-center border-t border-border pt-3 sm:pt-5">
         <Button onClick={handleContinue}>
           {t.booking.next}
         </Button>
