@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { useBooking } from "@/lib/booking-context"
 import { useLanguage } from "@/lib/i18n/language-provider"
@@ -30,6 +30,19 @@ export function BookingDialog() {
   const [bookingResult, setBookingResult] = useState<import("@/app/actions/booking").BookingReceipt | null>(null)
 
   const step = STEP_KEYS[stepIndex]
+  // The dialog content mounts in a portal after the first render, so track the element in state.
+  const [contentEl, setContentEl] = useState<HTMLDivElement | null>(null)
+  const [serviceStepHeight, setServiceStepHeight] = useState<number | null>(null)
+
+  // Record the natural height of the service step so the therapist step can match it exactly.
+  useEffect(() => {
+    if (step !== "service" || !contentEl) return
+    const measure = () => setServiceStepHeight(contentEl.offsetHeight)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(contentEl)
+    return () => observer.disconnect()
+  }, [step, contentEl])
 
   function goNext() {
     setStepIndex((i) => Math.min(i + 1, STEP_KEYS.length - 1))
@@ -50,7 +63,7 @@ export function BookingDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[calc(100dvh-0.5rem)] w-screen min-w-0 min-h-0 max-w-6xl overflow-x-hidden overflow-y-auto p-0 sm:max-h-[calc(100dvh-1rem)]" showCloseButton>
+      <DialogContent ref={setContentEl} style={step === "therapist" && serviceStepHeight ? { minHeight: serviceStepHeight } : undefined} className="max-h-[calc(100dvh-0.5rem)] w-screen min-w-0 min-h-0 max-w-6xl overflow-x-hidden overflow-y-auto p-0 sm:max-h-[calc(100dvh-1rem)]" showCloseButton>
         <DialogTitle className="sr-only">{t.booking.title}</DialogTitle>
         <DialogDescription className="sr-only">
           {t.booking.step} {stepIndex + 1} {t.booking.of} {STEP_KEYS.length}
@@ -90,7 +103,7 @@ export function BookingDialog() {
             )}
           </div>
 
-          <div className="min-h-0 min-w-0 px-1 py-0 sm:px-2 sm:py-0 lg:px-6 lg:py-4">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col px-1 py-0 sm:px-2 sm:py-0 lg:px-6 lg:py-4">
             {step === "service" && <StepService onNext={goNext} />}
             {step === "therapist" && <StepTherapist onNext={goNext} onBack={goBack} />}
             {step === "datetime" && <StepDateTime onNext={goNext} onBack={goBack} />}
