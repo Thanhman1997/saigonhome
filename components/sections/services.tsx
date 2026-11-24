@@ -84,7 +84,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                 <div>
                   <ServiceCardImage image={image} alt={name} icon={service.icon} />
                   <div className="px-1">
-                    <h3 className={`${luxuryFont} whitespace-nowrap text-center font-bold leading-tight tracking-tight ${locale === "en" ? "text-base! md:text-xl!" : "text-sm! md:text-lg!"}`}>{name}</h3>
+                    <h3 className={`${luxuryFont} whitespace-nowrap text-center font-bold leading-tight tracking-tight ${locale === "en" ? "text-[22px]!" : "text-sm! md:text-lg!"}`}>{name}</h3>
                     <p className="mt-2 text-base leading-relaxed text-muted-foreground">{desc}</p>
                     <div className="mt-3 flex flex-col gap-1.5 border-t border-border pt-3">
                       {service.durations.map((d) => <div key={d.id} className={`${luxuryFont} grid grid-cols-[6.5rem_1fr] items-baseline gap-3 text-xl leading-snug`}><span className="font-medium text-muted-foreground">{d.minutes} {locale === "en" ? "mins" : locale === "ko" ? "분" : "phút"}</span><span className="font-bold tracking-wide text-foreground">{formatServicePrice(d.priceVnd, locale)}</span></div>)}
