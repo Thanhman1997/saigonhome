@@ -190,7 +190,7 @@ export function StepDateTime({ onNext, onBack }: { onNext: () => void; onBack: (
         </p>
       )}
 
-      <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
+      <div className="sticky bottom-0 flex items-center justify-between gap-3 border-t border-border bg-background py-3">
         <Button variant="outline" onClick={onBack} size="lg">
           {t.booking.back}
         </Button>
