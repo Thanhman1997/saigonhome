@@ -8,6 +8,7 @@ type ContactInfo = Awaited<ReturnType<typeof getContactInfo>>
 export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
   void contactInfo
   const { locale } = useLanguage()
+  const footerFont = locale === "ko" ? "font-korean-sans" : "font-sans"
   const footerCopy = {
     en: {
       services: "SERVICES",
@@ -48,22 +49,22 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
   }[locale]
 
   return (
-    <footer className="border-t border-border/70 bg-secondary px-5 py-10 font-sans text-base text-foreground sm:px-8 md:py-12">
+    <footer className={`border-t border-border/70 bg-secondary px-5 py-10 ${footerFont} text-base text-foreground sm:px-8 md:py-12`}>
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-16">
         <div className="min-w-0 text-left">
-          <h2 className="font-sans text-sm font-semibold leading-5 tracking-[0.08em] text-guiding-pink">{footerCopy.about}</h2>
-          <nav className="mt-4 flex flex-col items-start gap-1.5 text-left text-base font-light leading-7 text-muted-foreground" aria-label="About navigation">
-            {footerCopy.aboutLinks.map((label, index) => <a key={label} href={["#about", "#experts", "/reviews", "#faq"][index]} className="transition-colors hover:text-accent">{label}</a>)}
+          <h2 className="text-base font-medium leading-6 tracking-normal text-guiding-pink">{footerCopy.about}</h2>
+          <nav className="mt-4 flex flex-col items-start gap-1.5 text-left text-lg font-normal leading-7 text-foreground" aria-label="About navigation">
+            {footerCopy.aboutLinks.map((label, index) => <a key={label} href={["#about", "#experts", "/reviews", "#faq"][index]} className="transition-colors hover:text-guiding-pink">{label}</a>)}
           </nav>
         </div>
         <div className="min-w-0 text-left">
-          <h2 className="font-sans text-sm font-semibold leading-5 tracking-[0.08em] text-guiding-pink">{footerCopy.services}</h2>
-          <nav className="mt-4 flex flex-col items-start gap-1.5 text-left text-base font-light leading-7 text-muted-foreground" aria-label="Services navigation">
-            {footerCopy.serviceLinks.map((label) => <a key={label} href="#services" className="transition-colors hover:text-accent">{label}</a>)}
+          <h2 className="text-base font-medium leading-6 tracking-normal text-guiding-pink">{footerCopy.services}</h2>
+          <nav className="mt-4 flex flex-col items-start gap-1.5 text-left text-lg font-normal leading-7 text-foreground" aria-label="Services navigation">
+            {footerCopy.serviceLinks.map((label) => <a key={label} href="#services" className="transition-colors hover:text-guiding-pink">{label}</a>)}
           </nav>
         </div>
         <div className="min-w-0 text-left text-foreground">
-          <h2 className="font-sans text-sm font-semibold leading-5 tracking-[0.08em] text-guiding-pink">{footerCopy.working}</h2>
+          <h2 className="text-base font-medium leading-6 tracking-normal text-guiding-pink">{footerCopy.working}</h2>
           <div className="mt-4 flex flex-col gap-4 text-left text-base font-light leading-6 text-muted-foreground">
             <div>
               <p className="font-medium text-foreground">{footerCopy.open}</p>
@@ -79,7 +80,7 @@ export function Footer({ contactInfo }: { contactInfo: ContactInfo }) {
       </div>
       <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-4 border-t border-border/70 pt-5 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:pr-40">
         <p>Lotus Wellness Massage · Professional care delivered to you</p>
-        <div className="flex gap-5"><a href="/privacy" className="transition-colors hover:text-accent">Privacy Policy</a><a href="/terms" className="transition-colors hover:text-accent">Terms of Service</a></div>
+        <div className="flex gap-5"><a href="/privacy" className="transition-colors hover:text-guiding-pink">Privacy Policy</a><a href="/terms" className="transition-colors hover:text-guiding-pink">Terms of Service</a></div>
       </div>
     </footer>
   )
