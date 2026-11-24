@@ -91,7 +91,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                     <Link href={`/services/${service.slug}`} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">{detailsLabel}</Link>
                   </div>
                 </div>
-                <Button onClick={() => openBooking({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null })} className="mt-3 h-11 min-h-11 w-auto min-w-44 self-center rounded-full bg-accent px-8 font-sans text-sm font-semibold uppercase tracking-[0.14em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90">{t.services.book}</Button>
+                <Button onClick={() => openBooking({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null })} className="mt-3 h-11 min-h-11 w-auto min-w-44 self-center rounded-full bg-accent px-8 font-sans text-sm font-semibold uppercase tracking-[0.14em] text-lotus-pink-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90">{t.services.book}</Button>
               </article>
             )
           })}

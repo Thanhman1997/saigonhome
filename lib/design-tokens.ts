@@ -98,7 +98,7 @@ export function lineHeightValue(key: string): string {
 }
 
 // Keep the contact section warm-white on vivid pink palette backgrounds, rather than switching to near-black.
-const LOTUS_PINK_FOREGROUND = "#fdfaf3"
+const LOTUS_PINK_FOREGROUND = "#ffffff"
 
 /** Picks a legible foreground (near-black or near-white) for a given hex background. */
 export function contrastForeground(hex: string): string {
