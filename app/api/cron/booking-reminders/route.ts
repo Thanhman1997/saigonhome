@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   }
   if (!process.env.RESEND_API_KEY) return NextResponse.json({ sent: 0, skipped: "Resend not configured" })
 
-  const now = sql`CURRENT_TIMESTAMP AT TIME ZONE 'UTC'`
+  const now = sql`now()`
   const eligible = and(
     eq(bookings.status, "confirmed"),
     isNull(bookings.reminderEmailSentAt),

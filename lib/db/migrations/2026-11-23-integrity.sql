@@ -55,12 +55,13 @@ DO $$ BEGIN
 END $$;
 
 -- A named therapist can never hold two active bookings that overlap. Skipped with a notice if
--- existing data already overlaps. start_at/end_at are timestamp (Vietnam-local converted to UTC).
+-- existing data already overlaps. start_at/end_at are timestamptz (absolute instants; the venue
+-- timezone is Asia/Ho_Chi_Minh, applied only when converting the local date/time columns).
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bookings_therapist_no_overlap') THEN
     BEGIN
       ALTER TABLE public.bookings ADD CONSTRAINT bookings_therapist_no_overlap
-        EXCLUDE USING gist (therapist_id WITH =, tsrange(start_at, end_at) WITH &&)
+        EXCLUDE USING gist (therapist_id WITH =, tstzrange(start_at, end_at, '[)') WITH &&)
         WHERE (therapist_id IS NOT NULL AND status IN ('pending', 'confirmed'));
     EXCEPTION WHEN exclusion_violation THEN
       RAISE NOTICE 'bookings_therapist_no_overlap skipped: overlapping active bookings already exist.';
@@ -73,7 +74,8 @@ CREATE INDEX IF NOT EXISTS bookings_status_start_idx ON public.bookings (status,
 CREATE INDEX IF NOT EXISTS bookings_therapist_start_idx ON public.bookings (therapist_id, start_at);
 CREATE INDEX IF NOT EXISTS reviews_approved_date_idx ON public.reviews (approved, review_date DESC);
 
--- After cleaning legacy rows, validate:
+-- Applied to production 2026-11-25: start_at/end_at converted to timestamptz (6 legacy rows normalized
+-- from date/time minus 7h) and all NOT VALID constraints validated. Kept for reference:
 -- ALTER TABLE public.bookings VALIDATE CONSTRAINT bookings_service_id_fkey;
 -- ALTER TABLE public.bookings VALIDATE CONSTRAINT bookings_therapist_id_fkey;
 -- ALTER TABLE public.reviews VALIDATE CONSTRAINT reviews_booking_id_fkey;
