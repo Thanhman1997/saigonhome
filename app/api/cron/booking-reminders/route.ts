@@ -7,6 +7,7 @@ import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { localizedServiceName } from "@/lib/booking-management-locale"
 
 export const runtime = "nodejs"
+export const maxDuration = 60
 
 // A claim older than this is treated as a crashed run and may be retried.
 const CLAIM_TIMEOUT_MINUTES = 15

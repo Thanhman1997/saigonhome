@@ -13,12 +13,13 @@ import "@fontsource-variable/inter"
 import { SiteAnalytics } from "@/components/site-analytics"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
 import { getLayoutSiteData } from "@/lib/data"
+import { getSiteUrl } from "@/lib/site-url"
 import { buildDesignTokenCss, DESIGN_PRESETS, FONT_OPTIONS } from "@/lib/design-tokens"
 import "@fontsource-variable/noto-sans-kr"
 import "@fontsource-variable/noto-serif-kr"
 import "./globals.css"
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
+const siteUrl = getSiteUrl()
 
 const SECTION_HEADING_SIZES: Record<string, string> = {
   inherit: "inherit",

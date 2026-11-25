@@ -8,8 +8,9 @@ import { ServiceBookingCta } from "@/components/sections/service-booking-cta"
 import { BookingProvider } from "@/lib/booking-context"
 import { BookingDialog } from "@/components/booking/booking-dialog"
 import { getAvailableTherapists } from "@/lib/data"
+import { getSiteUrl } from "@/lib/site-url"
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
+const siteUrl = getSiteUrl()
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0

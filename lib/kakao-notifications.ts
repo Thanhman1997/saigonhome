@@ -160,6 +160,9 @@ export async function sendKakaoTestNotification(): Promise<KakaoDeliveryResult> 
   return processKakaoNotification(notification.id)
 }
 
+const KAKAO_CRON_BATCH_SIZE = 50
+const KAKAO_CRON_CONCURRENCY = 5
+
 export async function processDueKakaoNotifications(): Promise<{ attempted: number; sent: number; failed: number }> {
   const now = new Date()
   const staleSendingCutoff = new Date(now.getTime() - 10 * 60 * 1000)
@@ -177,9 +180,14 @@ export async function processDueKakaoNotifications(): Promise<{ attempted: numbe
       or(isNull(kakaoNotifications.nextAttemptAt), lte(kakaoNotifications.nextAttemptAt, now)),
     ))
     .orderBy(asc(kakaoNotifications.createdAt))
-    .limit(10)
+    .limit(KAKAO_CRON_BATCH_SIZE)
 
-  const results = await Promise.all(due.map((notification) => processKakaoNotification(notification.id)))
+  // Vercel Hobby crons run at most once a day, so one run must drain a busy day; chunks keep Kakao API concurrency low.
+  const results: KakaoDeliveryResult[] = []
+  for (let index = 0; index < due.length; index += KAKAO_CRON_CONCURRENCY) {
+    const chunk = due.slice(index, index + KAKAO_CRON_CONCURRENCY)
+    results.push(...(await Promise.all(chunk.map((notification) => processKakaoNotification(notification.id)))))
+  }
   return {
     attempted: due.length,
     sent: results.filter((result) => result.status === "sent").length,

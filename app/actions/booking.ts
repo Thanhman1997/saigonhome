@@ -336,19 +336,19 @@ async function sendAdminNotification(details: BookingEmailDetails) {
       html: `
         <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
           <h2 style="margin-bottom: 4px;">New Booking Received</h2>
-          <p style="color: #666; margin-top: 0;">Reference: <strong>${details.reference}</strong></p>
+          <p style="color: #666; margin-top: 0;">Reference: <strong>${escapeHtml(details.reference)}</strong></p>
           <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
-            <tr><td style="padding: 6px 0; color: #666;">Service</td><td style="padding: 6px 0;">${details.serviceName} (${details.durationMinutes} min)</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Date &amp; Time</td><td style="padding: 6px 0;">${details.date} at ${details.time}</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Guests</td><td style="padding: 6px 0;">${details.guests}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Service</td><td style="padding: 6px 0;">${escapeHtml(details.serviceName)} (${Number(details.durationMinutes)} min)</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Date &amp; Time</td><td style="padding: 6px 0;">${escapeHtml(details.date)} at ${escapeHtml(details.time)}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Guests</td><td style="padding: 6px 0;">${Number(details.guests)}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Customer name</td><td style="padding: 6px 0;">${escapeHtml(details.customerName)}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Payment method</td><td style="padding: 6px 0;">${paymentMethod.en} (${paymentMethod.vi})</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;">${details.email}</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Phone</td><td style="padding: 6px 0;">${details.phone}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;">${escapeHtml(details.email)}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Phone</td><td style="padding: 6px 0;">${escapeHtml(details.phone)}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Address</td><td style="padding: 6px 0;">${escapeHtml(details.address)}${details.detailedAddress ? ` — ${escapeHtml(details.detailedAddress)}` : ""}</td></tr>
             ${details.notes ? `<tr><td style="padding: 6px 0; color: #666;">Notes</td><td style="padding: 6px 0;">${escapeHtml(details.notes)}</td></tr>` : ""}
             <tr><td style="padding: 6px 0; color: #666;">Subtotal</td><td style="padding: 6px 0;">${fmt(details.subtotalVnd)}</td></tr>
-            ${details.discountLabel ? `<tr><td style="padding: 6px 0; color: #666;">Discount</td><td style="padding: 6px 0;">${details.discountLabel} (-${fmt(details.discountVnd)})</td></tr>` : ""}
+            ${details.discountLabel ? `<tr><td style="padding: 6px 0; color: #666;">Discount</td><td style="padding: 6px 0;">${escapeHtml(details.discountLabel)} (-${fmt(details.discountVnd)})</td></tr>` : ""}
             <tr><td style="padding: 6px 0; color: #666; font-weight: bold;">Total</td><td style="padding: 6px 0; font-weight: bold;">${fmt(details.totalVnd)}</td></tr>
           </table>
           <p style="margin-top: 20px;"><a href="${escapeHtml(adminBookingReviewUrl(details.id))}" style="display: inline-block; padding: 12px 20px; border-radius: 24px; background: #26362f; color: #fff; text-decoration: none;">Confirm booking</a></p>
