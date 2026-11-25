@@ -15,7 +15,7 @@ import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availabi
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { enqueueBookingKakaoNotification } from "@/lib/kakao-notifications"
 import { asBookingLocale, type Locale } from "@/lib/booking-management-locale"
-import { isPaymentMethod, type PaymentMethod } from "@/lib/payments/methods"
+import { isPaymentMethod, PAYMENT_METHOD_LABELS, type PaymentMethod } from "@/lib/payments/methods"
 import { MAX_BOOKING_GUESTS, MIN_BOOKING_NOTICE_MS } from "@/lib/booking-rules"
 
 export type CreateBookingInput = {
@@ -267,6 +267,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       time: input.time,
       guests: input.guests,
       customerName: input.customerName,
+      paymentMethod,
       email: input.email,
       phone: input.phone,
       address: input.address,
@@ -312,6 +313,7 @@ type BookingEmailDetails = {
   time: string
   guests: number
   customerName: string
+  paymentMethod: PaymentMethod
   email: string
   phone: string
   address: string
@@ -326,6 +328,7 @@ type BookingEmailDetails = {
 async function sendAdminNotification(details: BookingEmailDetails) {
   try {
     const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + "đ"
+    const paymentMethod = PAYMENT_METHOD_LABELS[details.paymentMethod]
 
     await sendTransactionalEmail({
       to: process.env.ADMIN_EMAIL ?? "saigonservice2020@gmail.com",
@@ -338,7 +341,8 @@ async function sendAdminNotification(details: BookingEmailDetails) {
             <tr><td style="padding: 6px 0; color: #666;">Service</td><td style="padding: 6px 0;">${details.serviceName} (${details.durationMinutes} min)</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Date &amp; Time</td><td style="padding: 6px 0;">${details.date} at ${details.time}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Guests</td><td style="padding: 6px 0;">${details.guests}</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Customer</td><td style="padding: 6px 0;">${escapeHtml(details.customerName)}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Customer name</td><td style="padding: 6px 0;">${escapeHtml(details.customerName)}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Payment method</td><td style="padding: 6px 0;">${paymentMethod.en} (${paymentMethod.vi})</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;">${details.email}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Phone</td><td style="padding: 6px 0;">${details.phone}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Address</td><td style="padding: 6px 0;">${escapeHtml(details.address)}${details.detailedAddress ? ` — ${escapeHtml(details.detailedAddress)}` : ""}</td></tr>

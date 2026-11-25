@@ -30,8 +30,14 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/db/schema", () => ({ bookingSettings: "settings", services: "services", serviceDurations: "durations", therapists: "therapists", bookings: "bookings" }))
 vi.mock("@/lib/booking-rate-limit", () => ({ allowBookingRequest: async () => true }))
-vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: async () => false }))
+vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: transactionalEmailMock.send }))
 
+const transactionalEmailMock = vi.hoisted(() => ({
+  send: vi.fn(async (email: { to: string; subject: string; html: string }) => {
+    void email
+    return false
+  }),
+}))
 const insertedBooking = vi.hoisted(() => ({ value: null as Record<string, unknown> | null }))
 const conflicts = vi.hoisted(() => ({ value: [] as unknown[] }))
 const databaseErrors = vi.hoisted(() => ({ insertQueue: [] as Array<{ code: string; constraint: string }> }))
@@ -53,6 +59,7 @@ describe("createBooking integration contract", () => {
     conflicts.value = []
     databaseErrors.insertQueue = []
     kakaoNotificationMock.enqueueBooking.mockClear()
+    transactionalEmailMock.send.mockClear()
     vi.resetModules()
   })
 
@@ -65,6 +72,28 @@ describe("createBooking integration contract", () => {
       expect(result.success).toBe(true)
       expect(insertedBooking.value?.startAt).toEqual(new Date("2026-08-18T03:00:00.000Z"))
       expect(insertedBooking.value?.endAt).toEqual(new Date("2026-08-18T04:00:00.000Z"))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it.each([
+    ["CASH", "Cash (Tiền mặt)"],
+    ["BANK_TRANSFER", "Bank transfer (Chuyển khoản ngân hàng)"],
+  ] as const)("includes the customer name and selected %s payment method in the admin email", async (paymentMethod, paymentLabel) => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking({ ...validInput("2026-08-18"), customerName: "Test <Customer>", paymentMethod })
+      expect(result.success).toBe(true)
+      expect(insertedBooking.value?.paymentMethod).toBe(paymentMethod)
+      const adminEmail = transactionalEmailMock.send.mock.calls
+        .map(([email]) => email)
+        .find(({ subject }) => subject.startsWith("New booking — "))
+      expect(adminEmail?.html).toContain("Customer name")
+      expect(adminEmail?.html).toContain("Test &lt;Customer&gt;")
+      expect(adminEmail?.html).toContain(paymentLabel)
     } finally {
       vi.useRealTimers()
     }
