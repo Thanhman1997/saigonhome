@@ -33,5 +33,3 @@ export function splitExpiringSessionToken(value: string): { issuedAt: number; to
   return { issuedAt, token }
 }
 
-export const ADMIN_SESSION_MAX_AGE_SECONDS = 8 * 60 * 60
-export const ADMIN_SESSION_MAX_AGE_MS = ADMIN_SESSION_MAX_AGE_SECONDS * 1000

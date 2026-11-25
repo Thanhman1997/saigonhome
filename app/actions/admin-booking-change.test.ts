@@ -27,7 +27,12 @@ function chain() {
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }))
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => ({ value: mocks.cookie }) }) }))
-vi.mock("@/lib/admin-auth", () => ({ ADMIN_SESSION_COOKIE: "session", getExpectedAdminSessionToken: async () => "ok" }))
+vi.mock("@/lib/admin-auth", () => ({
+  ADMIN_SESSION_COOKIE: "session",
+  assertAdmin: async () => {
+    if (mocks.cookie !== "ok") throw new Error("Unauthorized")
+  },
+}))
 vi.mock("@/lib/db", () => ({
   db: {
     select: chain,

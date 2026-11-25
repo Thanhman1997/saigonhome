@@ -2,14 +2,15 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { getServiceBySlug } from "@/lib/data"
+import { getBookingSettings, getServiceBySlug } from "@/lib/data"
 import { formatVnd } from "@/lib/pricing"
 import { ServiceBookingCta } from "@/components/sections/service-booking-cta"
 import { BookingProvider } from "@/lib/booking-context"
 import { BookingDialog } from "@/components/booking/booking-dialog"
 import { getAvailableTherapists } from "@/lib/data"
+import { getSiteUrl } from "@/lib/site-url"
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
+const siteUrl = getSiteUrl()
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -32,10 +33,10 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   const service = await getServiceBySlug(slug)
   if (!service) notFound()
   const image = service.imageUrl || "/images/service-deep-tissue.png"
-  const therapists = await getAvailableTherapists()
+  const [therapists, bookingSettings] = await Promise.all([getAvailableTherapists(), getBookingSettings()])
 
   return (
-    <BookingProvider services={[service]} therapists={therapists}>
+    <BookingProvider services={[service]} therapists={therapists} maxGuests={bookingSettings?.maxGuests}>
     <main className="bg-background">
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-16 lg:py-24">
         <div>

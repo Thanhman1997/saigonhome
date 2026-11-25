@@ -2,22 +2,17 @@
 
 import { createHmac } from "node:crypto"
 import { revalidatePath } from "next/cache"
-import { cookies, headers } from "next/headers"
-import { eq, lt, sql } from "drizzle-orm"
+import { headers } from "next/headers"
+import { after } from "next/server"
+import { clientIpFromHeaders } from "@/lib/client-ip"
+import { and, eq, lt, sql } from "drizzle-orm"
 import { sendTransactionalEmail } from "@/lib/transactional-email"
 import { db } from "@/lib/db"
 import { contactSubmissionRateLimits, questions } from "@/lib/db/schema"
 import { enqueueQuestionKakaoNotification } from "@/lib/kakao-notifications"
 import { sendAdminPushNotification } from "@/lib/admin-web-push"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
+import { assertAdmin } from "@/lib/admin-auth"
 import { escapeHtml } from "@/lib/security"
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) throw new Error("Unauthorized")
-}
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -29,9 +24,7 @@ async function isWithinContactRateLimit(): Promise<boolean> {
   const secret = process.env.ADMIN_SECRET
   if (!secret) throw new Error("Contact rate limiting is not configured")
 
-  const requestHeaders = await headers()
-  const forwardedFor = requestHeaders.get("x-vercel-forwarded-for") ?? requestHeaders.get("x-forwarded-for")
-  const ipAddress = requestHeaders.get("x-real-ip") ?? forwardedFor?.split(",").at(-1)?.trim() ?? "unknown"
+  const ipAddress = clientIpFromHeaders(await headers())
   const ipHash = createHmac("sha256", secret).update(ipAddress).digest("hex")
   const now = new Date()
   const cutoff = new Date(now.getTime() - 15 * 60 * 1000)
@@ -98,12 +91,14 @@ export async function askQuestion(input: {
       console.error("[v0] Failed to queue Kakao question notification:", error)
     }
 
-    await Promise.all([
-      sendAdminNewQuestionNotification({ name, phone, email, question }),
-      sendAdminPushNotification().catch((error) => {
-        console.error("[v0] Failed to send admin Web Push notification:", error)
-      }),
-    ])
+    after(async () => {
+      await Promise.all([
+        sendAdminNewQuestionNotification({ name, phone, email, question }),
+        sendAdminPushNotification().catch((error) => {
+          console.error("[v0] Failed to send admin Web Push notification:", error)
+        }),
+      ])
+    })
     return { success: true }
   } catch (error) {
     console.error("[v0] askQuestion error:", error)
@@ -111,7 +106,23 @@ export async function askQuestion(input: {
   }
 }
 
-export type ReplyToQuestionResult = { success: true } | { success: false; error: string }
+export type ReplyToQuestionResult =
+  | { success: true; emailSent: boolean }
+  | { success: false; error: string }
+
+async function deliverReplyEmail(question: typeof questions.$inferSelect, reply: string): Promise<boolean> {
+  const sent = await sendReplyToCustomer({
+    email: question.email,
+    name: question.name,
+    question: question.question,
+    reply,
+  })
+  await db
+    .update(questions)
+    .set({ replyEmailStatus: sent ? "sent" : "failed", replyEmailSentAt: sent ? new Date() : null })
+    .where(eq(questions.id, question.id))
+  return sent
+}
 
 export async function replyToQuestion(questionId: number, reply: string): Promise<ReplyToQuestionResult> {
   try {
@@ -122,31 +133,47 @@ export async function replyToQuestion(questionId: number, reply: string): Promis
 
   const trimmedReply = reply?.trim()
   if (!trimmedReply) return { success: false, error: "Reply cannot be empty" }
+  if (trimmedReply.length > 5000) return { success: false, error: "Reply is too long" }
 
-  const [existing] = await db.select().from(questions).where(eq(questions.id, questionId)).limit(1)
-  if (!existing) return { success: false, error: "Question not found" }
-
-  await db
+  const [updated] = await db
     .update(questions)
-    .set({ reply: trimmedReply, status: "answered", repliedAt: new Date() })
-    .where(eq(questions.id, questionId))
+    .set({ reply: trimmedReply, status: "answered", repliedAt: new Date(), replyEmailStatus: "not_sent" })
+    .where(and(eq(questions.id, questionId), eq(questions.status, "pending")))
+    .returning()
+  if (!updated) return { success: false, error: "Question not found or already answered" }
 
-  await sendReplyToCustomer({
-    email: existing.email,
-    name: existing.name,
-    question: existing.question,
-    reply: trimmedReply,
-  })
+  const emailSent = await deliverReplyEmail(updated, trimmedReply)
 
   revalidatePath("/admin/questions")
-  return { success: true }
+  return { success: true, emailSent }
+}
+
+export async function resendQuestionReplyEmail(questionId: number): Promise<ReplyToQuestionResult> {
+  try {
+    await assertAdmin()
+  } catch {
+    return { success: false, error: "Unauthorized" }
+  }
+
+  const [existing] = await db.select().from(questions).where(eq(questions.id, questionId)).limit(1)
+  if (!existing?.reply) return { success: false, error: "No reply to send" }
+  if (existing.replyEmailStatus === "sent") return { success: true, emailSent: true }
+
+  const emailSent = await deliverReplyEmail(existing, existing.reply)
+  revalidatePath("/admin/questions")
+  return { success: true, emailSent }
 }
 
 async function sendAdminNewQuestionNotification(details: { name: string; phone: string; email: string; question: string }) {
+  const adminEmail = process.env.ADMIN_EMAIL
+  if (!adminEmail) {
+    console.error("[v0] ADMIN_EMAIL is not set; skipping new question email")
+    return
+  }
   try {
     await sendTransactionalEmail({
-      to: process.env.ADMIN_EMAIL ?? "saigonservice2020@gmail.com",
-      subject: `New question from ${escapeHtml(details.name)}`,
+      to: adminEmail,
+      subject: `New question from ${details.name.replace(/[\r\n]+/g, " ").slice(0, 80)}`,
       html: `
         <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
           <h2 style="margin-bottom: 4px;">New Question Received</h2>
@@ -165,7 +192,7 @@ async function sendAdminNewQuestionNotification(details: { name: string; phone: 
   }
 }
 
-async function sendReplyToCustomer(details: { email: string; name: string; question: string; reply: string }) {
+async function sendReplyToCustomer(details: { email: string; name: string; question: string; reply: string }): Promise<boolean> {
   try {
     await sendTransactionalEmail({
       to: details.email,
@@ -180,7 +207,9 @@ async function sendReplyToCustomer(details: { email: string; name: string; quest
         </div>
       `,
     })
+    return true
   } catch (error) {
     console.error("[v0] Failed to send reply email to customer:", error)
+    return false
   }
 }

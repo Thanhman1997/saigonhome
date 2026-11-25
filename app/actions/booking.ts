@@ -15,6 +15,8 @@ import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availabi
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { enqueueBookingKakaoNotification } from "@/lib/kakao-notifications"
 import { asBookingLocale, type Locale } from "@/lib/booking-management-locale"
+import { isPaymentMethod, PAYMENT_METHOD_LABELS, type PaymentMethod } from "@/lib/payments/methods"
+import { MAX_BOOKING_GUESTS, MIN_BOOKING_NOTICE_MS } from "@/lib/booking-rules"
 
 export type CreateBookingInput = {
   serviceId: number
@@ -30,6 +32,7 @@ export type CreateBookingInput = {
   detailedAddress: string
   notes: string
   isFirstTime?: boolean
+  paymentMethod?: PaymentMethod
   locale?: Locale
   submissionKey?: string
 }
@@ -42,6 +45,16 @@ export type CreateBookingResult =
 
 function generateReference(): string {
   return String(randomInt(10000, 100000))
+}
+
+function getDatabaseErrorDetails(error: unknown) {
+  if (typeof error !== "object" || error === null) return null
+  const candidate = error as { code?: unknown; constraint?: unknown }
+  if (typeof candidate.code !== "string") return null
+  return {
+    code: candidate.code,
+    constraint: typeof candidate.constraint === "string" ? candidate.constraint : undefined,
+  }
 }
 
 function isValidEmail(email: string): boolean {
@@ -73,6 +86,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     if (input.notes != null && (typeof input.notes !== "string" || input.notes.length > 2000)) return { success: false, error: "Something went wrong. Please try again." }
     const submissionKey = input.submissionKey ?? null
     if (submissionKey !== null && (typeof submissionKey !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(submissionKey))) return { success: false, error: "Something went wrong. Please try again." }
+    const paymentMethod = input.paymentMethod ?? "CASH"
+    if (!isPaymentMethod(paymentMethod)) return { success: false, error: "Something went wrong. Please try again." }
     if (!(await allowBookingRequest("create"))) return { success: false, error: "Please wait before trying again." }
     const locale = asBookingLocale(input.locale) ?? "en"
 
@@ -85,7 +100,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
           firstTimeDiscount: Number(settingsRow.firstTimeDiscount),
         }
       : DEFAULT_DISCOUNT_RATES
-    const maxGuests = settingsRow?.maxGuests ?? 20
+    const maxGuests = Math.min(settingsRow?.maxGuests ?? MAX_BOOKING_GUESTS, MAX_BOOKING_GUESTS)
     if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(input.date) || !/^[0-9]{2}:[0-9]{2}$/.test(input.time)) {
       return { success: false, error: "Invalid date or time" }
     }
@@ -97,12 +112,12 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const isCalendarDateValid = parsedDate.getUTCFullYear() === year && parsedDate.getUTCMonth() === month - 1 && parsedDate.getUTCDate() === day
     const [hours, minutes] = input.time.split(":").map(Number)
     const isMidnight = hours === 24 && minutes === 0
-    const isClockTimeValid = (hours < 24 && minutes < 60) || isMidnight
+    const isClockTimeValid = (hours < 24 && minutes < 60 && minutes % 15 === 0) || isMidnight
     if (!isCalendarDateValid || !isClockTimeValid) return { success: false, error: "Invalid date or time" }
 
     const weekday = parsedDate.getUTCDay()
     const [openHour, openMinute] = (settingsRow?.openTime ?? "09:00").split(":").map(Number)
-    const [closeHour, closeMinute] = (settingsRow?.closeTime ?? "21:00").split(":").map(Number)
+    const [closeHour, closeMinute] = (settingsRow?.closeTime ?? "00:00").split(":").map(Number)
     const openingMinutes = openHour * 60 + openMinute
     const configuredClosingMinutes = closeHour * 60 + closeMinute
     const closingMinutes = configuredClosingMinutes <= openingMinutes
@@ -110,7 +125,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       : configuredClosingMinutes
     const requestedMinutes = hours * 60 + minutes
     const bookingUtcMs = zonedLocalDateTimeToUtc(input.date, input.time, VIETNAM_TIME_ZONE).getTime()
-    const minBookingUtcMs = now.getTime() + 60 * 60 * 1000
+    const minBookingUtcMs = now.getTime() + MIN_BOOKING_NOTICE_MS
 
     const maxAdvanceDays = settingsRow?.advanceBookingDays ?? 30
     const maxBookingDate = new Date(`${vietnamToday}T00:00:00Z`)
@@ -138,7 +153,9 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       .where(and(eq(serviceDurations.serviceId, input.serviceId), eq(serviceDurations.minutes, input.durationMinutes)))
       .limit(1)
     if (!duration) return { success: false, error: "Selected duration is unavailable for this service" }
-    if (requestedMinutes + duration.minutes > closingMinutes) {
+    if (closeHour === 0 && closeMinute === 0
+      ? requestedMinutes + duration.minutes >= closingMinutes
+      : requestedMinutes + duration.minutes > closingMinutes) {
       return { success: false, error: "Selected time is unavailable" }
     }
 
@@ -172,18 +189,19 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       discountLabel = getGroupDiscountLabel(input.guests, rates)
     }
 
-    const reference = generateReference()
+    let reference = generateReference()
     const startAt = zonedLocalDateTimeToUtc(input.date, input.time, "Asia/Ho_Chi_Minh")
     const endAt = new Date(startAt.getTime() + input.durationMinutes * 60 * 1000)
 
     const access = issueBookingToken()
-    const saved = await db.transaction(async (tx) => {
+    const save = () => db.transaction(async (tx) => {
       await lockBookingSchedule(tx)
       if (submissionKey) {
         const [previous] = await tx.select({ reference: bookings.reference, totalVnd: bookings.totalVnd, subtotalVnd: bookings.subtotalVnd, discountVnd: bookings.discountVnd, confirmation: bookings.confirmationEmailSentAt, locale: bookings.locale })
           .from(bookings).where(and(eq(bookings.submissionKey, submissionKey), eq(bookings.email, input.email.trim()))).limit(1)
         if (previous) return { kind: "duplicate", receipt: previous } as const
       }
+      if (startAt.getTime() < Date.now() + MIN_BOOKING_NOTICE_MS) return null
       if ((await overlappingBookings(tx, input, startAt, endAt)).length) return null
       const [created] = await tx.insert(bookings).values({
         reference,
@@ -203,6 +221,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         discountVnd,
         totalVnd,
         discountLabel,
+        paymentMethod,
         status: "pending",
         locale,
         submissionKey,
@@ -214,6 +233,25 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       }).returning({ id: bookings.id, email: bookings.email })
       return { kind: "created", booking: created } as const
     })
+    let saved: Awaited<ReturnType<typeof save>> | null = null
+    let saveCompleted = false
+    for (let attempt = 0; !saveCompleted && attempt < 3; attempt += 1) {
+      try {
+        saved = await save()
+        saveCompleted = true
+      } catch (error) {
+        const databaseError = getDatabaseErrorDetails(error)
+        if (databaseError?.code === "23P01" && databaseError.constraint === "bookings_therapist_no_overlap") {
+          return { success: false, error: "Selected time is unavailable" }
+        }
+        if (
+          databaseError?.code !== "23505" ||
+          databaseError.constraint !== "bookings_reference_key" ||
+          attempt >= 2
+        ) throw error
+        reference = generateReference()
+      }
+    }
     if (!saved) return { success: false, error: "Selected time is unavailable" }
     if (saved.kind === "duplicate") {
       const { confirmation, ...receipt } = saved.receipt
@@ -229,6 +267,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       time: input.time,
       guests: input.guests,
       customerName: input.customerName,
+      paymentMethod,
       email: input.email,
       phone: input.phone,
       address: input.address,
@@ -243,7 +282,10 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const localizedService = { en: service.nameEn, vi: service.nameVi, ko: service.nameKo }[locale]
     const [, managementEmailSent] = await Promise.all([
       sendAdminNotification(bookingDetails),
-      sendBookingManagementEmail({ ...saved.booking, reference, date: input.date, time: input.time, status: "pending" }, localizedService, "received", locale, { token: access.token, therapist: therapistCode }),
+      sendBookingManagementEmail({ ...saved.booking, reference, date: input.date, time: input.time, status: "pending" }, localizedService, "received", locale, { token: access.token, therapist: therapistCode }).catch(() => {
+        console.error("Could not send booking management email")
+        return false
+      }),
       enqueueBookingKakaoNotification(saved.booking.id).catch((error) => {
         console.error("[v0] Failed to queue Kakao booking notification:", error)
       }),
@@ -255,8 +297,9 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     }
 
     return { success: true, reference, totalVnd, subtotalVnd: subtotal, discountVnd, managementEmailSent, locale }
-  } catch {
-    console.error("Could not save the booking")
+  } catch (error) {
+    const databaseError = getDatabaseErrorDetails(error)
+      console.error("Could not save the booking", databaseError ?? { errorType: error instanceof Error ? error.name : "unknown" })
     return { success: false, error: "Something went wrong. Please try again." }
   }
 }
@@ -270,6 +313,7 @@ type BookingEmailDetails = {
   time: string
   guests: number
   customerName: string
+  paymentMethod: PaymentMethod
   email: string
   phone: string
   address: string
@@ -284,6 +328,7 @@ type BookingEmailDetails = {
 async function sendAdminNotification(details: BookingEmailDetails) {
   try {
     const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + "đ"
+    const paymentMethod = PAYMENT_METHOD_LABELS[details.paymentMethod]
 
     await sendTransactionalEmail({
       to: process.env.ADMIN_EMAIL ?? "saigonservice2020@gmail.com",
@@ -291,18 +336,19 @@ async function sendAdminNotification(details: BookingEmailDetails) {
       html: `
         <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
           <h2 style="margin-bottom: 4px;">New Booking Received</h2>
-          <p style="color: #666; margin-top: 0;">Reference: <strong>${details.reference}</strong></p>
+          <p style="color: #666; margin-top: 0;">Reference: <strong>${escapeHtml(details.reference)}</strong></p>
           <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
-            <tr><td style="padding: 6px 0; color: #666;">Service</td><td style="padding: 6px 0;">${details.serviceName} (${details.durationMinutes} min)</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Date &amp; Time</td><td style="padding: 6px 0;">${details.date} at ${details.time}</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Guests</td><td style="padding: 6px 0;">${details.guests}</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Customer</td><td style="padding: 6px 0;">${escapeHtml(details.customerName)}</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;">${details.email}</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Phone</td><td style="padding: 6px 0;">${details.phone}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Service</td><td style="padding: 6px 0;">${escapeHtml(details.serviceName)} (${Number(details.durationMinutes)} min)</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Date &amp; Time</td><td style="padding: 6px 0;">${escapeHtml(details.date)} at ${escapeHtml(details.time)}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Guests</td><td style="padding: 6px 0;">${Number(details.guests)}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Customer name</td><td style="padding: 6px 0;">${escapeHtml(details.customerName)}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Payment method</td><td style="padding: 6px 0;">${paymentMethod.en} (${paymentMethod.vi})</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Email</td><td style="padding: 6px 0;">${escapeHtml(details.email)}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Phone</td><td style="padding: 6px 0;">${escapeHtml(details.phone)}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Address</td><td style="padding: 6px 0;">${escapeHtml(details.address)}${details.detailedAddress ? ` — ${escapeHtml(details.detailedAddress)}` : ""}</td></tr>
             ${details.notes ? `<tr><td style="padding: 6px 0; color: #666;">Notes</td><td style="padding: 6px 0;">${escapeHtml(details.notes)}</td></tr>` : ""}
             <tr><td style="padding: 6px 0; color: #666;">Subtotal</td><td style="padding: 6px 0;">${fmt(details.subtotalVnd)}</td></tr>
-            ${details.discountLabel ? `<tr><td style="padding: 6px 0; color: #666;">Discount</td><td style="padding: 6px 0;">${details.discountLabel} (-${fmt(details.discountVnd)})</td></tr>` : ""}
+            ${details.discountLabel ? `<tr><td style="padding: 6px 0; color: #666;">Discount</td><td style="padding: 6px 0;">${escapeHtml(details.discountLabel)} (-${fmt(details.discountVnd)})</td></tr>` : ""}
             <tr><td style="padding: 6px 0; color: #666; font-weight: bold;">Total</td><td style="padding: 6px 0; font-weight: bold;">${fmt(details.totalVnd)}</td></tr>
           </table>
           <p style="margin-top: 20px;"><a href="${escapeHtml(adminBookingReviewUrl(details.id))}" style="display: inline-block; padding: 12px 20px; border-radius: 24px; background: #26362f; color: #fff; text-decoration: none;">Confirm booking</a></p>

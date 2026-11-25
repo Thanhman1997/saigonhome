@@ -1,32 +1,48 @@
 import { createHmac, timingSafeEqual } from "node:crypto"
+import { getSiteUrl } from "@/lib/site-url"
 
-const TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000
+// "view" is the link in the admin email. The other tokens are minted by the review page for a single action
+// and cannot be exchanged for another action or for viewing the page.
+export type ReviewTokenAction = "view" | "confirm" | "approve-change" | "decline-change"
 
-function signature(bookingId: number, expires: number) {
-  const secret = process.env.ADMIN_SECRET
-  if (!secret) return null
-  return createHmac("sha256", secret).update(`booking-review:${bookingId}:${expires}`).digest("hex")
+const TOKEN_TTL_MS: Record<ReviewTokenAction, number> = {
+  view: 7 * 24 * 60 * 60 * 1000,
+  confirm: 2 * 60 * 60 * 1000,
+  "approve-change": 2 * 60 * 60 * 1000,
+  "decline-change": 2 * 60 * 60 * 1000,
 }
 
-export function createBookingReviewToken(bookingId: number, now = Date.now()) {
-  const expires = now + TOKEN_TTL_MS
-  const signed = signature(bookingId, expires)
+function sign(payload: string) {
+  const secret = process.env.ADMIN_SECRET
+  if (!secret) return null
+  return createHmac("sha256", secret).update(payload).digest("hex")
+}
+
+const payload = (action: ReviewTokenAction, bookingId: number, expires: number) => `booking-review:${action}:${bookingId}:${expires}`
+// Links already delivered by email were signed before tokens were scoped; they stay valid for viewing only.
+const legacyViewPayload = (bookingId: number, expires: number) => `booking-review:${bookingId}:${expires}`
+
+export function createBookingReviewToken(bookingId: number, now = Date.now(), action: ReviewTokenAction = "view") {
+  const expires = now + TOKEN_TTL_MS[action]
+  const signed = sign(payload(action, bookingId, expires))
   return signed ? `${expires}.${signed}` : null
 }
 
-export function verifyBookingReviewToken(bookingId: number, token: string | null | undefined, now = Date.now()) {
+function matches(provided: string, expected: string | null) {
+  return Boolean(expected) && provided.length === expected!.length && timingSafeEqual(Buffer.from(provided), Buffer.from(expected!))
+}
+
+export function verifyBookingReviewToken(bookingId: number, token: string | null | undefined, now = Date.now(), action: ReviewTokenAction = "view") {
   if (!token || !Number.isSafeInteger(bookingId)) return false
   const [expiresPart, provided, ...rest] = token.split(".")
   const expires = Number(expiresPart)
   if (!provided || rest.length || !Number.isSafeInteger(expires) || expires < now) return false
-  const expected = signature(bookingId, expires)
-  if (!expected || provided.length !== expected.length) return false
-  return timingSafeEqual(Buffer.from(provided), Buffer.from(expected))
+  if (matches(provided, sign(payload(action, bookingId, expires)))) return true
+  return action === "view" && matches(provided, sign(legacyViewPayload(bookingId, expires)))
 }
 
 export function siteBaseUrl() {
-  const production = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? (production ? `https://${production}` : "https://lotuswellness.app")).replace(/\/$/, "")
+  return getSiteUrl()
 }
 
 // Falls back to the admin booking list when no signing secret is configured.

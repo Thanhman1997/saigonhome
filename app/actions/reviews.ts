@@ -9,7 +9,12 @@ import { getInvitedBookingId } from "@/lib/review-invitation"
 
 export type SubmitReviewResult =
   | { ok: true }
-  | { ok: false; error: "invalid" | "invalid_invitation" | "not_eligible" | "duplicate" }
+  | { ok: false; error: "invalid" | "invalid_invitation" | "not_eligible" | "duplicate" | "failed" }
+
+function isUniqueViolation(error: unknown) {
+  const e = error as { code?: string; cause?: { code?: string } } | null
+  return e?.code === "23505" || e?.cause?.code === "23505"
+}
 
 function todayInVietnam() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date())
@@ -51,9 +56,11 @@ export async function submitReview(formData: FormData): Promise<SubmitReviewResu
       reviewDate: todayInVietnam(),
       approved: false,
     })
-  } catch {
-    // The unique index on booking_id rejects a concurrent second submission.
-    return { ok: false, error: "duplicate" }
+  } catch (error) {
+    // Only the unique index on booking_id means a concurrent second submission; anything else is a real failure.
+    if (isUniqueViolation(error)) return { ok: false, error: "duplicate" }
+    console.error("Review could not be saved", error instanceof Error ? error.message : "unknown")
+    return { ok: false, error: "failed" }
   }
 
   revalidatePath("/reviews")

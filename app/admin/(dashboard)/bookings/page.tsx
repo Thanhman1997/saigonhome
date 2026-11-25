@@ -3,6 +3,7 @@ import { formatVnd } from "@/lib/pricing"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { BookingStatusSelect } from "@/components/admin/booking-status-select"
 import { BookingChangeRequest } from "@/components/admin/booking-change-request"
+import { MarkPaidButton } from "@/components/admin/mark-paid-button"
 import { pendingChangeRequest } from "@/lib/booking-change-request"
 import { cn } from "@/lib/utils"
 import type { ReactNode } from "react"
@@ -78,7 +79,13 @@ export default async function AdminBookingsPage() {
                   </details>}
                 </BookingField>
                 <BookingField label="Guests">{booking.guests}</BookingField>
-                <BookingField label="Total"><span className="font-medium">{formatVnd(booking.totalVnd)}</span></BookingField>
+                <BookingField label="Total">
+                  <span className="font-medium">{formatVnd(booking.totalVnd)}</span>
+                  <p className="text-sm text-muted-foreground">
+                    {booking.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Cash"} · {booking.paymentStatus === "PAID" ? "Paid" : "Unpaid"}
+                  </p>
+                  {booking.paymentStatus === "PENDING_PAYMENT" && ["confirmed", "completed"].includes(booking.status) && <MarkPaidButton bookingId={booking.id} />}
+                </BookingField>
                 <BookingField label="Status" className="col-span-2 border-t border-border pt-3 @min-[40rem]:col-span-1 @min-[40rem]:border-0 @min-[40rem]:pt-0 @min-[58rem]:pt-3">
                   <BookingStatusSelect bookingId={booking.id} status={booking.status} revoked={Boolean(booking.accessTokenRevokedAt)} />
                 </BookingField>

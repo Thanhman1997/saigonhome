@@ -6,10 +6,12 @@ import { dictionary } from "@/lib/i18n/dictionary"
 import { track } from "@vercel/analytics"
 import { CheckCircle2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { BookingActionButton } from "./booking-action-button"
 import { useBooking } from "@/lib/booking-context"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { formatVnd, getGroupDiscountRate } from "@/lib/pricing"
 import { createBooking, type BookingReceipt } from "@/app/actions/booking"
+import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS, type PaymentMethod } from "@/lib/payments/methods"
 import Link from "next/link"
 import type { CustomerInfo } from "./step-details"
 
@@ -30,6 +32,7 @@ export function StepConfirm({
   const inFlight = useRef(false)
   const submissionKey = useRef<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH")
 
   const service = services.find((s) => s.id === draft.serviceId)
   const duration = service?.durations.find((d) => d.minutes === draft.durationMinutes)
@@ -61,6 +64,7 @@ export function StepConfirm({
         address: customerInfo.address,
         detailedAddress: customerInfo.detailedAddress,
         notes: customerInfo.notes,
+        paymentMethod,
         locale,
         submissionKey: submissionKey.current ??= crypto.randomUUID(),
       })
@@ -134,16 +138,43 @@ export function StepConfirm({
         </div>
       </div>
 
+      <fieldset className="flex flex-col gap-3" disabled={submitting}>
+        <legend className="mb-1 text-sm font-medium">{{ en: "Payment method", vi: "Phương thức thanh toán", ko: "결제 방법" }[locale]}</legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {PAYMENT_METHODS.map((method) => (
+            <label
+              key={method}
+              className="flex cursor-pointer items-center gap-3 border border-border p-4 text-sm has-[:checked]:border-foreground has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
+            >
+              <input
+                type="radio"
+                name="paymentMethod"
+                value={method}
+                checked={paymentMethod === method}
+                onChange={() => setPaymentMethod(method)}
+                className="size-4 accent-foreground"
+              />
+              {PAYMENT_METHOD_LABELS[method][locale]}
+            </label>
+          ))}
+        </div>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {paymentMethod === "BANK_TRANSFER"
+            ? { en: "Our team will send the bank transfer details after confirming your booking.", vi: "Chúng tôi sẽ gửi thông tin chuyển khoản sau khi xác nhận lịch hẹn.", ko: "예약 확정 후 계좌 이체 정보를 보내드립니다." }[locale]
+            : { en: "Please pay in cash to the therapist after the service.", vi: "Vui lòng thanh toán tiền mặt cho kỹ thuật viên sau buổi dịch vụ.", ko: "서비스 후 관리사에게 현금으로 결제해 주세요." }[locale]}
+        </p>
+      </fieldset>
+
       {error && <p role="alert" className="text-sm text-destructive">{localizeBookingError(error, locale)}</p>}
 
       <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
         <Button variant="outline" onClick={onBack} size="lg" disabled={submitting}>
           {t.booking.back}
         </Button>
-        <Button onClick={handleConfirm} size="lg" disabled={submitting}>
+        <BookingActionButton onClick={handleConfirm} size="lg" disabled={submitting}>
           {submitting && <Loader2 className="size-4 animate-spin" />}
           {t.booking.confirmBooking}
-        </Button>
+        </BookingActionButton>
       </div>
     </div>
   )

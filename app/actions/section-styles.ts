@@ -5,15 +5,8 @@ import { LAYOUT_DATA_TAG } from "@/lib/data"
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { sectionStyles } from "@/lib/db/schema"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
+import { assertAdmin } from "@/lib/admin-auth"
 import { FONT_OPTIONS } from "@/lib/design-tokens"
-import { cookies } from "next/headers"
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const token = (await cookies()).get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) throw new Error("Unauthorized")
-}
 
 const FONT_KEYS = new Set(["inherit", ...FONT_OPTIONS.map((font) => font.key)])
 const HEADING_SIZES = new Set(["inherit", "1.5rem", "1.75rem", "2rem", "2.5rem", "3rem"])

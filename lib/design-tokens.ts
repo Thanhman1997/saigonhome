@@ -97,6 +97,9 @@ export function lineHeightValue(key: string): string {
   return LINE_HEIGHT_OPTIONS.find((l) => l.key === key)?.value ?? "1.5"
 }
 
+// Keep the contact section warm-white on vivid pink palette backgrounds, rather than switching to near-black.
+const LOTUS_PINK_FOREGROUND = "#ffffff"
+
 /** Picks a legible foreground (near-black or near-white) for a given hex background. */
 export function contrastForeground(hex: string): string {
   const clean = hex.replace("#", "")
@@ -288,7 +291,7 @@ export function buildDesignTokenVars(s: DesignSettingsValues): Record<string, st
   const primaryFg = contrastForeground(s.colorPrimary)
   const accentFg = contrastForeground(s.colorAccent)
   const secondaryFg = contrastForeground(s.colorSecondary)
-  const lotusFg = contrastForeground(s.colorLotusPink)
+  const lotusFg = LOTUS_PINK_FOREGROUND
 
   return {
     "--background": s.colorBackground,
@@ -318,7 +321,7 @@ export function buildDesignTokenCss(s: DesignSettingsValues): string {
   const primaryFg = contrastForeground(s.colorPrimary)
   const accentFg = contrastForeground(s.colorAccent)
   const secondaryFg = contrastForeground(s.colorSecondary)
-  const lotusFg = contrastForeground(s.colorLotusPink)
+  const lotusFg = LOTUS_PINK_FOREGROUND
 
   return `:root{
   --background:${s.colorBackground};

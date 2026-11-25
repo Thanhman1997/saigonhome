@@ -5,6 +5,7 @@ import { Users } from "lucide-react"
 import { useBooking } from "@/lib/booking-context"
 import { useLanguage } from "@/lib/i18n/language-provider"
 import { Button } from "@/components/ui/button"
+import { BookingActionButton } from "./booking-action-button"
 import { cn } from "@/lib/utils"
 
 export function StepTherapist({ onNext, onBack }: { onNext: () => void; onBack: () => void }) {
@@ -12,7 +13,7 @@ export function StepTherapist({ onNext, onBack }: { onNext: () => void; onBack: 
   const { t } = useLanguage()
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-1 flex-col gap-6">
       <h2 className="font-serif text-2xl">{t.booking.selectTherapist}</h2>
 
       <button
@@ -29,7 +30,7 @@ export function StepTherapist({ onNext, onBack }: { onNext: () => void; onBack: 
         <span className="text-sm font-medium">{t.booking.anyTherapist}</span>
       </button>
 
-      <div className="grid max-h-72 gap-3 overflow-y-auto pr-1 sm:grid-cols-2">
+      <div className="grid min-h-48 flex-1 basis-0 content-start gap-3 overflow-y-auto pr-1 sm:grid-cols-2">
         {therapists.map((therapist) => {
           const isSelected = draft.therapistId === therapist.id
           return (
@@ -68,9 +69,9 @@ export function StepTherapist({ onNext, onBack }: { onNext: () => void; onBack: 
         <Button variant="outline" onClick={onBack} size="lg">
           {t.booking.back}
         </Button>
-        <Button onClick={onNext} size="lg">
+        <BookingActionButton onClick={onNext} size="lg">
           {t.booking.next}
-        </Button>
+        </BookingActionButton>
       </div>
     </div>
   )

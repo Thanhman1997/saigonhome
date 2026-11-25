@@ -6,6 +6,7 @@ import { Languages, MapPin, Ruler, BadgeCheck, UserRound } from "lucide-react"
 import { useLanguage, pickLocalized } from "@/lib/i18n/language-provider"
 import { useBooking, type TherapistRow } from "@/lib/booking-context"
 import { Button } from "@/components/ui/button"
+import { BookingCtaButton } from "@/components/booking/booking-cta-button"
 
 const PAGE_SIZE = 8
 
@@ -80,14 +81,13 @@ export function ExpertsSection({ therapists }: { therapists: TherapistRow[] }) {
 
                   {bio && <p className="line-clamp-3 text-xs leading-relaxed text-muted-foreground">{bio}</p>}
 
-                  <Button
-                    size="lg"
+                  <BookingCtaButton
                     disabled={!therapist.available}
                     onClick={() => openBooking({ therapistId: therapist.id })}
-                    className={`mt-auto h-9 min-w-24 whitespace-nowrap px-4 ${locale === "ko" ? "font-korean-sans text-sm" : "text-xs"} self-center rounded-full bg-accent font-semibold uppercase tracking-[0.06em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground`}
+                    className="mt-auto self-center disabled:bg-muted disabled:text-muted-foreground"
                   >
                     {t.experts.book}
-                  </Button>
+                  </BookingCtaButton>
                 </div>
               </article>
             )

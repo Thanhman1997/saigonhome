@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { BookingActionButton } from "./booking-action-button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -97,9 +98,9 @@ export function StepDetails({
         <Button variant="outline" onClick={onBack} size="lg">
           {t.booking.back}
         </Button>
-        <Button onClick={handleContinue} size="lg">
+        <BookingActionButton onClick={handleContinue} size="lg">
           {t.booking.next}
-        </Button>
+        </BookingActionButton>
       </div>
     </div>
   )

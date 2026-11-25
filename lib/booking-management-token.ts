@@ -1,5 +1,6 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto"
 import { asBookingLocale, type Locale } from "@/lib/booking-management-locale"
+import { getSiteUrl } from "@/lib/site-url"
 
 const lifetime = 45 * 24 * 60 * 60
 
@@ -39,7 +40,7 @@ export function issueBookingToken() {
 }
 
 export function getBookingManagementUrl(access: number | string, locale?: Locale) {
-  const url = new URL("/booking/manage", process.env.NEXT_PUBLIC_SITE_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "https://lotuswellness.app")
+  const url = new URL("/booking/manage", getSiteUrl())
   if (locale) url.searchParams.set("lang", locale)
   url.hash = `access=${typeof access === "number" ? createBookingManagementToken(access, Date.now(), locale) : access}`
   return url.href

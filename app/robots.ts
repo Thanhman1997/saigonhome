@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next"
-
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://lotus-wellness.vercel.app"
+import { getSiteUrl } from "@/lib/site-url"
 
 export default function robots(): MetadataRoute.Robots {
+  const siteUrl = getSiteUrl()
   return {
     rules: { userAgent: "*", allow: "/", disallow: ["/admin/", "/payment/", "/api/", "/_next/", "/.well-known/"] },
     sitemap: `${siteUrl}/sitemap.xml`,

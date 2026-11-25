@@ -2,6 +2,7 @@ import { createHmac } from "node:crypto"
 import { headers } from "next/headers"
 import { sql } from "drizzle-orm"
 import { db } from "@/lib/db"
+import { clientIpFromHeaders } from "@/lib/client-ip"
 import { contactSubmissionRateLimits as limits } from "@/lib/db/schema"
 
 const caps = { create: 12, read: 120, change: 20 }
@@ -10,7 +11,7 @@ export async function allowBookingRequest(kind: keyof typeof caps) {
   const secret = process.env.ADMIN_SECRET
   if (!secret) return false
   const h = await headers()
-  const ip = h.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown"
+  const ip = clientIpFromHeaders(h)
   const ipHash = createHmac("sha256", secret).update(`booking:${kind}:${ip}`).digest("hex")
   const now = new Date()
   const cutoff = new Date(+now - 15 * 60 * 1000)

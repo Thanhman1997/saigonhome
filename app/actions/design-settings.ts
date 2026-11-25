@@ -3,18 +3,10 @@
 import { revalidatePath, updateTag } from "next/cache"
 import { LAYOUT_DATA_TAG } from "@/lib/data"
 import { eq } from "drizzle-orm"
-import { cookies } from "next/headers"
 import { db } from "@/lib/db"
 import { designSettings } from "@/lib/db/schema"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
+import { assertAdmin } from "@/lib/admin-auth"
 import { DESIGN_PRESETS, FONT_OPTIONS } from "@/lib/design-tokens"
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) throw new Error("Unauthorized")
-}
 
 export type DesignSettingsActionState = {
   success: boolean

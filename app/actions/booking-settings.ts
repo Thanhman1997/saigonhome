@@ -4,17 +4,8 @@ import { db } from "@/lib/db"
 import { bookingSettings } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
-import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) {
-    throw new Error("Unauthorized")
-  }
-}
+import { assertAdmin } from "@/lib/admin-auth"
+import { MAX_BOOKING_GUESTS } from "@/lib/booking-rules"
 
 function clampRatePercent(raw: FormDataEntryValue | null): string {
   const n = Number(raw ?? 0)
@@ -28,17 +19,21 @@ export async function updateBookingSettings(_prevState: { error?: string } | und
   await assertAdmin()
 
   const advanceBookingDays = Number(formData.get("advanceBookingDays") ?? 30)
-  const maxGuests = Number(formData.get("maxGuests") ?? 20)
+  const maxGuests = Number(formData.get("maxGuests") ?? MAX_BOOKING_GUESTS)
   const openTime = String(formData.get("openTime") ?? "09:00")
-  const closeTime = String(formData.get("closeTime") ?? "21:00")
+  const closeTime = String(formData.get("closeTime") ?? "00:00")
 
   if (!Number.isInteger(advanceBookingDays) || advanceBookingDays < 1 || advanceBookingDays > 365) {
     return { error: "Advance booking days must be between 1 and 365." }
   }
-  if (!Number.isInteger(maxGuests) || maxGuests < 1 || maxGuests > 50) {
-    return { error: "Max guests must be between 1 and 50." }
+  if (!Number.isInteger(maxGuests) || maxGuests < 1 || maxGuests > MAX_BOOKING_GUESTS) {
+    return { error: `Max guests must be between 1 and ${MAX_BOOKING_GUESTS}.` }
   }
-  if (!/^\d{2}:\d{2}$/.test(openTime) || !/^\d{2}:\d{2}$/.test(closeTime)) {
+  const isValidClockTime = (value: string) => {
+    const match = /^(\d{2}):(\d{2})$/.exec(value)
+    return Boolean(match && Number(match[1]) < 24 && Number(match[2]) < 60)
+  }
+  if (!isValidClockTime(openTime) || !isValidClockTime(closeTime)) {
     return { error: "Invalid time format." }
   }
 
@@ -69,5 +64,8 @@ export async function updateBookingSettings(_prevState: { error?: string } | und
 
   revalidatePath("/admin/booking-settings")
   revalidatePath("/")
+  revalidatePath("/booking")
+  revalidatePath("/services")
+  revalidatePath("/services/[slug]", "page")
   return { error: undefined }
 }

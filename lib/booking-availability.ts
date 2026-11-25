@@ -2,11 +2,12 @@ import { and, eq, gt, inArray, isNull, lt, ne, or, sql } from "drizzle-orm"
 import type { db } from "@/lib/db"
 import { bookings, bookingSettings, therapists } from "@/lib/db/schema"
 import { zonedLocalDateTimeToUtc } from "@/lib/timezone"
+import { BOOKING_BUFFER_MS, MAX_BOOKING_GUESTS, MIN_BOOKING_NOTICE_MS } from "@/lib/booking-rules"
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 type Reader = Transaction | typeof db
 type Party = { id?: number; therapistId: number | null; guests: number }
-type Settings = Pick<typeof bookingSettings.$inferSelect, "openTime" | "closeTime" | "closedWeekdays" | "advanceBookingDays">
+type Settings = Pick<typeof bookingSettings.$inferSelect, "openTime" | "closeTime" | "closedWeekdays" | "advanceBookingDays"> & Partial<Pick<typeof bookingSettings.$inferSelect, "maxGuests">>
 const timezone = "Asia/Ho_Chi_Minh"
 const dateFormatter = new Intl.DateTimeFormat("sv-SE", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" })
 
@@ -28,13 +29,13 @@ export function candidateSlots(date: string, duration: number, settings: Setting
     return hour * 60 + minute
   }
   const open = toMinutes(settings?.openTime ?? "09:00")
-  const close = toMinutes(settings?.closeTime ?? "21:00")
+  const close = toMinutes(settings?.closeTime ?? "00:00")
   const end = close <= open ? close + 1440 : close
   const slots: { time: string; start: Date; end: Date }[] = []
-  for (let minutes = Math.ceil(open / 15) * 15; minutes <= 1440 && minutes + duration <= end && minutes < end; minutes += 15) {
+  for (let minutes = Math.ceil(open / 15) * 15; minutes <= 1440 && (close === 0 ? minutes + duration < end : minutes + duration <= end) && minutes < end; minutes += 15) {
     const time = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`
     const start = zonedLocalDateTimeToUtc(date, time, timezone)
-    if (start.getTime() < now.getTime() + 3_600_000) continue
+    if (start.getTime() < now.getTime() + MIN_BOOKING_NOTICE_MS) continue
     slots.push({ time, start, end: new Date(start.getTime() + duration * 60_000) })
   }
   return slots
@@ -45,11 +46,17 @@ export async function lockBookingSchedule(tx: Transaction) {
   await tx.execute(sql`select pg_advisory_xact_lock(417236, 1)`)
 }
 
+export function bookingIntervalsConflict(start: Date, end: Date, otherStart: Date, otherEnd: Date) {
+  return start.getTime() < otherEnd.getTime() + BOOKING_BUFFER_MS && end.getTime() > otherStart.getTime() - BOOKING_BUFFER_MS
+}
+
 export function overlappingBookings(reader: Reader, party: Party, start: Date, end: Date) {
+  const bufferedStart = new Date(start.getTime() - BOOKING_BUFFER_MS)
+  const bufferedEnd = new Date(end.getTime() + BOOKING_BUFFER_MS)
   return reader.select({ start: bookings.startAt, end: bookings.endAt }).from(bookings).where(and(
     inArray(bookings.status, ["pending", "confirmed"]),
     party.id === undefined ? undefined : ne(bookings.id, party.id),
-    lt(bookings.startAt, end), gt(bookings.endAt, start),
+    lt(bookings.startAt, bufferedEnd), gt(bookings.endAt, bufferedStart),
     party.therapistId !== null && party.guests === 1
       ? or(eq(bookings.therapistId, party.therapistId), isNull(bookings.therapistId), gt(bookings.guests, 1))
       : undefined,
@@ -58,6 +65,8 @@ export function overlappingBookings(reader: Reader, party: Party, start: Date, e
 
 export async function availableBookingSlots(reader: Reader, booking: Party & { durationMinutes: number; date: string; time: string }, date: string, now: Date) {
   const [settings] = await reader.select().from(bookingSettings).limit(1)
+  const maxGuests = Math.min(settings?.maxGuests ?? MAX_BOOKING_GUESTS, MAX_BOOKING_GUESTS)
+  if (booking.guests > maxGuests) return []
   const slots = candidateSlots(date, booking.durationMinutes, settings, now)
   const first = slots[0]
   const last = slots.at(-1)
@@ -67,5 +76,5 @@ export async function availableBookingSlots(reader: Reader, booking: Party & { d
     if (!therapist) return []
   }
   const occupied = await overlappingBookings(reader, booking, first.start, last.end)
-  return slots.filter((slot) => !(booking.date === date && booking.time === slot.time) && !occupied.some((old) => old.start < slot.end && old.end > slot.start))
+  return slots.filter((slot) => !(booking.date === date && booking.time === slot.time) && !occupied.some((old) => bookingIntervalsConflict(slot.start, slot.end, old.start, old.end)))
 }

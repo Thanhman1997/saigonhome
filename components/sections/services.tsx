@@ -10,6 +10,7 @@ function formatServicePrice(priceVnd: number, locale: "en" | "ko" | "vi") {
 }
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { BookingCtaButton } from "@/components/booking/booking-cta-button"
 
 const fallbackImages: Record<string, { src: string; flag: string }> = {
   thai: { src: "/images/service-thai.png", flag: "TH" },
@@ -66,7 +67,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
       <div className="mx-auto max-w-[80rem] px-8 lg:px-20">
         <div className="mx-auto max-w-3xl text-center">
           {t.services.kicker ? <p className="section-heading text-center text-accent">{localizedContent(servicesContent.kickerEn, servicesContent.kickerKo, servicesContent.kickerVi)}</p> : null}
-          <SectionTitle className="mt-4 text-center text-balance text-4xl font-semibold leading-snug tracking-tight text-foreground sm:text-5xl">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</SectionTitle>
+          <SectionTitle className="mt-4 text-center text-balance text-[24px]! font-semibold leading-snug tracking-tight text-foreground">{localizedContent(servicesContent.titleEn, servicesContent.titleKo, servicesContent.titleVi)}</SectionTitle>
           <p className="mx-auto mt-4 max-w-3xl text-center font-sans text-lg font-normal leading-relaxed text-muted-foreground">{withServiceCount(localizedContent(servicesContent.subtitleEn, servicesContent.subtitleKo, servicesContent.subtitleVi), services.length, locale)}</p>
         </div>
 
@@ -83,7 +84,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                 <div>
                   <ServiceCardImage image={image} alt={name} icon={service.icon} />
                   <div className="px-1">
-                    <h3 className={`${luxuryFont} whitespace-nowrap text-center text-sm! font-bold leading-tight tracking-tight md:text-lg!`}>{name}</h3>
+                    <h3 className={`${luxuryFont} whitespace-nowrap text-center font-bold leading-tight tracking-tight ${locale === "en" ? "text-[22px]!" : "text-sm! md:text-lg!"}`}>{name}</h3>
                     <p className="mt-2 text-base leading-relaxed text-muted-foreground">{desc}</p>
                     <div className="mt-3 flex flex-col gap-1.5 border-t border-border pt-3">
                       {service.durations.map((d) => <div key={d.id} className={`${luxuryFont} grid grid-cols-[6.5rem_1fr] items-baseline gap-3 text-xl leading-snug`}><span className="font-medium text-muted-foreground">{d.minutes} {locale === "en" ? "mins" : locale === "ko" ? "분" : "phút"}</span><span className="font-bold tracking-wide text-foreground">{formatServicePrice(d.priceVnd, locale)}</span></div>)}
@@ -91,7 +92,7 @@ export function ServicesSection({ services, featured = services.slice(0, 3), ful
                     <Link href={`/services/${service.slug}`} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">{detailsLabel}</Link>
                   </div>
                 </div>
-                <Button onClick={() => openBooking({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null })} className="mt-3 h-11 min-h-11 w-auto min-w-44 self-center rounded-full bg-accent px-8 font-sans text-sm font-semibold uppercase tracking-[0.14em] text-accent-foreground transition-transform duration-200 hover:-translate-y-0.5 hover:bg-accent/90">{t.services.book}</Button>
+                <BookingCtaButton onClick={() => openBooking({ serviceId: service.id, durationMinutes: service.durations[0]?.minutes ?? null })} className="mt-3 self-center">{t.services.book}</BookingCtaButton>
               </article>
             )
           })}
