@@ -35,6 +35,8 @@ import {
   getBookingSettings,
 } from "@/lib/data"
 
+const SHOW_ASK_QUESTION_WIDGET = true
+
 export default async function Home() {
   const [services, servicesContent, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews, videoMedia, bookingSettings] =
     await Promise.all([
@@ -73,7 +75,7 @@ export default async function Home() {
         <Footer contactInfo={contactInfo} />
       </main>
       <BookingDialog />
-      <AskQuestionWidget />
+      {SHOW_ASK_QUESTION_WIDGET && <AskQuestionWidget />}
     </BookingProvider>
   )
 }
