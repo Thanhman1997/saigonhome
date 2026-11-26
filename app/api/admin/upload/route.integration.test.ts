@@ -7,7 +7,7 @@ vi.mock("@vercel/blob", () => ({ put: putMock }))
 vi.mock("next/headers", () => ({ cookies: vi.fn(async () => ({ get: () => ({ value: cookieValue.value }) })) }))
 vi.mock("@/lib/admin-auth", () => ({
   ADMIN_SESSION_COOKIE: "admin",
-  isValidAdminSession: vi.fn(async (value: string) => value === "valid-token"),
+  isAdminAuthenticated: vi.fn(async () => cookieValue.value === "valid-token"),
 }))
 
 import { POST } from "./route"

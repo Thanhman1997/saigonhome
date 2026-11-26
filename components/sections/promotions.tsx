@@ -26,18 +26,18 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
   const t = dict.promotions
 
   return (
-    <section id="promotions" className="bg-secondary py-20 md:py-28">
-      <div className="mx-auto max-w-6xl px-6">
+    <section id="promotions" className="bg-header-background py-12 md:py-16">
+      <div className="mx-auto max-w-[80rem] px-8 lg:px-20">
         <div className="max-w-2xl">
-          <p className="text-sm font-medium uppercase tracking-widest text-primary">{t.kicker}</p>
-          <h2 className="mt-3 text-balance font-sans text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
+          <p className="section-heading text-accent">{t.kicker}</p>
+          <h2 className="mt-3 text-balance text-xl font-semibold leading-snug tracking-tight text-foreground sm:text-2xl">
             {t.title}
           </h2>
-          <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">{t.subtitle}</p>
+          <p className="mt-3 max-w-xl text-pretty text-base font-normal leading-relaxed text-muted-foreground">{t.subtitle}</p>
         </div>
 
         {promotions.length > 0 ? (
-          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {promotions.map((promo) => {
               const name = pickLocalized({ en: promo.nameEn, ko: promo.nameKo, vi: promo.nameVi }, locale)
               const desc = pickLocalized({ en: promo.descEn, ko: promo.descKo, vi: promo.descVi }, locale)
@@ -47,28 +47,36 @@ export function Promotions({ promotions }: { promotions: PromotionRow[] }) {
               return (
                 <div
                   key={promo.id}
-                  className="flex flex-col overflow-hidden border border-border bg-background"
+                  className="group flex flex-col overflow-hidden rounded-[1.25rem] border border-border/60 bg-background shadow-[0_14px_40px_-34px_rgba(92,48,20,0.55)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_22px_50px_-34px_rgba(92,48,20,0.55)]"
                 >
                   {promo.imageUrl && (
-                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-                      <Image src={promo.imageUrl} alt={name} fill className="object-cover" />
+                    <div className="w-full overflow-hidden bg-muted">
+                      <Image
+                        src={promo.imageUrl}
+                        alt={name}
+                        width={1200}
+                        height={900}
+                        loading="lazy"
+                        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                        className="block h-auto w-full"
+                      />
                     </div>
                   )}
-                  <div className="flex flex-1 flex-col justify-between p-8">
+                  <div className="flex flex-1 flex-col justify-between p-4">
                     <div>
                       <div className="flex items-center justify-between gap-4">
                         <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
                         {promo.discountLabel && (
-                          <span className="border border-primary px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
+                          <span className="border border-primary px-3 py-1 text-sm font-semibold uppercase tracking-wide text-primary">
                             {promo.discountLabel}
                           </span>
                         )}
                       </div>
-                      <h3 className="mt-6 font-serif text-2xl text-foreground">{name}</h3>
-                      <p className="mt-3 leading-relaxed text-muted-foreground">{desc}</p>
+                      <h3 className="mt-4 font-serif text-2xl text-foreground">{name}</h3>
+                      <p className="mt-2 text-base leading-relaxed text-muted-foreground">{desc}</p>
                     </div>
                     {isSeasonal && promo.endDate && (
-                      <p className="mt-6 text-xs uppercase tracking-wide text-primary">
+                      <p className="mt-6 text-sm uppercase tracking-wide text-primary">
                         {t.until}{" "}
                         {formatDate(promo.endDate, locale)}
                       </p>

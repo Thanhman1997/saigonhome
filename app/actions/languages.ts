@@ -3,18 +3,9 @@
 import { db } from "@/lib/db"
 import { siteContent } from "@/lib/db/schema"
 import { sql } from "drizzle-orm"
-import { revalidatePath } from "next/cache"
-import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) {
-    throw new Error("Unauthorized")
-  }
-}
+import { revalidatePath, updateTag } from "next/cache"
+import { LAYOUT_DATA_TAG } from "@/lib/data"
+import { assertAdmin } from "@/lib/admin-auth"
 
 const VALID_LOCALES = ["en", "ko", "vi"] as const
 
@@ -34,6 +25,7 @@ export async function updateDefaultLocale(_prevState: { error?: string } | undef
       set: { valueEn: locale, valueKo: locale, valueVi: locale, updatedAt: sql`now()` },
     })
 
+  updateTag(LAYOUT_DATA_TAG)
   revalidatePath("/admin/languages")
   revalidatePath("/")
   return { error: undefined }

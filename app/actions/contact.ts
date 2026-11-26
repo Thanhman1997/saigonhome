@@ -3,18 +3,9 @@
 import { db } from "@/lib/db"
 import { contactInfo } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
-import { revalidatePath } from "next/cache"
-import { cookies } from "next/headers"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) {
-    throw new Error("Unauthorized")
-  }
-}
+import { revalidatePath, updateTag } from "next/cache"
+import { LAYOUT_DATA_TAG } from "@/lib/data"
+import { assertAdmin } from "@/lib/admin-auth"
 
 export async function updateContactInfo(_prevState: { error?: string } | undefined, formData: FormData) {
   await assertAdmin()
@@ -52,6 +43,7 @@ export async function updateContactInfo(_prevState: { error?: string } | undefin
     await db.insert(contactInfo).values(values)
   }
 
+  updateTag(LAYOUT_DATA_TAG)
   revalidatePath("/admin/contact")
   revalidatePath("/")
   return { error: undefined }

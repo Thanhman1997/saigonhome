@@ -6,16 +6,21 @@ import { Footer } from "@/components/footer"
 import { HeroSection } from "@/components/sections/hero"
 import { AboutSection } from "@/components/sections/about"
 import { ServicesSection } from "@/components/sections/services"
+import { ExperienceVideo } from "@/components/sections/experience-video"
 import { ExpertsSection } from "@/components/sections/experts"
 import { Promotions } from "@/components/sections/promotions"
 import { Membership } from "@/components/sections/membership"
 import { Faq } from "@/components/sections/faq"
 import { ContactSection } from "@/components/sections/contact"
+import { ReviewsSection } from "@/components/sections/reviews"
 import { BookingProvider } from "@/lib/booking-context"
 import { BookingDialog } from "@/components/booking/booking-dialog"
 import { AskQuestionWidget } from "@/components/ask-question-widget"
+import { getNavigationSettings } from "@/lib/admin-data"
 import {
   getServicesWithDurations,
+  getServicesContent,
+  getFeaturedServices,
   getAvailableTherapists,
   getTherapists,
   getActivePromotions,
@@ -25,39 +30,52 @@ import {
   getHeroContent,
   getAboutContent,
   getLotusValues,
+  getApprovedReviews,
+  getLatestVideoMedia,
+  getBookingSettings,
 } from "@/lib/data"
 
+const SHOW_ASK_QUESTION_WIDGET = true
+
 export default async function Home() {
-  const [services, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, hero, about, lotusValues] =
+  const [services, servicesContent, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews, videoMedia, bookingSettings] =
     await Promise.all([
       getServicesWithDurations(),
+      getServicesContent(),
+      getFeaturedServices(),
       getTherapists(),
       getAvailableTherapists(),
       getActivePromotions(),
       getMembershipPlans(),
       getFaqs(),
       getContactInfo(),
+      getNavigationSettings(),
       getHeroContent(),
       getAboutContent(),
       getLotusValues(),
+      getApprovedReviews(),
+      getLatestVideoMedia(),
+      getBookingSettings(),
     ])
 
   return (
-    <BookingProvider services={services} therapists={availableTherapists}>
+    <BookingProvider services={services} therapists={availableTherapists} maxGuests={bookingSettings?.maxGuests}>
       <main className="min-h-screen bg-background">
-        <Header />
+        <Header navigationSettings={navigationSettings} />
         <HeroSection hero={hero} />
-        <AboutSection about={about} values={lotusValues} />
-        <ServicesSection services={services} />
+        <ServicesSection services={services} featured={featuredServices} content={servicesContent} />
+        <ExperienceVideo video={videoMedia} />
         <ExpertsSection therapists={allTherapists} />
         <Promotions promotions={promotions} />
+        <AboutSection about={about} values={lotusValues} />
         <Membership plans={plans} />
+        <ReviewsSection reviews={reviews} />
         <Faq faqs={faqs} />
         <ContactSection contactInfo={contactInfo} />
-        <Footer />
+        <Footer contactInfo={contactInfo} />
       </main>
       <BookingDialog />
-      <AskQuestionWidget />
+      {SHOW_ASK_QUESTION_WIDGET && <AskQuestionWidget />}
     </BookingProvider>
   )
 }

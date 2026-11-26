@@ -12,6 +12,7 @@ import {
   WEIGHT_OPTIONS,
   LINE_HEIGHT_OPTIONS,
   DESIGN_PRESETS,
+  COLOR_PALETTES,
   buildDesignTokenVars,
   type DesignSettingsValues,
 } from "@/lib/design-tokens"
@@ -28,11 +29,13 @@ function ColorField({
   value,
   onChange,
 }: { label: string; value: string; onChange: (v: string) => void }) {
+  const inputId = `design-color-${label.toLowerCase().replaceAll(" ", "-")}`
   return (
     <div className="flex flex-col gap-1.5">
-      <Label>{label}</Label>
+      <Label htmlFor={inputId}>{label}</Label>
       <div className="flex items-center gap-2">
         <input
+          id={inputId}
           type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -40,6 +43,7 @@ function ColorField({
         />
         <input
           type="text"
+          aria-label={`${label} hex value`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="h-9 w-28 rounded-md border border-input bg-background px-2 text-sm"
@@ -55,11 +59,12 @@ function SelectField({
   onChange,
   options,
 }: { label: string; value: string; onChange: (v: string) => void; options: { key: string; label: string }[] }) {
+  const inputId = `design-select-${label.toLowerCase().replaceAll(" ", "-")}`
   return (
     <div className="flex flex-col gap-1.5">
-      <Label>{label}</Label>
+      <Label htmlFor={inputId}>{label}</Label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-full">
+        <SelectTrigger id={inputId} className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -94,8 +99,14 @@ export function DesignSettingsForm({ initial }: { initial: DesignSettingsValues 
     })
   }
 
+  function applyPalette(paletteKey: string) {
+    const palette = COLOR_PALETTES.find((option) => option.key === paletteKey)
+    if (!palette) return
+    setValues((previous) => ({ ...previous, ...palette.colors, presetKey: "custom" }))
+  }
+
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <div className="grid grid-cols-1 gap-6 @min-[60rem]:grid-cols-[minmax(0,1fr)_minmax(0,22.5rem)]">
       <form action={formAction} className="flex flex-col gap-6">
         {Object.entries(values).map(([key, value]) => (
           <input key={key} type="hidden" name={key} value={value} />
@@ -125,7 +136,7 @@ export function DesignSettingsForm({ initial }: { initial: DesignSettingsValues 
         </Card>
 
         <Tabs defaultValue="typography">
-          <TabsList>
+          <TabsList className="h-auto max-w-full flex-wrap justify-start">
             <TabsTrigger value="typography">Typography</TabsTrigger>
             <TabsTrigger value="colors">Colors</TabsTrigger>
             <TabsTrigger value="components">Components</TabsTrigger>
@@ -176,13 +187,44 @@ export function DesignSettingsForm({ initial }: { initial: DesignSettingsValues 
 
           <TabsContent value="colors" className="mt-4">
             <Card>
-              <CardContent className="grid gap-4 pt-6 sm:grid-cols-2">
-                <ColorField label="Primary" value={values.colorPrimary} onChange={(v) => set("colorPrimary", v)} />
-                <ColorField label="Secondary" value={values.colorSecondary} onChange={(v) => set("colorSecondary", v)} />
-                <ColorField label="Accent" value={values.colorAccent} onChange={(v) => set("colorAccent", v)} />
-                <ColorField label="Lotus pink" value={values.colorLotusPink} onChange={(v) => set("colorLotusPink", v)} />
-                <ColorField label="Background" value={values.colorBackground} onChange={(v) => set("colorBackground", v)} />
-                <ColorField label="Foreground" value={values.colorForeground} onChange={(v) => set("colorForeground", v)} />
+              <CardHeader>
+                <CardTitle>Site color palettes</CardTitle>
+                <CardDescription>Choose a complete color direction, then fine-tune individual colors below.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-6">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {COLOR_PALETTES.map((palette) => {
+                    const selected = Object.entries(palette.colors).every(([key, value]) => values[key as keyof typeof palette.colors] === value)
+                    const swatches = [palette.colors.colorPrimary, palette.colors.colorAccent, palette.colors.colorSecondary, palette.colors.colorBackground]
+                    return (
+                      <button
+                        key={palette.key}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => applyPalette(palette.key)}
+                        className={`rounded-lg border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                          selected ? "border-primary bg-primary/5" : "border-border hover:bg-muted"
+                        }`}
+                      >
+                        <span className="block text-sm font-medium">{palette.label}</span>
+                        <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">{palette.description}</span>
+                        <span className="mt-3 flex gap-2" aria-hidden="true">
+                          {swatches.map((color, index) => (
+                            <span key={`${palette.key}-${index}`} className="size-5 rounded-full border border-border" style={{ backgroundColor: color }} />
+                          ))}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <ColorField label="Primary" value={values.colorPrimary} onChange={(v) => set("colorPrimary", v)} />
+                  <ColorField label="Secondary" value={values.colorSecondary} onChange={(v) => set("colorSecondary", v)} />
+                  <ColorField label="Accent" value={values.colorAccent} onChange={(v) => set("colorAccent", v)} />
+                  <ColorField label="Lotus pink" value={values.colorLotusPink} onChange={(v) => set("colorLotusPink", v)} />
+                  <ColorField label="Background" value={values.colorBackground} onChange={(v) => set("colorBackground", v)} />
+                  <ColorField label="Foreground" value={values.colorForeground} onChange={(v) => set("colorForeground", v)} />
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

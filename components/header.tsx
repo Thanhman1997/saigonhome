@@ -1,51 +1,101 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState, type MouseEvent } from "react"
+import Image from "next/image"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { LanguageSwitcher } from "@/components/language-switcher"
-import { useLanguage } from "@/lib/i18n/language-provider"
+import { pickLocalized, useLanguage } from "@/lib/i18n/language-provider"
 import { useBooking } from "@/lib/booking-context"
 
-export function Header() {
-  const [open, setOpen] = useState(false)
-  const { t } = useLanguage()
-  const { openBooking } = useBooking()
+type NavigationSetting = { menuKey: string; labelEn: string; labelVi: string; labelKo: string; href: string; visible: boolean; fontFamily?: string; fontSize?: string; fontWeight?: string; textColor?: string; hoverColor?: string }
 
-  const links = [
-    { label: t.nav.services, href: "#services" },
-    { label: t.nav.experts, href: "#experts" },
-    { label: t.nav.promotions, href: "#promotions" },
-    { label: t.nav.faq, href: "#faq" },
-    { label: t.nav.contact, href: "#contact" },
+export function Header({ navigationSettings = [] }: { navigationSettings?: NavigationSetting[] }) {
+  const [open, setOpen] = useState(false)
+  const { locale, t } = useLanguage()
+  const { openBooking } = useBooking()
+  const [pathname, setPathname] = useState("/")
+  const [activeSection, setActiveSection] = useState("")
+
+  useEffect(() => {
+    const syncPathname = () => setPathname(window.location.pathname)
+    syncPathname()
+    window.addEventListener("popstate", syncPathname)
+    return () => window.removeEventListener("popstate", syncPathname)
+  }, [])
+
+  useEffect(() => {
+    if (pathname !== "/") return
+    const sectionIds = ["top", "services", "experts", "faq", "reviews", "contact"]
+    const updateActiveSection = () => {
+      const visibleSections = sectionIds
+        .map((id) => ({ id, top: document.getElementById(id)?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY }))
+        .filter((section) => section.top <= 160)
+      const current = visibleSections.at(-1)?.id ?? "top"
+      setActiveSection(current === "top" ? "home" : current)
+    }
+    updateActiveSection()
+    window.addEventListener("scroll", updateActiveSection, { passive: true })
+    return () => window.removeEventListener("scroll", updateActiveSection)
+  }, [pathname])
+
+  const resolveHref = (href: string) => {
+    return href.startsWith("#") && pathname !== "/" ? `/${href}` : href
+  }
+  const isActive = (link: { menuKey: string; href: string }) => pathname === "/" ? (link.href.startsWith("#") ? activeSection === link.menuKey : false) : (link.href.startsWith("/") && pathname.startsWith(link.href))
+  const handleHashNavigation = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!href.startsWith("#") || pathname !== "/") return
+
+    event.preventDefault()
+    const target = document.querySelector(href)
+    if (target) {
+      const headerOffset = 96
+      const top = target.getBoundingClientRect().top + window.scrollY - headerOffset
+      window.scrollTo({ top, behavior: "auto" })
+    }
+    setOpen(false)
+    setActiveSection(href === "#top" ? "home" : href.slice(1))
+  }
+
+  const defaultLinks: NavigationSetting[] = [
+    { menuKey: "home", labelEn: "HOME", labelVi: "TRANG CHỦ", labelKo: "홈", href: "#top", visible: true },
+    { menuKey: "services", labelEn: t.nav.services, labelVi: t.nav.services, labelKo: t.nav.services, href: "#services", visible: true },
+    { menuKey: "booking", labelEn: "Booking", labelVi: "Đặt lịch", labelKo: "예약", href: "/booking", visible: true },
+    { menuKey: "experts", labelEn: t.nav.experts, labelVi: t.nav.experts, labelKo: t.nav.experts, href: "#experts", visible: true },
+    { menuKey: "reviews", labelEn: t.nav.reviews, labelVi: t.nav.reviews, labelKo: t.nav.reviews, href: "#reviews", visible: true },
+    { menuKey: "faq", labelEn: t.nav.faq, labelVi: t.nav.faq, labelKo: t.nav.faq, href: "#faq", visible: true },
+    { menuKey: "contact", labelEn: t.nav.contact, labelVi: t.nav.contact, labelKo: t.nav.contact, href: "#contact", visible: true },
   ]
+  const allowedMenuKeys = new Set(["home", "services", "experts", "contact", "faq", "reviews", "booking"])
+  const configuredKeys = new Set(navigationSettings.map((link) => link.menuKey))
+  const links = [...navigationSettings.filter((link) => allowedMenuKeys.has(link.menuKey)), ...defaultLinks.filter((link) => !configuredKeys.has(link.menuKey))]
+    .filter((link) => allowedMenuKeys.has(link.menuKey) && link.visible)
+    .map((link) => ({ ...link, label: pickLocalized({ en: link.labelEn, vi: link.labelVi, ko: link.labelKo }, locale) }))
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur-md">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
-        <a href="#top" className="group flex items-center gap-3" aria-label="Lotus Wellness home">
-          <span className="flex size-10 items-center justify-center rounded-full border border-secondary/60 font-serif text-xl text-secondary transition-transform group-hover:rotate-6">L</span>
-          <span className="hidden font-serif text-2xl leading-none tracking-tight text-foreground sm:block">Lotus Wellness</span>
+    <header className="sticky top-0 z-50 border-b-2 border-[#d96b8a] bg-header-background backdrop-blur-md">
+      <div className="mx-auto flex h-20 min-w-0 w-full max-w-[96rem] items-center justify-between gap-2 px-3 sm:h-24 sm:px-5 lg:h-24 lg:pr-5 lg:pl-12">
+        <a href={resolveHref("#top")} onClick={(event) => handleHashNavigation(event, "#top")} className="group flex items-center" aria-label="Lotus Wellness home">
+          <Image src="/images/lotus-wellness-logo.png" alt="Lotus Wellness Massage" width={150} height={112} priority className="h-14 max-w-[44vw] w-auto object-contain mix-blend-multiply sm:h-16 sm:max-w-none lg:h-24" />
         </a>
-        <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Primary navigation">
           {links.map((link) => (
             <a
               key={link.href}
-              href={link.href}
-              className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
+              href={resolveHref(link.href)}
+              onClick={(event) => handleHashNavigation(event, resolveHref(link.href))}
+              className={`relative tracking-[0.08em] transition-colors ${locale === "en" || locale === "vi" ? "uppercase" : ""} ${isActive(link) ? "text-accent after:absolute after:-bottom-3 after:left-0 after:h-0.5 after:w-7 after:bg-accent" : "text-foreground/80"}`}
+              style={{ fontFamily: locale === "ko" ? '"Spoqa Han Sans Neo", "Noto Sans KR", sans-serif' : locale === "en" || locale === "vi" ? '"Palatino Linotype", Palatino, Georgia, serif' : link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? "1.15rem" : locale === "en" ? "1.15rem" : locale === "ko" ? "1.5rem" : (link.fontSize === "lg" ? "2.25rem" : link.fontSize === "md" ? "2rem" : "1.5rem"), fontWeight: locale === "ko" ? 600 : 500, color: isActive(link) ? "var(--accent)" : link.textColor === "inherit" ? undefined : link.textColor }}
             >
               {link.label}
             </a>
           ))}
         </nav>
-        <div className="hidden items-center gap-5 lg:flex">
+        <div className="flex min-w-0 items-center lg:hidden">
           <LanguageSwitcher />
-          <Button type="button" size="sm" onClick={() => openBooking()} className="rounded-full px-5 text-xs uppercase tracking-[0.14em]">
-            {t.nav.book}
-          </Button>
         </div>
         <button
-          className="flex size-11 items-center justify-center lg:hidden"
+          className="flex size-11 shrink-0 items-center justify-center lg:hidden"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls="mobile-menu"
@@ -53,21 +103,24 @@ export function Header() {
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
+        <div className="hidden items-center gap-5 lg:flex">
+          <LanguageSwitcher />
+          <Button type="button" size="sm" onClick={() => openBooking()} className="rounded-full px-5 text-xs uppercase tracking-[0.14em]">
+            {t.nav.book}
+          </Button>
+        </div>
       </div>
       {open && (
-        <nav id="mobile-menu" className="border-t border-border bg-background px-5 py-6 lg:hidden" aria-label="Mobile navigation">
+        <nav id="mobile-menu" className="border-t border-border bg-card px-5 py-6 lg:hidden" aria-label="Mobile navigation">
           <div className="flex flex-col gap-5">
             {links.map((link) => (
-              <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="font-serif text-2xl">
+              <a key={link.href} href={resolveHref(link.href)} onClick={(event) => { handleHashNavigation(event, resolveHref(link.href)); if (!event.defaultPrevented) setOpen(false) }} className={`font-serif text-4xl font-bold ${locale === "en" ? "uppercase" : ""} ${isActive(link) ? "text-accent" : "text-foreground"}`} style={{ fontFamily: link.fontFamily === "inherit" ? undefined : link.fontFamily, fontSize: locale === "vi" ? (link.fontSize === "lg" ? "2.2rem" : link.fontSize === "md" ? "1.9rem" : "1.6rem") : locale === "en" ? (link.fontSize === "lg" ? "2.7rem" : link.fontSize === "md" ? "2.25rem" : "1.8rem") : (link.fontSize === "lg" ? "3rem" : link.fontSize === "md" ? "2.5rem" : "2rem"), fontWeight: 800, color: isActive(link) || link.textColor === "inherit" ? undefined : link.textColor }}>
                 {link.label}
               </a>
             ))}
-            <div className="mt-1 flex items-center justify-between gap-4">
-              <LanguageSwitcher />
-              <Button type="button" onClick={() => { setOpen(false); openBooking() }} className="rounded-full px-5 text-xs uppercase tracking-[0.14em]">
-                {t.nav.book}
-              </Button>
-            </div>
+            <Button type="button" onClick={() => { setOpen(false); openBooking() }} className="w-fit rounded-full px-5 text-xs uppercase tracking-[0.14em]">
+              {t.nav.book}
+            </Button>
           </div>
         </nav>
       )}

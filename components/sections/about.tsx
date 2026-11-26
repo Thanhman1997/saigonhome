@@ -17,6 +17,7 @@ const ICON_MAP: Record<string, typeof Sparkles> = {
   leaf: Leaf,
 }
 const fallbackIcons = [Sparkles, Home, Wallet, Lock]
+const valueImages = ["/images/value-hotel-booking.png", "/images/value-privacy-premium.png", "/images/value-healing-premium.png", "/images/value-professional-premium.png"]
 
 type About = Awaited<ReturnType<typeof getAboutContent>>
 type LotusValue = Awaited<ReturnType<typeof getLotusValues>>[number]
@@ -29,36 +30,27 @@ export function AboutSection({ about, values }: { about: About; values: LotusVal
   const body = about && about[bodyKey].length > 0 ? about[bodyKey] : t.about.body
 
   return (
-    <section id="about" className="bg-background py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8">
+    <section id="about" className="bg-header-background py-20 lg:py-28">
+      <div className="mx-auto max-w-[80rem] px-8 lg:px-20">
         <div className="mx-auto max-w-3xl text-center">
-          <Image src="/images/lotus-philosophy-logo.png" alt="Lotus Wellness" width={720} height={420} className="mx-auto mb-3 h-auto w-80 object-contain sm:w-[28rem] lg:w-[34rem]" priority />
-          <h2 className={`mt-0 text-balance font-extrabold leading-tight tracking-tight text-guiding-pink ${locale === "ko" ? "font-korean-serif text-4xl sm:text-5xl lg:text-6xl" : "font-serif text-4xl sm:text-5xl lg:text-6xl"}`}>{title}</h2>
-          <div className="mt-8 flex flex-col gap-4 text-left">
-            {body.map((paragraph, idx) => <p key={idx} className="text-pretty text-base leading-relaxed text-muted-foreground first:text-lg first:text-foreground">{paragraph}</p>)}
+          <Image src="/images/lotus-philosophy-logo.png" alt="Lotus Wellness" width={720} height={420} className="mx-auto mb-3 h-auto w-48 object-contain mix-blend-multiply sm:w-56 lg:w-64" loading="lazy" />
+          <h2 className="section-heading mt-3 text-balance font-serif text-accent">{title}</h2>
+          <div className="mt-8 flex flex-col gap-5 text-left">
+            {body.map((paragraph, idx) => <p key={idx} className="text-pretty text-base leading-7 text-foreground/80 sm:text-lg">{paragraph}</p>)}
           </div>
         </div>
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {values.length > 0
-            ? values.map((value) => {
-                const Icon = ICON_MAP[value.icon] ?? Sparkles
-                const text = pickLocalized({ en: value.textEn, ko: value.textKo, vi: value.textVi }, locale)
-                return (
-                  <article key={value.id} className="rounded-2xl bg-muted p-6">
-                    <Icon className="size-7 text-accent" />
-                    <h3 className="mt-5 font-serif text-2xl">{text}</h3>
-                  </article>
-                )
-              })
-            : t.about.values.map((value, idx) => {
-                const Icon = fallbackIcons[idx]
-                return (
-                  <article key={value} className="rounded-2xl bg-muted p-6">
-                    <Icon className="size-7 text-accent" />
-                    <h3 className="mt-5 font-serif text-2xl">{value}</h3>
-                  </article>
-                )
-              })}
+        <div className="mt-16 grid items-stretch gap-6 lg:grid-cols-[1.4fr_.6fr]">
+          <div className="relative min-h-80 overflow-hidden rounded-2xl lg:min-h-[22rem]"><Image src={about?.imageUrl || "/images/spa-massage.png"} alt="Therapist delivering a calming massage at home" fill loading="lazy" className="object-cover transition-transform duration-700 hover:scale-105" /></div>
+          <div className="grid gap-3">
+            {values.length > 0 ? values.map((value, index) => {
+              const Icon = ICON_MAP[value.icon] ?? Sparkles
+              const text = pickLocalized({ en: value.textEn, ko: value.textKo, vi: value.textVi }, locale)
+              return <article key={value.id} className="group flex min-h-28 w-full max-w-xs justify-self-end items-center gap-3 rounded-[1.25rem] border border-accent/15 bg-accent/10 px-3 py-3 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15"><div className="relative size-24 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[index % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div><div className="flex min-w-0 items-center gap-2"><Icon className="size-5 shrink-0 text-accent" aria-hidden="true" /><h3 className="whitespace-nowrap font-serif text-3xl font-semibold leading-tight text-accent">{text}</h3></div></article>
+            }) : t.about.values.map((value, index) => {
+              const Icon = fallbackIcons[index]
+              return <article key={value} className="group flex min-h-28 w-full max-w-xs justify-self-end items-center gap-3 rounded-[1.25rem] border border-accent/15 bg-accent/10 px-3 py-3 transition-all duration-500 hover:-translate-y-1 hover:bg-accent/15"><div className="relative size-24 shrink-0 overflow-hidden rounded-full ring-2 ring-card"><Image src={valueImages[index % valueImages.length]} alt="" fill className="object-cover transition-transform duration-500 group-hover:scale-110" /></div><div className="flex min-w-0 items-center gap-2"><Icon className="size-4 shrink-0 text-accent" aria-hidden="true" /><h3 className="whitespace-nowrap font-serif text-3xl font-semibold leading-tight text-accent">{value}</h3></div></article>
+            })}
+          </div>
         </div>
       </div>
     </section>

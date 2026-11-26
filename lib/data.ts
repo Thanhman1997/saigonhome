@@ -1,6 +1,8 @@
+import { list } from "@vercel/blob"
 import { db } from "@/lib/db"
 import {
   services,
+  servicesContent,
   serviceDurations,
   therapists,
   reviews,
@@ -14,8 +16,76 @@ import {
   designSettings,
   bookingSettings,
   siteContent,
+  sectionStyles,
 } from "@/lib/db/schema"
-import { and, asc, eq, desc } from "drizzle-orm"
+import { and, asc, eq, desc, sql } from "drizzle-orm"
+import { unstable_cache } from "next/cache"
+
+export const LAYOUT_DATA_TAG = "site-layout"
+
+const loadLayoutSiteData = unstable_cache(
+  async () => {
+    const [localeRows, designRows, styleRows, contactRows] = await Promise.all([
+      db.select().from(siteContent).where(eq(siteContent.key, "default_locale")).limit(1),
+      db.select().from(designSettings).limit(1),
+      db.select().from(sectionStyles),
+      db.select().from(contactInfo).limit(1),
+    ])
+    return {
+      databaseLocale: localeRows[0]?.valueEn ?? null,
+      designSettings: designRows[0] ?? null,
+      sectionStyles: styleRows,
+      contactInfo: contactRows[0] ?? null,
+    }
+  },
+  ["site-layout-data"],
+  { tags: [LAYOUT_DATA_TAG], revalidate: 300 },
+)
+
+/**
+ * Locale, design tokens, section styles, and contact info read by the root layout on every request.
+ * Cached for five minutes and expired immediately by the admin actions that change them (updateTag).
+ * Errors are not cached: a failed read falls back to defaults and retries on the next request.
+ */
+export async function getLayoutSiteData() {
+  try {
+    const data = await loadLayoutSiteData()
+    const locale = data.databaseLocale
+    return { ...data, defaultLocale: locale === "ko" || locale === "vi" ? locale : ("en" as SiteLocale) }
+  } catch {
+    return { databaseLocale: null, designSettings: null, sectionStyles: [], contactInfo: null, defaultLocale: "en" as SiteLocale }
+  }
+}
+
+export async function getLatestVideoMedia() {
+  const configured = await db.select().from(siteContent).where(eq(siteContent.key, "experience_video")).limit(1)
+  const value = configured[0]?.valueEn
+  if (value) {
+    try {
+      const parsed = JSON.parse(value) as { videoUrl?: string; thumbnailUrl?: string; aspectRatio?: number }
+      if (parsed.videoUrl) return { videoUrl: parsed.videoUrl, thumbnailUrl: parsed.thumbnailUrl ?? null, aspectRatio: parsed.aspectRatio ?? 16 / 9 }
+    } catch {
+      // Ignore legacy or malformed configuration and use the media fallback below.
+    }
+  }
+  const { blobs } = await list({ prefix: "lotus-wellness/" })
+  const video = blobs.filter((blob) => /\.(mp4|webm)$/i.test(blob.pathname)).sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0]
+  return video ? { videoUrl: `/api/media?pathname=${encodeURIComponent(video.pathname)}`, thumbnailUrl: null, aspectRatio: 16 / 9 } : null
+}
+
+export async function getServicesContent() {
+  const rows = await db.select().from(servicesContent).limit(1)
+  const row = rows[0]
+  if (!row) return null
+
+  // Keep legacy database rows from overwriting the canonical multilingual dictionary.
+  return {
+    ...row,
+    kickerEn: row.kickerEn,
+    kickerKo: row.kickerKo,
+    kickerVi: row.kickerVi,
+  }
+}
 
 export async function getServicesWithDurations() {
   const allServices = await db.select().from(services).where(eq(services.active, true)).orderBy(asc(services.sortOrder))
@@ -29,14 +99,22 @@ export async function getServicesWithDurations() {
   }))
 }
 
+export async function getFeaturedServices() {
+  const serviceList = await getServicesWithDurations()
+  return serviceList.slice(0, 3)
+}
+
+export async function getServiceBySlug(slug: string) {
+  const serviceList = await getServicesWithDurations()
+  return serviceList.find((service) => service.slug === slug) ?? null
+}
+
 export async function getTherapists() {
-  return db.select().from(therapists).orderBy(asc(therapists.code))
+  return db.select().from(therapists).where(eq(therapists.visible, true)).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getAvailableTherapists() {
-  return db.select().from(therapists)
-    .where(and(eq(therapists.available, true), eq(therapists.status, "active")))
-    .orderBy(asc(therapists.code))
+  return db.select().from(therapists).where(and(eq(therapists.visible, true), eq(therapists.available, true))).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getApprovedReviews() {
@@ -50,8 +128,19 @@ export async function getActivePromotions() {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date())
-  const all = await db.select().from(events).where(eq(events.active, true)).orderBy(asc(events.sortOrder))
-  return all.filter((e) => (!e.startDate || e.startDate <= now) && (!e.endDate || e.endDate >= now))
+  const all = await db.select().from(events).where(eq(events.active, true)).orderBy(asc(events.sortOrder), asc(events.startDate), asc(events.id))
+  const seasonal = all.filter((event) => event.type === "seasonal")
+  const currentSeasonal = seasonal.filter((event) => (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now))
+  if (currentSeasonal.length > 0) return [...currentSeasonal, ...all.filter((event) => event.type !== "seasonal" && (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now))].slice(0, 3)
+
+  const nextSeasonal = seasonal.find((event) => event.startDate && event.startDate > now)
+  if (nextSeasonal) {
+    const fallback = all.filter((event) => event.id !== nextSeasonal.id && event.type !== "seasonal" && (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now)).slice(0, 2)
+    return [nextSeasonal, ...fallback]
+  }
+
+  const current = all.filter((event) => (!event.startDate || event.startDate <= now) && (!event.endDate || event.endDate >= now))
+  return current.slice(0, 3)
 }
 
 export async function getMembershipPlans() {
@@ -63,8 +152,12 @@ export async function getFaqs() {
 }
 
 export async function getContactInfo() {
-  const rows = await db.select().from(contactInfo).limit(1)
-  return rows[0] ?? null
+  try {
+    const rows = await db.select().from(contactInfo).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export async function getHeroContent() {
@@ -81,9 +174,21 @@ export async function getLotusValues() {
   return db.select().from(lotusValues).where(eq(lotusValues.active, true)).orderBy(asc(lotusValues.sortOrder))
 }
 
+export async function getSectionStyles() {
+  try {
+    return await db.select().from(sectionStyles)
+  } catch {
+    return []
+  }
+}
+
 export async function getDesignSettings() {
-  const rows = await db.select().from(designSettings).limit(1)
-  return rows[0] ?? null
+  try {
+    const rows = await db.select().from(designSettings).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export async function getBookingSettings() {
@@ -95,7 +200,11 @@ const VALID_LOCALES = ["en", "ko", "vi"] as const
 export type SiteLocale = (typeof VALID_LOCALES)[number]
 
 export async function getDefaultLocale(): Promise<SiteLocale> {
-  const rows = await db.select().from(siteContent).where(eq(siteContent.key, "default_locale")).limit(1)
-  const value = rows[0]?.valueEn
-  return (VALID_LOCALES as readonly string[]).includes(value ?? "") ? (value as SiteLocale) : "en"
+  try {
+    const rows = await db.select().from(siteContent).where(eq(siteContent.key, "default_locale")).limit(1)
+    const value = rows[0]?.valueEn
+    return (VALID_LOCALES as readonly string[]).includes(value ?? "") ? (value as SiteLocale) : "en"
+  } catch {
+    return "en"
+  }
 }

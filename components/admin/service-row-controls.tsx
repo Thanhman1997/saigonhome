@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition } from "react"
+import { useState, useTransition } from "react"
 import { ArrowUp, ArrowDown, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { toggleServiceActive, deleteService, reorderService } from "@/app/actions/services"
+import { toggleServiceActive, deleteService, reorderService, type ServiceActionResult } from "@/app/actions/services"
 
 export function ServiceRowControls({
   serviceId,
@@ -30,15 +30,28 @@ export function ServiceRowControls({
   canMoveDown: boolean
 }) {
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+
+  function run(action: () => Promise<ServiceActionResult>) {
+    setError(null)
+    startTransition(async () => {
+      try {
+        const result = await action()
+        if (result.error) setError(result.error)
+      } catch {
+        setError("The request failed. Please try again.")
+      }
+    })
+  }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex flex-wrap items-center gap-1">
       <Button
         variant="ghost"
         size="icon"
         className="size-8 text-muted-foreground hover:text-foreground"
         disabled={isPending || !canMoveUp}
-        onClick={() => startTransition(() => reorderService(serviceId, "up"))}
+        onClick={() => run(() => reorderService(serviceId, "up"))}
       >
         <ArrowUp className="size-4" />
         <span className="sr-only">Move up</span>
@@ -48,7 +61,7 @@ export function ServiceRowControls({
         size="icon"
         className="size-8 text-muted-foreground hover:text-foreground"
         disabled={isPending || !canMoveDown}
-        onClick={() => startTransition(() => reorderService(serviceId, "down"))}
+        onClick={() => run(() => reorderService(serviceId, "down"))}
       >
         <ArrowDown className="size-4" />
         <span className="sr-only">Move down</span>
@@ -58,7 +71,7 @@ export function ServiceRowControls({
           id={`service-${serviceId}`}
           checked={active}
           disabled={isPending}
-          onCheckedChange={(checked) => startTransition(() => toggleServiceActive(serviceId, checked))}
+          onCheckedChange={(checked) => run(() => toggleServiceActive(serviceId, checked))}
         />
         <Label htmlFor={`service-${serviceId}`} className="text-xs text-muted-foreground">
           {active ? "Active" : "Inactive"}
@@ -82,7 +95,7 @@ export function ServiceRowControls({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={isPending}
-              onClick={() => startTransition(() => deleteService(serviceId))}
+              onClick={() => run(() => deleteService(serviceId))}
               className="bg-destructive text-white hover:bg-destructive/90"
             >
               Delete
@@ -90,6 +103,11 @@ export function ServiceRowControls({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {error && (
+        <p role="alert" className="basis-full text-xs text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

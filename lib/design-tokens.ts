@@ -2,7 +2,17 @@
 // Keeps the set of choices the admin can pick from intentionally small and
 // vetted (fonts, radii, shadows) so arbitrary/unsafe values never reach CSS.
 
-export type FontKey = "cormorant" | "dm-sans" | "playfair" | "dm-serif-display" | "lora" | "manrope" | "inter"
+export type FontKey =
+  | "cormorant"
+  | "dm-sans"
+  | "playfair"
+  | "dm-serif-display"
+  | "lora"
+  | "manrope"
+  | "inter"
+  | "noto-sans"
+  | "noto-sans-kr"
+  | "noto-serif-kr"
 
 export const FONT_OPTIONS: { key: FontKey; label: string; cssVar: string; category: "serif" | "sans" }[] = [
   { key: "cormorant", label: "Cormorant Garamond", cssVar: "--font-cormorant", category: "serif" },
@@ -12,6 +22,9 @@ export const FONT_OPTIONS: { key: FontKey; label: string; cssVar: string; catego
   { key: "dm-sans", label: "DM Sans", cssVar: "--font-dm-sans", category: "sans" },
   { key: "manrope", label: "Manrope", cssVar: "--font-manrope", category: "sans" },
   { key: "inter", label: "Inter", cssVar: "--font-inter", category: "sans" },
+  { key: "noto-sans", label: "Noto Sans", cssVar: "--font-noto-sans", category: "sans" },
+  { key: "noto-sans-kr", label: "Noto Sans KR", cssVar: "--font-noto-sans-kr", category: "sans" },
+  { key: "noto-serif-kr", label: "Noto Serif KR", cssVar: "--font-noto-serif-kr", category: "serif" },
 ]
 
 export function fontCssVar(key: string): string {
@@ -84,15 +97,25 @@ export function lineHeightValue(key: string): string {
   return LINE_HEIGHT_OPTIONS.find((l) => l.key === key)?.value ?? "1.5"
 }
 
+// Keep the contact section warm-white on vivid pink palette backgrounds, rather than switching to near-black.
+const LOTUS_PINK_FOREGROUND = "#ffffff"
+
 /** Picks a legible foreground (near-black or near-white) for a given hex background. */
 export function contrastForeground(hex: string): string {
   const clean = hex.replace("#", "")
-  if (clean.length !== 6) return "#ffffff"
-  const r = Number.parseInt(clean.slice(0, 2), 16)
-  const g = Number.parseInt(clean.slice(2, 4), 16)
-  const b = Number.parseInt(clean.slice(4, 6), 16)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance > 0.6 ? "#211a12" : "#fdfaf3"
+  if (!/^[0-9a-fA-F]{6}$/.test(clean)) return "#ffffff"
+  const channels = [0, 2, 4].map((offset) => Number.parseInt(clean.slice(offset, offset + 2), 16) / 255)
+  const linear = channels.map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+  const luminance = 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+  const dark = "#211a12"
+  const light = "#fdfaf3"
+  const contrast = (foreground: string) => {
+    const foregroundLuminance = foreground === dark ? 0.010 : 0.960
+    const lighter = Math.max(luminance, foregroundLuminance)
+    const darker = Math.min(luminance, foregroundLuminance)
+    return (lighter + 0.05) / (darker + 0.05)
+  }
+  return contrast(dark) >= contrast(light) ? dark : light
 }
 
 export type DesignSettingsValues = {
@@ -127,12 +150,12 @@ export const DESIGN_PRESETS: { key: string; label: string; description: string; 
       bodySize: "md",
       fontWeightBody: "normal",
       lineHeight: "normal",
-      colorPrimary: "#2b2016",
-      colorSecondary: "#dcc9a0",
-      colorAccent: "#8a6a3f",
-      colorLotusPink: "#b06a71",
-      colorBackground: "#f7f2e4",
-      colorForeground: "#2b2016",
+      colorPrimary: "#d97706",
+      colorSecondary: "#f3e4d1",
+      colorAccent: "#c65d24",
+      colorLotusPink: "#e94f87",
+      colorBackground: "#fbe1bf",
+      colorForeground: "#3b2418",
       buttonRadius: "full",
       buttonSize: "md",
       cardRadius: "lg",
@@ -190,12 +213,85 @@ export const DESIGN_PRESETS: { key: string; label: string; description: string; 
   },
 ]
 
+export type DesignColorPalette = Pick<
+  DesignSettingsValues,
+  "colorPrimary" | "colorSecondary" | "colorAccent" | "colorLotusPink" | "colorBackground" | "colorForeground"
+>
+
+export const COLOR_PALETTES: { key: string; label: string; description: string; colors: DesignColorPalette }[] = [
+  {
+    key: "lotus-signature",
+    label: "Lotus Signature",
+    description: "Warm amber, soft peach, and a touch of lotus pink.",
+    colors: {
+      colorPrimary: "#d97706",
+      colorSecondary: "#f3e4d1",
+      colorAccent: "#c65d24",
+      colorLotusPink: "#e94f87",
+      colorBackground: "#fbe1bf",
+      colorForeground: "#3b2418",
+    },
+  },
+  {
+    key: "sage-garden",
+    label: "Sage Garden",
+    description: "Quiet greens and natural stone for a restorative feel.",
+    colors: {
+      colorPrimary: "#456453",
+      colorSecondary: "#e2e8df",
+      colorAccent: "#76876b",
+      colorLotusPink: "#ba777f",
+      colorBackground: "#f5f4ed",
+      colorForeground: "#26302b",
+    },
+  },
+  {
+    key: "saigon-sunset",
+    label: "Saigon Sunset",
+    description: "Terracotta, apricot, and rose inspired by late afternoon light.",
+    colors: {
+      colorPrimary: "#9e442e",
+      colorSecondary: "#f3ddc6",
+      colorAccent: "#d36c3e",
+      colorLotusPink: "#c75a75",
+      colorBackground: "#fff5e9",
+      colorForeground: "#3b281f",
+    },
+  },
+  {
+    key: "coastal-quiet",
+    label: "Coastal Quiet",
+    description: "Calm sea-glass blues with a soft, airy backdrop.",
+    colors: {
+      colorPrimary: "#315c6b",
+      colorSecondary: "#dcebe9",
+      colorAccent: "#3e8790",
+      colorLotusPink: "#bf727c",
+      colorBackground: "#f1f7f6",
+      colorForeground: "#203238",
+    },
+  },
+  {
+    key: "monsoon-stone",
+    label: "Monsoon Stone",
+    description: "Deep mocha and muted rose with a calm neutral base.",
+    colors: {
+      colorPrimary: "#423d36",
+      colorSecondary: "#e3dfd8",
+      colorAccent: "#856b51",
+      colorLotusPink: "#b8787c",
+      colorBackground: "#f7f5f1",
+      colorForeground: "#292722",
+    },
+  },
+]
+
 /** Builds a plain object of CSS custom properties for scoped, inline-style previews (no global side effects). */
 export function buildDesignTokenVars(s: DesignSettingsValues): Record<string, string> {
   const primaryFg = contrastForeground(s.colorPrimary)
   const accentFg = contrastForeground(s.colorAccent)
   const secondaryFg = contrastForeground(s.colorSecondary)
-  const lotusFg = contrastForeground(s.colorLotusPink)
+  const lotusFg = LOTUS_PINK_FOREGROUND
 
   return {
     "--background": s.colorBackground,
@@ -225,7 +321,7 @@ export function buildDesignTokenCss(s: DesignSettingsValues): string {
   const primaryFg = contrastForeground(s.colorPrimary)
   const accentFg = contrastForeground(s.colorAccent)
   const secondaryFg = contrastForeground(s.colorSecondary)
-  const lotusFg = contrastForeground(s.colorLotusPink)
+  const lotusFg = LOTUS_PINK_FOREGROUND
 
   return `:root{
   --background:${s.colorBackground};

@@ -4,14 +4,22 @@ import { MediaGallery, type MediaFile } from "@/components/admin/media-gallery"
 export const metadata = { title: "Media Library" }
 
 export default async function AdminMediaPage() {
-  const { blobs } = await list({ prefix: "lotus-wellness/" })
+  let blobs: Awaited<ReturnType<typeof list>>["blobs"] = []
+  let storageError = false
+  try {
+    blobs = (await list({ prefix: "lotus-wellness/" })).blobs
+  } catch {
+    storageError = true
+  }
 
   const files: MediaFile[] = blobs
     .map((blob) => ({
-      url: blob.url,
+      url: `/api/media?pathname=${encodeURIComponent(blob.pathname)}`,
+      blobUrl: blob.url,
       pathname: blob.pathname,
       size: blob.size,
       uploadedAt: blob.uploadedAt.toISOString(),
+      contentType: /\.webm$/i.test(blob.pathname) ? "video/webm" : /\.mp4$/i.test(blob.pathname) ? "video/mp4" : "image/*",
     }))
     .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
 
@@ -20,9 +28,14 @@ export default async function AdminMediaPage() {
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Media Library</h1>
         <p className="text-sm text-muted-foreground">
-          Upload and manage images used across the site. Copy a URL to paste it into any image field.
+          Upload and manage images and short videos used across the site. Copy a URL to use media in content fields.
         </p>
       </div>
+      {storageError && (
+        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          Could not load files from storage. The Blob store may be suspended or unreachable. Existing site content is not affected.
+        </p>
+      )}
       <MediaGallery files={files} />
     </div>
   )

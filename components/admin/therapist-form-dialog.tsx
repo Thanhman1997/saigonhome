@@ -34,8 +34,6 @@ type TherapistRow = {
   bioKo: string | null
   bioVi: string | null
   photoUrl: string | null
-  status: string
-  maxBookingsPerDay: number
 }
 
 function SubmitButton() {
@@ -73,22 +71,15 @@ export function TherapistFormDialog({ therapist }: { therapist: TherapistRow }) 
           <DialogDescription>Update profile details and photo shown on the public site.</DialogDescription>
         </DialogHeader>
         <form action={formAction} className="flex flex-col gap-4">
-          <ImageUpload label="Photo" name="photoUrl" value={photoUrl} onChange={setPhotoUrl} />
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="status">Publishing status</Label>
-              <select id="status" name="status" defaultValue={therapist.status} className="h-9 rounded-md border bg-background px-3 text-sm">
-                <option value="draft">Draft</option>
-                <option value="active">Active / public</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="maxBookingsPerDay">Daily booking limit</Label>
-              <Input id="maxBookingsPerDay" name="maxBookingsPerDay" type="number" min="1" defaultValue={therapist.maxBookingsPerDay ?? 4} />
-            </div>
-          </div>
+          <ImageUpload
+            label="Photo (hiển thị tỉ lệ 4:3 trên website)"
+            name="photoUrl"
+            value={photoUrl}
+            onChange={setPhotoUrl}
+            aspect="aspect-[4/3]"
+            className="w-full max-w-sm"
+            fit="object-cover"
+          />
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="flex flex-col gap-1.5">

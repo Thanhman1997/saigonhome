@@ -1,12 +1,15 @@
 import { getAllQuestions } from "@/lib/admin-data"
-import { QuestionReplyForm } from "@/components/admin/question-reply-form"
+import { AdminPushNotifications } from "@/components/admin/admin-push-notifications"
+import { QuestionReplyForm, ResendReplyEmailButton } from "@/components/admin/question-reply-form"
 import { Badge } from "@/components/ui/badge"
+import { getAdminWebPushPublicKey } from "@/lib/admin-web-push"
 
 export const metadata = { title: "Questions" }
 
 export default async function AdminQuestionsPage() {
   const questions = await getAllQuestions()
   const pendingCount = questions.filter((q) => q.status === "pending").length
+  const applicationServerKey = getAdminWebPushPublicKey()
 
   return (
     <div className="flex flex-col gap-6">
@@ -17,6 +20,8 @@ export default async function AdminQuestionsPage() {
         </p>
       </div>
 
+      <AdminPushNotifications applicationServerKey={applicationServerKey} />
+
       <div className="flex flex-col gap-3">
         {questions.map((q) => (
           <div key={q.id} className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
@@ -24,6 +29,7 @@ export default async function AdminQuestionsPage() {
               <div className="flex items-center gap-2">
                 <span className="font-medium text-foreground">{q.name}</span>
                 <span className="text-xs text-muted-foreground">{q.email}</span>
+                {q.phone && <span className="text-xs text-muted-foreground">{q.phone}</span>}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">
@@ -44,6 +50,14 @@ export default async function AdminQuestionsPage() {
             )}
 
             {q.status === "pending" && <QuestionReplyForm questionId={q.id} />}
+            {q.status === "answered" && q.reply && q.replyEmailStatus !== "sent" && (
+              <div className="flex flex-col gap-2">
+                <p role="alert" className="text-sm text-destructive">
+                  The reply email has not been delivered to the customer.
+                </p>
+                <ResendReplyEmailButton questionId={q.id} />
+              </div>
+            )}
           </div>
         ))}
         {questions.length === 0 && (

@@ -1,3 +1,38 @@
+const isDevelopment = process.env.NODE_ENV !== "production"
+const scriptSources = ["'self'", "'unsafe-inline'", ...(isDevelopment ? ["'unsafe-eval'"] : [])]
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "img-src 'self' data: https:",
+  "style-src 'self' 'unsafe-inline'",
+  `script-src ${scriptSources.join(" ")}`,
+  "connect-src 'self' https://vitals.vercel-insights.com https://vercel.com https://*.blob.vercel-storage.com",
+  "font-src 'self' data:",
+].join("; ")
+
 /** @type {import('next').NextConfig} */
-const nextConfig={images:{formats:["image/avif","image/webp"]},async headers(){return [{source:"/:path*",headers:[{key:"X-Content-Type-Options",value:"nosniff"},{key:"Referrer-Policy",value:"strict-origin-when-cross-origin"},{key:"Strict-Transport-Security",value:"max-age=63072000"},{key:"Permissions-Policy",value:"camera=(), microphone=(), geolocation=()"},{key:"Content-Security-Policy-Report-Only",value:"default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://vitals.vercel-insights.com; font-src 'self' data:;"}]}]}}
+const nextConfig = {
+  images: {
+    localPatterns: [{ pathname: "/api/media" }],
+    remotePatterns: [{ protocol: "https", hostname: "hebbkx1anhila5yf.public.blob.vercel-storage.com" }],
+    formats: ["image/avif", "image/webp"],
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          // Report-only until the policy has been observed in production without violations.
+          { key: "Content-Security-Policy-Report-Only", value: contentSecurityPolicy },
+        ],
+      },
+    ]
+  },
+}
+
 export default nextConfig

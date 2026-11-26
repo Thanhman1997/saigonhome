@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { updateBookingSettings } from "@/app/actions/booking-settings"
+import { MAX_BOOKING_GUESTS } from "@/lib/booking-rules"
 
 type BookingSettingsRow = {
   id: number
   advanceBookingDays: number
-  minNoticeHours: number
   maxGuests: number
   openTime: string
   closeTime: string
@@ -43,7 +43,8 @@ export function BookingSettingsForm({ settings }: { settings: BookingSettingsRow
 
       <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
         <h3 className="text-sm font-medium text-foreground">Availability window</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <p className="text-sm leading-relaxed text-muted-foreground">Customers can book at least 1 hour ahead, based on Vietnam time.</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="advanceBookingDays">Advance booking (days)</Label>
             <Input
@@ -57,26 +58,14 @@ export function BookingSettingsForm({ settings }: { settings: BookingSettingsRow
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="minNoticeHours">Minimum notice (hours)</Label>
-            <Input
-              id="minNoticeHours"
-              name="minNoticeHours"
-              type="number"
-              min={0}
-              max={168}
-              defaultValue={settings?.minNoticeHours ?? 2}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
             <Label htmlFor="maxGuests">Max guests per booking</Label>
             <Input
               id="maxGuests"
               name="maxGuests"
               type="number"
               min={1}
-              max={50}
-              defaultValue={settings?.maxGuests ?? 20}
+              max={MAX_BOOKING_GUESTS}
+              defaultValue={Math.min(settings?.maxGuests ?? MAX_BOOKING_GUESTS, MAX_BOOKING_GUESTS)}
               required
             />
           </div>
@@ -88,7 +77,7 @@ export function BookingSettingsForm({ settings }: { settings: BookingSettingsRow
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="closeTime">Closing time</Label>
-            <Input id="closeTime" name="closeTime" type="time" defaultValue={settings?.closeTime ?? "21:00"} required />
+            <Input id="closeTime" name="closeTime" type="time" defaultValue={settings?.closeTime ?? "00:00"} required />
           </div>
         </div>
         <div className="flex flex-col gap-2">

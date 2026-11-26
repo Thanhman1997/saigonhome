@@ -1,37 +1,51 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const rows = {
-  settings: { advanceBookingDays: 30, minNoticeHours: 2, maxGuests: 20, openTime: "09:00", closeTime: "21:00", closedWeekdays: [0] },
+  settings: { advanceBookingDays: 30, minNoticeHours: 2, maxGuests: 20, openTime: "09:00", closeTime: "00:00", closedWeekdays: [0] },
   service: { id: 1, nameEn: "Massage", active: true },
   duration: { serviceId: 1, minutes: 60, priceVnd: 500000 },
-  customer: { id: 1, name: "Test Customer", email: "test@example.com", phone: "0900000000" },
-  therapist: { id: 1, available: true, status: "active" },
-  bookings: [] as Array<{ time: string; durationMinutes: number; status: string }>,
+  therapist: { id: 1, available: true, visible: true },
 }
 
 vi.mock("@/lib/db", () => ({
   db: {
     select: () => ({
       from: (table: unknown) => ({
-        limit: async () => table === "settings" ? [rows.settings] : table === "services" ? [rows.service] : table === "durations" ? [rows.duration] : table === "therapists" ? [rows.therapist] : table === "bookings" ? rows.bookings : [],
-        where: () => ({ limit: async () => table === "services" ? [rows.service] : table === "durations" ? [rows.duration] : table === "therapists" ? [rows.therapist] : table === "bookings" ? rows.bookings : [] }),
+        limit: async () => table === "settings" ? [rows.settings] : table === "services" ? [rows.service] : table === "durations" ? [rows.duration] : table === "therapists" ? [rows.therapist] : [],
+        where: () => ({ limit: async () => table === "services" ? [rows.service] : table === "durations" ? [rows.duration] : table === "therapists" ? [rows.therapist] : [] }),
       }),
     }),
-    insert: () => ({ values: () => ({ returning: async () => [rows.customer] }) }),
-    update: () => ({ set: () => ({ where: () => ({ returning: async () => [rows.customer] }) }) }),
+    transaction: async (work: (tx: unknown) => unknown) => work({
+      execute: async () => undefined,
+      select: () => ({ from: () => ({ where: async () => conflicts.value }) }),
+      insert: () => ({ values: (value: Record<string, unknown>) => ({ returning: async () => {
+        const error = databaseErrors.insertQueue.shift()
+        if (error) throw Object.assign(new Error("Database constraint violation"), error)
+        insertedBooking.value = value
+        return [{ id: 42, email: value.email }]
+      } }) }),
+    }),
   },
 }))
 
-vi.mock("@/lib/db/schema", () => ({ bookingSettings: "settings", services: "services", serviceDurations: "durations", therapists: "therapists", bookings: "bookings", customers: "customers", serviceAreas: "serviceAreas", therapistServiceAreas: "therapistServiceAreas" }))
-vi.mock("resend", () => ({ Resend: class { emails = { send: vi.fn().mockResolvedValue({}) } } }))
+vi.mock("@/lib/db/schema", () => ({ bookingSettings: "settings", services: "services", serviceDurations: "durations", therapists: "therapists", bookings: "bookings" }))
+vi.mock("@/lib/booking-rate-limit", () => ({ allowBookingRequest: async () => true }))
+vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: transactionalEmailMock.send }))
+
+const transactionalEmailMock = vi.hoisted(() => ({
+  send: vi.fn(async (email: { to: string; subject: string; html: string }) => {
+    void email
+    return false
+  }),
+}))
+const insertedBooking = vi.hoisted(() => ({ value: null as Record<string, unknown> | null }))
+const conflicts = vi.hoisted(() => ({ value: [] as unknown[] }))
+const databaseErrors = vi.hoisted(() => ({ insertQueue: [] as Array<{ code: string; constraint: string }> }))
+const kakaoNotificationMock = vi.hoisted(() => ({ enqueueBooking: vi.fn(async () => undefined) }))
+
+vi.mock("@/lib/kakao-notifications", () => ({ enqueueBookingKakaoNotification: kakaoNotificationMock.enqueueBooking }))
 
 const localDateString = (date: Date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-")
-
-const futureOpenDate = (daysAhead = 3) => {
-  const date = new Date(Date.now() + daysAhead * 86400000)
-  while (date.getDay() === 0) date.setDate(date.getDate() + 1)
-  return localDateString(date)
-}
 
 const validInput = (date: string, time = "12:00") => ({
   serviceId: 1, durationMinutes: 60, therapistId: 1, guests: 1, date, time,
@@ -41,15 +55,101 @@ const validInput = (date: string, time = "12:00") => ({
 
 describe("createBooking integration contract", () => {
   beforeEach(() => {
+    insertedBooking.value = null
+    conflicts.value = []
+    databaseErrors.insertQueue = []
+    kakaoNotificationMock.enqueueBooking.mockClear()
+    transactionalEmailMock.send.mockClear()
     vi.resetModules()
-    rows.bookings = []
   })
 
-  it("accepts a valid booking", async () => {
-    const { createBooking } = await import("./booking")
-    const date = futureOpenDate()
-    const result = await createBooking(validInput(date))
-    expect(result.success).toBe(true)
+  it("persists Vietnam local time as the correct UTC instant", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "10:00"))
+      expect(result.success).toBe(true)
+      expect(insertedBooking.value?.startAt).toEqual(new Date("2026-08-18T03:00:00.000Z"))
+      expect(insertedBooking.value?.endAt).toEqual(new Date("2026-08-18T04:00:00.000Z"))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it.each([
+    ["CASH", "Cash (Tiền mặt)"],
+    ["BANK_TRANSFER", "Bank transfer (Chuyển khoản ngân hàng)"],
+  ] as const)("includes the customer name and selected %s payment method in the admin email", async (paymentMethod, paymentLabel) => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking({ ...validInput("2026-08-18"), customerName: "Test <Customer>", paymentMethod })
+      expect(result.success).toBe(true)
+      expect(insertedBooking.value?.paymentMethod).toBe(paymentMethod)
+      const adminEmail = transactionalEmailMock.send.mock.calls
+        .map(([email]) => email)
+        .find(({ subject }) => subject.startsWith("New booking — "))
+      expect(adminEmail?.html).toContain("Customer name")
+      expect(adminEmail?.html).toContain("Test &lt;Customer&gt;")
+      expect(adminEmail?.html).toContain(paymentLabel)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("queues one Kakao notification after a new booking is saved", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "10:00"))
+      expect(result.success).toBe(true)
+      expect(kakaoNotificationMock.enqueueBooking).toHaveBeenCalledWith(42)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("retries with a new reference when a generated reference already exists", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    databaseErrors.insertQueue.push({ code: "23505", constraint: "bookings_reference_key" })
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18"))
+      expect(result.success).toBe(true)
+      if (result.success) expect(insertedBooking.value?.reference).toBe(result.reference)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("returns an unavailable slot when the database rejects a therapist overlap", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    databaseErrors.insertQueue.push({ code: "23P01", constraint: "bookings_therapist_no_overlap" })
+    try {
+      const { createBooking } = await import("./booking")
+      expect(await createBooking(validInput("2026-08-18"))).toMatchObject({ success: false, error: "Selected time is unavailable" })
+      expect(insertedBooking.value).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("rejects a slot already held by an active booking", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    conflicts.value = [{}]
+    try {
+      const { createBooking } = await import("./booking")
+      expect(await createBooking(validInput("2026-08-18"))).toMatchObject({ success: false, error: "Selected time is unavailable" })
+      expect(insertedBooking.value).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it("rejects a closed weekday", async () => {
@@ -62,45 +162,129 @@ describe("createBooking integration contract", () => {
 
   it("rejects outside opening hours", async () => {
     const { createBooking } = await import("./booking")
-    const date = futureOpenDate()
-    const result = await createBooking(validInput(date, "08:00"))
+    const date = new Date(Date.now() + 3 * 86400000)
+    if (date.getUTCDay() === 0) date.setUTCDate(date.getUTCDate() + 1)
+    const result = await createBooking(validInput(date.toISOString().slice(0, 10), "08:00"))
     expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
   })
 
   it("rejects dates beyond the configured advance window", async () => {
     const { createBooking } = await import("./booking")
-    const date = futureOpenDate(31)
+    const date = new Date(Date.now() + 31 * 86400000).toISOString().slice(0, 10)
     const result = await createBooking(validInput(date))
     expect(result).toMatchObject({ success: false, error: "Selected date is outside the booking window" })
   })
 
-  it("rejects bookings inside the minimum notice window", async () => {
-    const { createBooking } = await import("./booking")
-    const date = new Date(Date.now() + 1 * 86400000)
-    while (date.getDay() === 0) date.setDate(date.getDate() + 1)
-    const result = await createBooking(validInput(date.toISOString().slice(0, 10), "00:30"))
-    expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
+  it("accepts a booking exactly one hour ahead in Vietnam time", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T01:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-15", "09:00"))
+      expect(result.success).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("rejects a booking less than one hour ahead in Vietnam time", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T01:01:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-15", "09:00"))
+      expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("rejects times that are not offered on the 15-minute schedule", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "10:07"))
+      expect(result).toMatchObject({ success: false, error: "Invalid date or time" })
+      expect(insertedBooking.value).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("enforces the database guest limit even when older settings allow more", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking({ ...validInput("2026-08-18", "10:00"), guests: 11 })
+      expect(result).toMatchObject({ success: false, error: "Invalid number of guests (max 10)" })
+      expect(insertedBooking.value).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("accepts a 17:45 booking when the configured closing time is 01:00", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.settings.closeTime = "01:00"
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "17:45"))
+      expect(result.success).toBe(true)
+    } finally {
+      rows.settings.closeTime = "00:00"
+      vi.useRealTimers()
+    }
+  })
+
+  it("accepts a 24:00 booking when a 60-minute service ends at 01:00", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.settings.closeTime = "01:00"
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "24:00"))
+      expect(result.success).toBe(true)
+      expect(insertedBooking.value?.endAt).toEqual(new Date("2026-08-18T18:00:00.000Z"))
+    } finally {
+      rows.settings.closeTime = "00:00"
+      vi.useRealTimers()
+    }
+  })
+
+  it("rejects a service that would finish after a midnight closing time", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.settings.closeTime = "00:00"
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "23:30"))
+      expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
+    } finally {
+      rows.settings.closeTime = "00:00"
+      vi.useRealTimers()
+    }
+  })
+
+  it("rejects a service that would finish exactly at midnight", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.settings.closeTime = "00:00"
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "23:00"))
+      expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
+    } finally {
+      rows.settings.closeTime = "00:00"
+      vi.useRealTimers()
+    }
   })
 
   it("rejects malformed date and time values", async () => {
     const { createBooking } = await import("./booking")
     const result = await createBooking(validInput("2026/08/20", "noon"))
     expect(result).toMatchObject({ success: false, error: "Invalid date or time" })
-  })
-
-  it("rejects an overlapping therapist booking", async () => {
-    const { createBooking } = await import("./booking")
-    const date = futureOpenDate()
-    rows.bookings = [{ time: "12:30", durationMinutes: 60, status: "confirmed" }]
-    const result = await createBooking(validInput(date, "12:00"))
-    expect(result).toMatchObject({ success: false, error: "Therapist already booked at this time" })
-  })
-
-  it("allows an adjacent therapist booking and returns pending status to the database", async () => {
-    const { createBooking } = await import("./booking")
-    const date = futureOpenDate()
-    rows.bookings = [{ time: "12:00", durationMinutes: 60, status: "confirmed" }]
-    const result = await createBooking(validInput(date, "13:00"))
-    expect(result.success).toBe(true)
   })
 })

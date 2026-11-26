@@ -2,18 +2,21 @@ import { drizzle } from "drizzle-orm/node-postgres"
 import { Pool } from "pg"
 import * as schema from "./schema"
 
-const rawConnectionString = process.env.POSTGRES_URL ?? process.env.DATABASE_URL
+const connectionString = process.env.DATABASE_URL ?? process.env.POSTGRES_URL
 
-// pg 8.22 treats `sslmode=require` as an alias for `verify-full`. Normalize it
-// explicitly so connection behavior remains stable across driver upgrades.
-const connectionString = rawConnectionString?.replace(
-  /([?&])sslmode=(prefer|require|verify-ca)(?=&|$)/i,
-  "$1sslmode=verify-full",
-)
+if (!connectionString) {
+  throw new Error("Database configuration is missing: set POSTGRES_URL or DATABASE_URL.")
+}
 
-// Keep module initialization build-safe; the deployed runtime supplies the
-// connection string through the project environment.
-export const pool = new Pool({
-  connectionString: connectionString ?? "postgresql://127.0.0.1:5432/postgres",
-})
+const normalizedConnectionString = connectionString.replace(/([?&]sslmode=)require\b/, "$1verify-full")
+
+// Hot reloads re-evaluate this module; keeping the pool on globalThis stops each reload from leaking a new set of connections.
+const globalForPool = globalThis as unknown as { __lotusPgPool?: Pool }
+
+export const pool =
+  globalForPool.__lotusPgPool ??
+  new Pool({ connectionString: normalizedConnectionString, max: 5, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 10_000 })
+
+globalForPool.__lotusPgPool = pool
+
 export const db = drizzle(pool, { schema })

@@ -1,19 +1,12 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, updateTag } from "next/cache"
+import { LAYOUT_DATA_TAG } from "@/lib/data"
 import { eq } from "drizzle-orm"
-import { cookies } from "next/headers"
 import { db } from "@/lib/db"
 import { designSettings } from "@/lib/db/schema"
-import { ADMIN_SESSION_COOKIE, getExpectedAdminSessionToken } from "@/lib/admin-auth"
-import { DESIGN_PRESETS } from "@/lib/design-tokens"
-
-async function assertAdmin() {
-  const expected = await getExpectedAdminSessionToken()
-  const cookieStore = await cookies()
-  const token = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  if (!expected || token !== expected) throw new Error("Unauthorized")
-}
+import { assertAdmin } from "@/lib/admin-auth"
+import { DESIGN_PRESETS, FONT_OPTIONS } from "@/lib/design-tokens"
 
 export type DesignSettingsActionState = {
   success: boolean
@@ -25,7 +18,7 @@ const SHADOW_KEYS = new Set(["none", "sm", "md", "lg"])
 const SIZE_KEYS = new Set(["sm", "md", "lg", "xl"])
 const WEIGHT_KEYS = new Set(["normal", "medium"])
 const LINE_HEIGHT_KEYS = new Set(["tight", "normal", "relaxed"])
-const FONT_KEYS = new Set(["cormorant", "dm-sans", "playfair", "dm-serif-display", "lora", "manrope", "inter"])
+const FONT_KEYS: Set<string> = new Set(FONT_OPTIONS.map((font) => font.key))
 
 function isHexColor(value: string): boolean {
   return /^#[0-9a-fA-F]{6}$/.test(value)
@@ -104,6 +97,7 @@ export async function updateDesignSettings(
     await db.insert(designSettings).values(values)
   }
 
+  updateTag(LAYOUT_DATA_TAG)
   revalidatePath("/", "layout")
   revalidatePath("/admin/design")
   return { success: true }
@@ -128,6 +122,7 @@ export async function resetDesignSettingsToPreset(presetKey: string): Promise<De
     await db.insert(designSettings).values(values)
   }
 
+  updateTag(LAYOUT_DATA_TAG)
   revalidatePath("/", "layout")
   revalidatePath("/admin/design")
   return { success: true }

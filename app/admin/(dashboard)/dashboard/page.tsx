@@ -1,86 +1,137 @@
-import { Card } from "@/components/ui/card"
-import { db } from "@/lib/db"
-import { heroContent } from "@/lib/db/schema"
-import { getAdminDashboardMetrics } from "@/lib/admin-data"
-import { formatVnd } from "@/lib/pricing"
-import { CalendarDays, CircleX, Clock3, DollarSign, MessageCircleQuestion, Users } from "lucide-react"
+import Link from "next/link"
+import { ArrowRight, CalendarDays, CheckCircle2, Clock3, MessageSquare, Star, Tag } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { getAllEventsAdmin, getDashboardOverview } from "@/lib/admin-data"
 
-export const metadata = { title: "Dashboard | Admin" }
+const vietnamDateFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" })
+const readableDateFormatter = new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", weekday: "long", day: "numeric", month: "long", year: "numeric" })
+
+export const metadata = { title: "Tổng quan | Admin" }
 
 export default async function DashboardPage() {
-  const [heroes, metrics] = await Promise.all([
-    db.select().from(heroContent).limit(1),
-    getAdminDashboardMetrics(),
-  ])
-  const hero = heroes[0]
-  const cards = [
-    { label: "Today's bookings", value: metrics.todayBookings, href: "/admin/bookings?from=today", icon: CalendarDays, tone: "text-primary" },
-    { label: "Pending bookings", value: metrics.pendingBookings, href: "/admin/bookings?status=pending", icon: Clock3, tone: "text-amber-600" },
-    { label: "Revenue", value: formatVnd(metrics.revenueVnd), href: "/admin/bookings", icon: DollarSign, tone: "text-emerald-600" },
-    { label: "Therapists available", value: metrics.availableTherapists, href: "/admin/therapists", icon: Users, tone: "text-sky-600" },
-    { label: "Cancelled bookings", value: metrics.cancelledBookings, href: "/admin/bookings?status=cancelled", icon: CircleX, tone: "text-destructive" },
-    { label: "Unanswered questions", value: metrics.unansweredQuestions, href: "/admin/questions", icon: MessageCircleQuestion, tone: "text-violet-600" },
+  const now = new Date()
+  const today = vietnamDateFormatter.format(now)
+  const [overview, events] = await Promise.all([getDashboardOverview(today), getAllEventsAdmin()])
+  const { todayBookings, pendingBookings, pendingQuestions, pendingReviews, pendingChangeRequests, todayAppointments } = overview
+  const endingSoon = events.filter((event) => {
+    if (!event.active || !event.endDate) return false
+    const endOfPromotion = new Date(`${event.endDate}T23:59:59+07:00`)
+    const remaining = endOfPromotion.getTime() - now.getTime()
+    return remaining >= 0 && remaining < 7 * 86400000
+  }).length
+
+  const metrics = [
+    { label: "Lịch hẹn hôm nay", value: todayBookings, detail: "Lịch đang hoạt động", href: "/admin/bookings", icon: CalendarDays },
+    { label: "Chờ xác nhận", value: pendingBookings, detail: "Đặt lịch mới cần duyệt", href: "/admin/bookings", icon: Clock3 },
+    { label: "Câu hỏi chưa trả lời", value: pendingQuestions, detail: "Khách đang chờ phản hồi", href: "/admin/questions", icon: MessageSquare },
+    { label: "Đánh giá chờ duyệt", value: pendingReviews, detail: "Chưa hiển thị trên website", href: "/admin/reviews", icon: Star },
   ]
 
+  const tasks = [
+    { label: "Yêu cầu đổi hoặc hủy lịch", count: pendingChangeRequests, detail: "Khách đang chờ xử lý yêu cầu", href: "/admin/bookings", icon: CalendarDays },
+    { label: "Lịch đặt mới cần xác nhận", count: pendingBookings, detail: "Xem và cập nhật trạng thái đặt lịch", href: "/admin/bookings", icon: Clock3 },
+    { label: "Câu hỏi cần phản hồi", count: pendingQuestions, detail: "Trả lời thắc mắc của khách", href: "/admin/questions", icon: MessageSquare },
+    { label: "Đánh giá cần duyệt", count: pendingReviews, detail: "Kiểm tra trước khi đăng công khai", href: "/admin/reviews", icon: Star },
+    { label: "Ưu đãi sắp kết thúc", count: endingSoon, detail: "Kết thúc trong 7 ngày tới", href: "/admin/promotions", icon: Tag },
+  ].filter((task) => task.count > 0)
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="font-serif text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="mt-2 text-muted-foreground">Manage your website content and operations</p>
-      </div>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        {cards.map((card) => {
-          const Icon = card.icon
-          return (
-            <a key={card.label} href={card.href} className="group rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/40 sm:p-5">
-              <div className="flex items-start justify-between gap-3">
-                <span className="text-xs font-medium text-muted-foreground sm:text-sm">{card.label}</span>
-                <Icon className={`size-4 shrink-0 ${card.tone}`} aria-hidden="true" />
+    <div className="flex flex-col gap-7">
+      <header className="flex flex-col gap-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Lotus Wellness · Vận hành</p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Tổng quan hôm nay</h1>
+          <p className="text-sm capitalize text-muted-foreground">{readableDateFormatter.format(now)}</p>
+        </div>
+        <p className="max-w-2xl text-muted-foreground">Những lịch hẹn và việc cần ưu tiên xử lý trong ngày.</p>
+      </header>
+
+      <section aria-label="Tình hình hôm nay" className="grid gap-3 @min-[30rem]:grid-cols-2 @min-[62rem]:grid-cols-4">
+        {metrics.map(({ label, value, detail, href, icon: Icon }) => (
+          <Link key={label} href={href} className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Card className="h-full transition-colors group-hover:border-primary/40">
+              <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+                <Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-semibold leading-none text-foreground">{value}</p>
+                <p className="mt-2 text-xs text-muted-foreground">{detail}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </section>
+
+      <div className="grid gap-5 @min-[52rem]:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between gap-3">
+            <div>
+              <CardTitle>Việc cần xử lý</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">Các mục đang cần bạn chú ý</p>
+            </div>
+            {tasks.length > 0 && <Badge variant="destructive">{tasks.reduce((total, task) => total + task.count, 0)} việc</Badge>}
+          </CardHeader>
+          <CardContent className="flex flex-col gap-1">
+            {tasks.length > 0 ? tasks.map(({ label, count, detail, href, icon: Icon }) => (
+              <Link key={label} href={href} className="flex items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><Icon className="size-4" aria-hidden="true" /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium text-foreground">{label}</span>
+                  <span className="block text-sm text-muted-foreground">{detail}</span>
+                </span>
+                <Badge variant="secondary" className="shrink-0">{count}</Badge>
+                <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              </Link>
+            )) : (
+              <div className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-5">
+                <CheckCircle2 className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                <div>
+                  <p className="font-medium text-foreground">Không có việc gấp</p>
+                  <p className="text-sm text-muted-foreground">Bạn đã xử lý hết các mục cần ưu tiên.</p>
+                </div>
               </div>
-              <p className="mt-3 truncate text-xl font-semibold text-foreground sm:text-2xl">{card.value}</p>
-              <span className="mt-2 block text-xs text-muted-foreground group-hover:text-primary">View details</span>
-            </a>
-          )
-        })}
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between gap-3">
+            <div>
+              <CardTitle>Lịch hẹn hôm nay</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">{todayBookings} lịch đang hoạt động</p>
+            </div>
+            <Link href="/admin/bookings" className="flex shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline">
+              Tất cả lịch <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {todayAppointments.length > 0 ? (
+              <ul className="flex flex-col divide-y divide-border">
+                {todayAppointments.map((appointment) => (
+                  <li key={appointment.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+                    <time className="w-14 shrink-0 font-mono text-sm font-semibold tabular-nums text-foreground">{appointment.time}</time>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-medium text-foreground">{appointment.customerName}</span>
+                      <span className="block truncate text-sm text-muted-foreground">{appointment.serviceName ?? "Dịch vụ"} · {appointment.reference}</span>
+                    </span>
+                    <Badge variant={appointment.status === "pending" ? "secondary" : "outline"} className="shrink-0">
+                      {appointment.status === "pending" ? "Chờ xác nhận" : "Đã xác nhận"}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="rounded-lg bg-muted/50 px-4 py-6 text-center">
+                <p className="font-medium text-foreground">Chưa có lịch hẹn hôm nay</p>
+                <p className="mt-1 text-sm text-muted-foreground">Các lịch mới sẽ xuất hiện tại đây.</p>
+              </div>
+            )}
+            {todayBookings > todayAppointments.length && <p className="mt-4 border-t border-border pt-3 text-center text-sm text-muted-foreground">Còn {todayBookings - todayAppointments.length} lịch hẹn khác</p>}
+          </CardContent>
+        </Card>
       </div>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="p-6">
-          <h2 className="font-semibold text-foreground">Website Content</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Edit hero, about, services, and more</p>
-          <div className="mt-4 space-y-2 text-sm">
-            <a href="/admin/hero" className="block text-primary hover:underline">Hero Section</a>
-            <a href="/admin/about" className="block text-primary hover:underline">About Page</a>
-            <a href="/admin/services" className="block text-primary hover:underline">Services</a>
-            <a href="/admin/therapists" className="block text-primary hover:underline">Therapists</a>
-            <a href="/admin/faq" className="block text-primary hover:underline">FAQ</a>
-          </div>
-        </Card>
-        <Card className="p-6">
-          <h2 className="font-semibold text-foreground">Operations</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Manage bookings, questions, and reviews</p>
-          <div className="mt-4 space-y-2 text-sm">
-            <a href="/admin/bookings" className="block text-primary hover:underline">Bookings</a>
-            <a href="/admin/questions" className="block text-primary hover:underline">Questions</a>
-            <a href="/admin/reviews" className="block text-primary hover:underline">Reviews</a>
-          </div>
-        </Card>
-        <Card className="p-6">
-          <h2 className="font-semibold text-foreground">Settings</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Configure site and design preferences</p>
-          <div className="mt-4 space-y-2 text-sm">
-            <a href="/admin/design" className="block text-primary hover:underline">Design Settings</a>
-            <a href="/admin/languages" className="block text-primary hover:underline">Languages</a>
-            <a href="/admin/media" className="block text-primary hover:underline">Media Library</a>
-            <a href="/admin/contact" className="block text-primary hover:underline">Contact Info</a>
-          </div>
-        </Card>
-      </div>
-      {hero && (
-        <Card className="p-6">
-          <h2 className="font-semibold text-foreground">Quick Status</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Hero section is {hero.visible ? "visible" : "hidden"}. Last updated {new Date(hero.updatedAt).toLocaleDateString()}.</p>
-        </Card>
-      )}
     </div>
   )
 }

@@ -16,74 +16,73 @@ import {
   bookingSettings,
   siteContent,
   questions,
+  navigationSettings,
 } from "@/lib/db/schema"
-import { and, asc, desc, eq, gte, ilike, lte, or, sql } from "drizzle-orm"
+import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm"
+import { pendingChangeRequest } from "@/lib/booking-change-request"
 
-export type BookingFilters = {
-  search?: string
-  status?: string
-  therapistId?: number
-  from?: string
-  to?: string
-  page?: number
-  pageSize?: number
-}
+const activeBookingStatuses = ["pending", "confirmed"] as const
 
-export async function getAllBookingsWithRelations(filters: BookingFilters = {}) {
-  const page = Math.max(1, filters.page ?? 1)
-  const pageSize = Math.min(100, Math.max(1, filters.pageSize ?? 25))
-  const search = filters.search?.trim()
-  const conditions = [
-    search ? or(ilike(bookings.reference, `%${search}%`), ilike(bookings.customerName, `%${search}%`), ilike(bookings.email, `%${search}%`), ilike(bookings.phone, `%${search}%`)) : undefined,
-    filters.status ? eq(bookings.status, filters.status) : undefined,
-    filters.therapistId ? eq(bookings.therapistId, filters.therapistId) : undefined,
-    filters.from ? gte(bookings.date, filters.from) : undefined,
-    filters.to ? lte(bookings.date, filters.to) : undefined,
-  ].filter(Boolean)
-  const where = conditions.length ? and(...conditions) : undefined
-  const allBookings = await db.select().from(bookings).where(where).orderBy(desc(bookings.date), desc(bookings.time)).limit(pageSize).offset((page - 1) * pageSize)
-  const allServices = await db.select().from(services)
-  const allTherapists = await db.select().from(therapists)
-
-  return {
-    rows: allBookings.map((booking) => ({
-      ...booking,
-      service: allServices.find((s) => s.id === booking.serviceId) ?? null,
-      therapist: allTherapists.find((t) => t.id === booking.therapistId) ?? null,
-    })),
-    page,
-    pageSize,
-    hasNextPage: allBookings.length === pageSize,
-  }
-}
-
-export async function getAdminDashboardMetrics() {
-  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date())
-  const [todayRows, pendingRows, cancelledRows, revenueRows, therapistRows, questionRows] = await Promise.all([
-    db.select({ count: sql<number>`count(*)` }).from(bookings).where(eq(bookings.date, today)),
-    db.select({ count: sql<number>`count(*)` }).from(bookings).where(eq(bookings.status, "pending")),
-    db.select({ count: sql<number>`count(*)` }).from(bookings).where(eq(bookings.status, "cancelled")),
-    db.select({ total: sql<number>`coalesce(sum(${bookings.totalVnd}), 0)` }).from(bookings).where(sql`${bookings.status} not in ('cancelled', 'no_show')`),
-    db.select({ count: sql<number>`count(*)` }).from(therapists).where(and(eq(therapists.available, true), eq(therapists.status, "active"))),
-    db.select({ count: sql<number>`count(*)` }).from(questions).where(eq(questions.status, "pending")),
+export async function getDashboardOverview(today: string) {
+  const [[todayRow], [pendingBookingsRow], [pendingQuestionsRow], [pendingReviewsRow], activeBookings, todayAppointments] = await Promise.all([
+    db.select({ total: count() }).from(bookings).where(and(eq(bookings.date, today), inArray(bookings.status, activeBookingStatuses))),
+    db.select({ total: count() }).from(bookings).where(eq(bookings.status, "pending")),
+    db.select({ total: count() }).from(questions).where(eq(questions.status, "pending")),
+    db.select({ total: count() }).from(reviews).where(eq(reviews.approved, false)),
+    db.select({ status: bookings.status, activity: bookings.activity }).from(bookings).where(inArray(bookings.status, activeBookingStatuses)),
+    db.select({
+      id: bookings.id,
+      reference: bookings.reference,
+      customerName: bookings.customerName,
+      time: bookings.time,
+      status: bookings.status,
+      serviceName: services.nameEn,
+    }).from(bookings)
+      .leftJoin(services, eq(bookings.serviceId, services.id))
+      .where(and(eq(bookings.date, today), inArray(bookings.status, activeBookingStatuses)))
+      .orderBy(asc(bookings.time))
+      .limit(6),
   ])
+
   return {
-    todayBookings: Number(todayRows[0]?.count ?? 0),
-    pendingBookings: Number(pendingRows[0]?.count ?? 0),
-    cancelledBookings: Number(cancelledRows[0]?.count ?? 0),
-    revenueVnd: Number(revenueRows[0]?.total ?? 0),
-    availableTherapists: Number(therapistRows[0]?.count ?? 0),
-    unansweredQuestions: Number(questionRows[0]?.count ?? 0),
+    todayBookings: todayRow?.total ?? 0,
+    pendingBookings: pendingBookingsRow?.total ?? 0,
+    pendingQuestions: pendingQuestionsRow?.total ?? 0,
+    pendingReviews: pendingReviewsRow?.total ?? 0,
+    pendingChangeRequests: activeBookings.filter((booking) => pendingChangeRequest(booking.activity) !== null).length,
+    todayAppointments,
   }
+}
+
+export async function getAllBookingsWithRelations() {
+  const [allBookings, allServices, allTherapists] = await Promise.all([
+    db.select().from(bookings).orderBy(desc(bookings.createdAt)),
+    db.select().from(services),
+    db.select().from(therapists),
+  ])
+  const serviceById = new Map(allServices.map((s) => [s.id, s]))
+  const therapistById = new Map(allTherapists.map((t) => [t.id, t]))
+
+  return allBookings.map((booking) => ({
+    ...booking,
+    service: serviceById.get(booking.serviceId) ?? null,
+    therapist: booking.therapistId ? (therapistById.get(booking.therapistId) ?? null) : null,
+  }))
 }
 
 export async function getAllReviewsWithRelations() {
-  const allReviews = await db.select().from(reviews).orderBy(desc(reviews.reviewDate))
-  const allTherapists = await db.select().from(therapists)
+  const [allReviews, allTherapists, bookingRefs] = await Promise.all([
+    db.select().from(reviews).orderBy(desc(reviews.reviewDate), desc(reviews.id)),
+    db.select().from(therapists),
+    db.select({ id: bookings.id, reference: bookings.reference }).from(bookings),
+  ])
+  const therapistById = new Map(allTherapists.map((t) => [t.id, t]))
+  const referenceByBookingId = new Map(bookingRefs.map((b) => [b.id, b.reference]))
 
   return allReviews.map((review) => ({
     ...review,
-    therapist: allTherapists.find((t) => t.id === review.therapistId) ?? null,
+    therapist: review.therapistId ? (therapistById.get(review.therapistId) ?? null) : null,
+    bookingReference: review.bookingId ? (referenceByBookingId.get(review.bookingId) ?? null) : null,
   }))
 }
 
@@ -110,8 +109,15 @@ export async function getContactInfoAdmin() {
   return rows[0] ?? null
 }
 
+export async function getExperienceVideoAdmin() {
+  const rows = await db.select().from(siteContent).where(eq(siteContent.key, "experience_video")).limit(1)
+  const value = rows[0]?.valueEn
+  if (!value) return null
+  try { return JSON.parse(value) as { videoUrl: string; thumbnailUrl: string | null; aspectRatio: number } } catch { return null }
+}
+
 export async function getAllTherapistsAdmin() {
-  return db.select().from(therapists).orderBy(asc(therapists.sortOrder), asc(therapists.code))
+  return db.select().from(therapists).orderBy(sql`CAST(NULLIF(regexp_replace(${therapists.code}, '[^0-9]', '', 'g'), '') AS INTEGER) ASC`)
 }
 
 export async function getHeroContentAdmin() {
@@ -132,9 +138,21 @@ export async function getAllLotusValuesAdmin() {
   return db.select().from(lotusValues).orderBy(asc(lotusValues.sortOrder))
 }
 
+export async function getNavigationSettingsAdmin() {
+  return db.select().from(navigationSettings).orderBy(asc(navigationSettings.sortOrder))
+}
+
+export async function getNavigationSettings() {
+  return db.select().from(navigationSettings).where(eq(navigationSettings.visible, true)).orderBy(asc(navigationSettings.sortOrder))
+}
+
 export async function getDesignSettingsAdmin() {
-  const rows = await db.select().from(designSettings).limit(1)
-  return rows[0] ?? null
+  try {
+    const rows = await db.select().from(designSettings).limit(1)
+    return rows[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export async function getBookingSettingsAdmin() {

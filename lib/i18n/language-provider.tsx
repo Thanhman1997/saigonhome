@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useContext, useState, type ReactNode } from "react"
 import { dictionary, type Locale, type Dictionary } from "./dictionary"
 
 type LanguageContextValue = {
@@ -9,9 +9,14 @@ type LanguageContextValue = {
   t: Dictionary
 }
 
-const LanguageContext = createContext<LanguageContextValue | null>(null)
+const defaultLanguageContext: LanguageContextValue = {
+  locale: "en",
+  setLocale: () => undefined,
+  t: dictionary.en,
+}
 
-const STORAGE_KEY = "lotus-wellness-locale"
+const LanguageContext = createContext<LanguageContextValue>(defaultLanguageContext)
+const LOCALE_COOKIE = "lotus-wellness-locale"
 
 export function LanguageProvider({
   children,
@@ -22,29 +27,20 @@ export function LanguageProvider({
 }) {
   const [locale, setLocaleState] = useState<Locale>(defaultLocale)
 
-  useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY) as Locale | null
-    if (stored && Object.prototype.hasOwnProperty.call(dictionary, stored)) {
-      setLocaleState(stored)
-    }
-  }, [])
-
   function setLocale(next: Locale) {
     setLocaleState(next)
-    window.localStorage.setItem(STORAGE_KEY, next)
+    document.cookie = `${LOCALE_COOKIE}=${next}; Path=/; Max-Age=31536000; SameSite=Lax`
   }
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t: dictionary[locale] }}>
-      {children}
+      <div className={locale === "vi" ? "locale-vi" : undefined}>{children}</div>
     </LanguageContext.Provider>
   )
 }
 
 export function useLanguage() {
-  const ctx = useContext(LanguageContext)
-  if (!ctx) throw new Error("useLanguage must be used within LanguageProvider")
-  return ctx
+  return useContext(LanguageContext)
 }
 
 export function pickLocalized<T extends { en: string; ko: string; vi: string } | Record<string, string>>(
