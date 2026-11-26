@@ -7,11 +7,17 @@ import { BookingLanding } from "@/components/booking/booking-landing"
 import { BookingProvider } from "@/lib/booking-context"
 import { getAvailableTherapists, getBookingSettings, getContactInfo, getServicesWithDurations, getServicesContent } from "@/lib/data"
 import { getNavigationSettings } from "@/lib/admin-data"
+import { buildPageMetadata, getSeoContext } from "@/lib/seo"
+import { seoCopy } from "@/lib/seo-copy"
 
-export const metadata: Metadata = {
-  title: "Booking | Mobile Massage in Ho Chi Minh City",
-  description: "Choose a Lotus Wellness massage, book a therapist, or find out how to manage your existing appointment.",
-  alternates: { canonical: "/booking" },
+export async function generateMetadata(): Promise<Metadata> {
+  const ctx = await getSeoContext()
+  return buildPageMetadata({
+    path: "/booking",
+    ctx,
+    title: seoCopy.booking.title[ctx.locale],
+    description: seoCopy.booking.description[ctx.locale],
+  })
 }
 
 export default async function BookingPage() {

@@ -5,14 +5,21 @@ import { Star } from "lucide-react"
 import type { Metadata } from "next"
 import { LocalizedReviewList } from "@/components/reviews/localized-review-list"
 import { getInvitedBookingId } from "@/lib/review-invitation"
+import { buildPageMetadata, getSeoContext } from "@/lib/seo"
+import { seoCopy } from "@/lib/seo-copy"
 
 export const dynamic = "force-dynamic"
-export const metadata: Metadata = {
-  title: "Massage Reviews in Ho Chi Minh City",
-  referrer: "no-referrer",
-  description: "Read real guest experiences from Lotus Wellness mobile massage visits in Ho Chi Minh City.",
-  alternates: { canonical: "/reviews" },
-  openGraph: { title: "Massage Reviews in Ho Chi Minh City | Lotus Wellness", description: "Read real guest experiences from Lotus Wellness mobile massage visits in Ho Chi Minh City.", url: "/reviews", type: "website" },
+export async function generateMetadata(): Promise<Metadata> {
+  const ctx = await getSeoContext()
+  return {
+    ...buildPageMetadata({
+      path: "/reviews",
+      ctx,
+      title: seoCopy.reviews.title[ctx.locale],
+      description: seoCopy.reviews.description[ctx.locale],
+    }),
+    referrer: "no-referrer",
+  }
 }
 
 export default async function ReviewsPage({ searchParams }: { searchParams: Promise<{ invite?: string | string[] }> }) {

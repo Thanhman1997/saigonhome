@@ -30,6 +30,11 @@ export function LanguageProvider({
   function setLocale(next: Locale) {
     setLocaleState(next)
     document.cookie = `${LOCALE_COOKIE}=${next}; Path=/; Max-Age=31536000; SameSite=Lax`
+    // Keep a /vi or /ko URL in step with the chosen language so a reload does not flip it back.
+    const { pathname, search, hash } = window.location
+    if (/^\/(en|vi|ko)(?=\/|$)/.test(pathname)) {
+      window.history.replaceState(window.history.state, "", `${pathname.replace(/^\/(en|vi|ko)(?=\/|$)/, `/${next}`)}${search}${hash}`)
+    }
   }
 
   return (

@@ -1,6 +1,5 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { cookies } from "next/headers"
 import "@fontsource-variable/dm-sans"
 import "@fontsource-variable/cormorant-garamond"
 import "@fontsource-variable/jetbrains-mono"
@@ -14,6 +13,9 @@ import { SiteAnalytics } from "@/components/site-analytics"
 import { LanguageProvider } from "@/lib/i18n/language-provider"
 import { getLayoutSiteData } from "@/lib/data"
 import { getSiteUrl } from "@/lib/site-url"
+import { DEFAULT_OG_IMAGE, SITE_NAME, getSeoContext } from "@/lib/seo"
+import { OG_LOCALES } from "@/lib/seo-constants"
+import { seoCopy } from "@/lib/seo-copy"
 import { buildDesignTokenCss, DESIGN_PRESETS, FONT_OPTIONS } from "@/lib/design-tokens"
 import "@fontsource-variable/noto-sans-kr"
 import "@fontsource-variable/noto-serif-kr"
@@ -54,39 +56,26 @@ function getSectionFont(value: string, fallback: string) {
   return font ? `var(${font.cssVar})` : `var(${fallback})`
 }
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
-    template: "%s | Lotus Wellness",
-  },
-  description:
-    "Professional mobile massage brought to your hotel room, apartment, or residence in Ho Chi Minh City. Book vetted therapists, view transparent pricing, and choose your preferred time — in English, Korean, or Vietnamese.",
-  keywords: [
-    "mobile massage Ho Chi Minh City",
-    "hotel massage Saigon",
-    "massage booking Vietnam",
-    "in-room massage HCMC",
-    "Lotus Wellness",
-  ],
-  alternates: { canonical: "/" },
-  icons: { apple: "/apple-icon.png", icon: "/icon.svg" },
-  openGraph: {
-    title: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
-    description: "Excellence, convenience, affordability, and privacy — professional massage wherever you are.",
-    url: siteUrl,
-    siteName: "Lotus Wellness",
-    type: "website",
-    locale: "en_US",
-    images: [{ url: "/images/hero.jpg", width: 1200, height: 630, alt: "Lotus Wellness mobile massage" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Lotus Wellness — Mobile Massage, Delivered to Your Door",
-    description: "Professional mobile massage in Ho Chi Minh City.",
-    images: ["/images/hero.jpg"],
-  },
-  generator: "v0.app",
+export async function generateMetadata(): Promise<Metadata> {
+  const ctx = await getSeoContext()
+  const title = seoCopy.home.title[ctx.locale]
+  const description = seoCopy.home.description[ctx.locale]
+  return {
+    metadataBase: new URL(siteUrl),
+    applicationName: SITE_NAME,
+    title: { default: title, template: `%s | ${SITE_NAME}` },
+    description,
+    icons: { apple: "/apple-icon.png", icon: "/icon.svg" },
+    openGraph: {
+      title,
+      description,
+      siteName: SITE_NAME,
+      type: "website",
+      locale: OG_LOCALES[ctx.locale],
+      images: [{ ...DEFAULT_OG_IMAGE, alt: SITE_NAME }],
+    },
+    twitter: { card: "summary_large_image", title, description, images: [DEFAULT_OG_IMAGE.url] },
+  }
 }
 
 export async function generateViewport(): Promise<Viewport> {
@@ -100,10 +89,9 @@ export async function generateViewport(): Promise<Viewport> {
 export const dynamic = "force-dynamic"
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies()
-  const savedLocale = cookieStore.get("lotus-wellness-locale")?.value
-  const { defaultLocale: databaseLocale, designSettings, sectionStyles, contactInfo } = await getLayoutSiteData()
-  const defaultLocale = savedLocale === "en" || savedLocale === "vi" || savedLocale === "ko" ? savedLocale : databaseLocale
+  const [seo, { designSettings, sectionStyles, contactInfo }] = await Promise.all([getSeoContext(), getLayoutSiteData()])
+  const defaultLocale = seo.locale
+  const sameAs = [contactInfo?.instagramUrl].filter((url): url is string => !!url && /^https?:\/\//i.test(url))
   // Keep the public Lotus experience aligned with the approved reference preset.
   // Legacy database rows may contain the previous muted palette and make the page appear broken.
   const activeDesign = designSettings?.presetKey === "lotus-premium" ? DESIGN_PRESETS[0].values : (designSettings ?? DESIGN_PRESETS[0].values)
@@ -129,17 +117,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <style id="design-tokens" dangerouslySetInnerHTML={{ __html: designTokenCss }} />
         <style id="section-styles" dangerouslySetInnerHTML={{ __html: sectionStyleCss }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([
-          { "@context": "https://schema.org", "@type": "WebSite", name: "Lotus Wellness", url: siteUrl },
+          { "@context": "https://schema.org", "@type": "WebSite", "@id": `${siteUrl}/#website`, name: SITE_NAME, url: siteUrl, inLanguage: ["en", "vi", "ko"] },
           {
           "@context": "https://schema.org",
           "@type": "HealthAndBeautyBusiness",
-          name: "Lotus Wellness",
+          "@id": `${siteUrl}/#business`,
+          name: SITE_NAME,
           url: siteUrl,
-          image: `${siteUrl}/images/hero.jpg`,
+          image: `${siteUrl}${DEFAULT_OG_IMAGE.url}`,
+          logo: `${siteUrl}/images/lotus-wellness-logo.png`,
           ...(contactInfo?.phone ? { telephone: contactInfo.phone } : {}),
-          ...(contactInfo?.addressEn ? { address: { "@type": "PostalAddress", streetAddress: contactInfo.addressEn, addressCountry: "VN" } } : {}),
-          areaServed: "Ho Chi Minh City",
-          priceRange: "$$",
+          ...(contactInfo?.email ? { email: contactInfo.email } : {}),
+          ...(contactInfo?.addressEn ? { address: { "@type": "PostalAddress", streetAddress: contactInfo.addressEn, addressLocality: "Ho Chi Minh City", addressCountry: "VN" } } : {}),
+          ...(sameAs.length ? { sameAs } : {}),
+          areaServed: { "@type": "City", name: "Ho Chi Minh City" },
+          availableLanguage: ["English", "Vietnamese", "Korean"],
           }
         ]) }} />
         <LanguageProvider defaultLocale={defaultLocale}>{children}</LanguageProvider>

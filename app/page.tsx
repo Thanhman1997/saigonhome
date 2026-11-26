@@ -1,4 +1,7 @@
+import type { Metadata } from "next"
 import { Header } from "@/components/header"
+import { buildPageMetadata, getSeoContext } from "@/lib/seo"
+import { seoCopy } from "@/lib/seo-copy"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
@@ -34,6 +37,16 @@ import {
   getLatestVideoMedia,
   getBookingSettings,
 } from "@/lib/data"
+
+export async function generateMetadata(): Promise<Metadata> {
+  const ctx = await getSeoContext()
+  return buildPageMetadata({
+    path: "/",
+    ctx,
+    title: { absolute: seoCopy.home.title[ctx.locale] },
+    description: seoCopy.home.description[ctx.locale],
+  })
+}
 
 export default async function Home() {
   const [services, servicesContent, featuredServices, allTherapists, availableTherapists, promotions, plans, faqs, contactInfo, navigationSettings, hero, about, lotusValues, reviews, videoMedia, bookingSettings] =

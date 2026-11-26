@@ -6,11 +6,17 @@ import { BookingProvider } from "@/lib/booking-context"
 import { getAvailableTherapists, getBookingSettings, getContactInfo, getServicesWithDurations, getServicesContent } from "@/lib/data"
 import type { Metadata } from "next"
 import { getNavigationSettings } from "@/lib/admin-data"
+import { buildPageMetadata, getSeoContext } from "@/lib/seo"
+import { seoCopy } from "@/lib/seo-copy"
 
-export const metadata: Metadata = {
-  title: "Mobile Massage Services in Ho Chi Minh City",
-  description: "Explore professional mobile massage services delivered to your home or hotel in Ho Chi Minh City.",
-  alternates: { canonical: "/services" },
+export async function generateMetadata(): Promise<Metadata> {
+  const ctx = await getSeoContext()
+  return buildPageMetadata({
+    path: "/services",
+    ctx,
+    title: seoCopy.services.title[ctx.locale],
+    description: seoCopy.services.description[ctx.locale],
+  })
 }
 
 export const dynamic = "force-dynamic"

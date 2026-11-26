@@ -15,7 +15,7 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
   const [activeSection, setActiveSection] = useState("")
 
   useEffect(() => {
-    const syncPathname = () => setPathname(window.location.pathname)
+    const syncPathname = () => setPathname(window.location.pathname.replace(/^\/(en|vi|ko)(?=\/|$)/, "") || "/")
     syncPathname()
     window.addEventListener("popstate", syncPathname)
     return () => window.removeEventListener("popstate", syncPathname)
