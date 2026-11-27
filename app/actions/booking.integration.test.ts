@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const rows = {
   settings: { advanceBookingDays: 30, minNoticeHours: 2, maxGuests: 20, openTime: "09:00", closeTime: "00:00", closedWeekdays: [0] },
@@ -56,6 +56,7 @@ const validInput = (date: string, time = "12:00") => ({
 
 describe("createBooking integration contract", () => {
   beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
     rows.therapists = Array.from({ length: 10 }, (_, index) => ({ id: index + 1 }))
     insertedBooking.value = null
     conflicts.value = []
@@ -64,6 +65,8 @@ describe("createBooking integration contract", () => {
     transactionalEmailMock.send.mockClear()
     vi.resetModules()
   })
+
+  afterEach(() => vi.restoreAllMocks())
 
   it("persists Vietnam local time as the correct UTC instant", async () => {
     vi.useFakeTimers()
@@ -101,6 +104,21 @@ describe("createBooking integration contract", () => {
       expect(adminEmail?.amp).toContain("CONFIRM BOOKING")
       expect(adminEmail?.amp).toContain("method=\"post\"")
       expect(adminEmail?.amp).toMatch(/name=\"token\" value=\"[A-Za-z0-9_-]{43}\"/)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("reports admin email rejection without exposing confirmation credentials", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    transactionalEmailMock.send.mockResolvedValue(false)
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "10:00"))
+      expect(result.success).toBe(true)
+      expect(console.error).toHaveBeenCalledWith("Admin booking notification could not be delivered")
+      expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toMatch(/[A-Za-z0-9_-]{43}/)
     } finally {
       vi.useRealTimers()
     }

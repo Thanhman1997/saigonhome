@@ -285,7 +285,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     }
 
     const localizedService = { en: service.nameEn, vi: service.nameVi, ko: service.nameKo }[locale]
-    const [, managementEmailSent] = await Promise.all([
+    const [adminNotificationSent, managementEmailSent] = await Promise.all([
       sendAdminNotification(bookingDetails, emailConfirmation.token),
       sendBookingManagementEmail({ ...saved.booking, reference, date: input.date, time: input.time, status: "pending" }, localizedService, "received", locale, { token: access.token, therapist: therapistCode }).catch(() => {
         console.error("Could not send booking management email")
@@ -295,6 +295,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         console.error("[v0] Failed to queue Kakao booking notification:", error)
       }),
     ])
+    if (!adminNotificationSent) console.error("Admin booking notification could not be delivered")
     if (managementEmailSent) {
       await db.update(bookings).set({ confirmationEmailSentAt: new Date() }).where(eq(bookings.id, saved.booking.id)).catch(() => {
         console.error("Could not record booking email delivery")
@@ -336,7 +337,7 @@ async function sendAdminNotification(details: BookingEmailDetails, confirmationT
     const paymentMethod = PAYMENT_METHOD_LABELS[details.paymentMethod]
     const reviewUrl = adminBookingReviewUrl(details.id)
 
-    await sendTransactionalEmail({
+    return await sendTransactionalEmail({
       to: process.env.ADMIN_EMAIL ?? "saigonservice2020@gmail.com",
       replyTo: details.email,
       subject: `New booking — ${details.reference}`,
@@ -367,6 +368,6 @@ async function sendAdminNotification(details: BookingEmailDetails, confirmationT
       `,
     })
   } catch {
-    console.error("Could not send admin booking notification")
+    return false
   }
 }
