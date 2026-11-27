@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { bookings, services, therapists } from "@/lib/db/schema"
 import { createBookingReviewToken, verifyBookingReviewToken } from "@/lib/booking-review-token"
+import { isAdminAuthenticated } from "@/lib/admin-auth"
 import { pendingChangeRequest } from "@/lib/booking-change-request"
 import { formatVnd } from "@/lib/pricing"
 import { BookingEmailReview } from "@/components/admin/booking-email-review"
@@ -32,16 +33,19 @@ export default async function BookingReviewPage({ params, searchParams }: { para
   const { id: rawId } = await params
   const { t: token } = await searchParams
   const id = Number(rawId)
+  const validId = Number.isSafeInteger(id) && id > 0
+  const validLink = validId && verifyBookingReviewToken(id, token)
+  const canReview = validId && (validLink || await isAdminAuthenticated())
 
-  const [row] = verifyBookingReviewToken(id, token)
+  const [row] = canReview
     ? await db.select({ booking: bookings, service: services, therapist: therapists }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).leftJoin(therapists, eq(bookings.therapistId, therapists.id)).where(eq(bookings.id, id)).limit(1)
     : []
 
-  if (!row || !token) {
+  if (!row) {
     return (
       <Shell>
-        <h1 className="text-xl font-semibold text-foreground">This link has expired</h1>
-        <p className="text-sm text-muted-foreground">Sign in to the admin dashboard to review the booking.</p>
+        <h1 className="text-xl font-semibold text-foreground">This link is invalid or expired</h1>
+        <p className="text-sm text-muted-foreground">Sign in to the admin dashboard, then reopen this email link to review the booking.</p>
         <Link href="/admin/bookings" className="text-sm font-medium text-primary underline">Open bookings</Link>
       </Shell>
     )
