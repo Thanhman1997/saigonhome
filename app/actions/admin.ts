@@ -34,8 +34,17 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
     if ((status === "confirmed" || status === "pending") && !["pending", "confirmed"].includes(current.status)) {
       if (!(await bookingHasAvailableCapacity(tx, current, current.startAt, current.endAt))) throw new Error("This time is no longer available")
     }
-    const activity = status === current.status ? current.activity : [...current.activity, { kind: status, at: new Date().toISOString(), date: current.date, time: current.time }]
-    const [updated] = await tx.update(bookings).set({ status, activity, updatedAt: new Date(), ...(access && { accessTokenHash: access.hash, accessTokenExpiresAt: access.expires, accessTokenRevokedAt: null }) }).where(and(
+    const now = new Date()
+    const activity = status === current.status ? current.activity : [...current.activity, { kind: status, at: now.toISOString(), date: current.date, time: current.time }]
+    const [updated] = await tx.update(bookings).set({
+      status,
+      activity,
+      updatedAt: now,
+      confirmedAt: status === "confirmed" ? current.confirmedAt ?? now : status === "pending" ? null : current.confirmedAt,
+      confirmationTokenHash: status === "pending" ? current.confirmationTokenHash : null,
+      confirmationTokenExpiresAt: status === "pending" ? current.confirmationTokenExpiresAt : null,
+      ...(access && { accessTokenHash: access.hash, accessTokenExpiresAt: access.expires, accessTokenRevokedAt: null }),
+    }).where(and(
       eq(bookings.id, id), eq(bookings.status, current.status), eq(bookings.startAt, current.startAt),
     )).returning({ id: bookings.id })
     if (!updated) throw new Error("The booking changed. Refresh and try again.")
@@ -114,7 +123,7 @@ async function applyBookingChange(id: number) {
     const activity = [...current.activity]
     if (request.kind === "cancel") {
       activity.push({ kind: "cancelled", at: now.toISOString(), date: current.date, time: current.time })
-      const [updated] = await tx.update(bookings).set({ status: "cancelled", activity, updatedAt: now }).where(eq(bookings.id, id)).returning()
+      const [updated] = await tx.update(bookings).set({ status: "cancelled", activity, updatedAt: now, confirmationTokenHash: null, confirmationTokenExpiresAt: null }).where(eq(bookings.id, id)).returning()
       return { updated, kind: "cancelled" as const }
     }
     const slot = (await availableBookingSlots(tx, current, request.date, now)).find((candidate) => candidate.time === request.time)

@@ -120,6 +120,9 @@ export const bookings = pgTable("bookings", {
   paymentProvider: text("payment_provider").default("manual"),
   paymentMethod: text("payment_method").notNull().default("CASH"),
   paymentConfirmedAt: timestamp("payment_confirmed_at", { withTimezone: true }),
+  confirmationTokenHash: text("confirmation_token_hash"),
+  confirmationTokenExpiresAt: timestamp("confirmation_token_expires_at", { withTimezone: true }),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
   startAt: timestamp("start_at", { withTimezone: true }).notNull(),
   endAt: timestamp("end_at", { withTimezone: true }).notNull(),
   locale: text("locale").$type<"en" | "vi" | "ko">(),
@@ -133,6 +136,7 @@ export const bookings = pgTable("bookings", {
   reminderEmailSentAt: timestamp("reminder_email_sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
+  uniqueIndex("bookings_confirmation_token_hash_key").on(table.confirmationTokenHash),
   index("bookings_status_start_idx").on(table.status, table.startAt),
   index("bookings_therapist_start_idx").on(table.therapistId, table.startAt),
   check("bookings_guests_range", sql`${table.guests} BETWEEN 1 AND 10`),

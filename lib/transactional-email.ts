@@ -1,3 +1,7 @@
+import nodemailer from "nodemailer"
+
+export const TRANSACTIONAL_EMAIL_FROM_ADDRESS = "booking@lotuswellness.app"
+const TRANSACTIONAL_EMAIL_FROM = `Lotus Wellness <${TRANSACTIONAL_EMAIL_FROM_ADDRESS}>`
 const EMAIL_PATTERN = /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/
 
 function validEmail(value: string | null | undefined) {
@@ -14,26 +18,61 @@ export async function sendTransactionalEmail({
   to,
   subject,
   html,
+  text,
+  amp,
   replyTo,
 }: {
   to: string
   subject: string
   html: string
+  text?: string
+  amp?: string
   replyTo?: string | null
 }) {
   const key = process.env.RESEND_API_KEY
   if (!key) return false
-  const reply_to = validEmail(replyTo) ?? validEmail(process.env.ADMIN_EMAIL)
+  const replyToAddress = validEmail(replyTo) ?? validEmail(process.env.ADMIN_EMAIL)
+
+  if (amp) {
+    const transport = nodemailer.createTransport({
+      host: "smtp.resend.com",
+      port: 465,
+      secure: true,
+      auth: { user: "resend", pass: key },
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 12000,
+    })
+    try {
+      const info = await transport.sendMail({
+        from: TRANSACTIONAL_EMAIL_FROM,
+        to,
+        subject,
+        text: text ?? "Please view this email in a compatible email client.",
+        html,
+        amp,
+        ...(replyToAddress ? { replyTo: replyToAddress } : {}),
+      })
+      return info.accepted.length > 0 && info.rejected.length === 0
+    } catch {
+      console.error("Resend SMTP rejected AMP transactional email")
+      return false
+    } finally {
+      transport.close()
+    }
+  }
+
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: "Lotus Wellness <booking@lotuswellness.app>",
+        from: TRANSACTIONAL_EMAIL_FROM,
         to: [to],
         subject,
         html,
-        ...(reply_to ? { reply_to } : {}),
+        ...(text ? { text } : {}),
+        ...(replyToAddress ? { reply_to: replyToAddress } : {}),
       }),
       redirect: "error",
       signal: AbortSignal.timeout(8000),

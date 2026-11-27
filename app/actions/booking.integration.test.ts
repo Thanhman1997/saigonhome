@@ -34,7 +34,7 @@ vi.mock("@/lib/booking-rate-limit", () => ({ allowBookingRequest: async () => tr
 vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: transactionalEmailMock.send }))
 
 const transactionalEmailMock = vi.hoisted(() => ({
-  send: vi.fn(async (email: { to: string; subject: string; html: string }) => {
+  send: vi.fn(async (email: { to: string; subject: string; html: string; text?: string; amp?: string }) => {
     void email
     return false
   }),
@@ -96,6 +96,11 @@ describe("createBooking integration contract", () => {
       expect(adminEmail?.html).toContain("Customer name")
       expect(adminEmail?.html).toContain("Test &lt;Customer&gt;")
       expect(adminEmail?.html).toContain(paymentLabel)
+      expect(adminEmail?.html).toContain("Review booking")
+      expect(adminEmail?.html).not.toContain("/api/booking-confirmations/confirm")
+      expect(adminEmail?.amp).toContain("CONFIRM BOOKING")
+      expect(adminEmail?.amp).toContain("method=\"post\"")
+      expect(adminEmail?.amp).toMatch(/name=\"token\" value=\"[A-Za-z0-9_-]{43}\"/)
     } finally {
       vi.useRealTimers()
     }
