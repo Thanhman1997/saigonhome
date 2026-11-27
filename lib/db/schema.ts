@@ -266,7 +266,7 @@ export const bookingSettings = pgTable("booking_settings", {
   minNoticeHours: integer("min_notice_hours").notNull().default(1),
   maxGuests: integer("max_guests").notNull().default(20),
   openTime: text("open_time").notNull().default("09:00"),
-  closeTime: text("close_time").notNull().default("00:00"),
+  closeTime: text("close_time").notNull().default("01:00"),
   closedWeekdays: integer("closed_weekdays").array().notNull().default([]),
   groupDiscount2: numeric("group_discount_2").notNull().default("0.02"),
   groupDiscount3: numeric("group_discount_3").notNull().default("0.03"),

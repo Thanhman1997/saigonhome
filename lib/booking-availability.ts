@@ -2,7 +2,7 @@ import { and, eq, gt, inArray, lt, ne, sql } from "drizzle-orm"
 import type { db } from "@/lib/db"
 import { bookings, bookingSettings, therapists } from "@/lib/db/schema"
 import { zonedLocalDateTimeToUtc } from "@/lib/timezone"
-import { BOOKING_BUFFER_MS, MAX_BOOKING_GUESTS, MIN_BOOKING_NOTICE_MS } from "@/lib/booking-rules"
+import { BOOKING_BUFFER_MS, DEFAULT_CLOSE_TIME, DEFAULT_OPEN_TIME, MAX_BOOKING_GUESTS, MIN_BOOKING_NOTICE_MS } from "@/lib/booking-rules"
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0]
 type Reader = Transaction | typeof db
@@ -28,8 +28,8 @@ export function candidateSlots(date: string, duration: number, settings: Setting
     const [hour, minute] = value.split(":").map(Number)
     return hour * 60 + minute
   }
-  const open = toMinutes(settings?.openTime ?? "09:00")
-  const close = toMinutes(settings?.closeTime ?? "00:00")
+  const open = toMinutes(settings?.openTime ?? DEFAULT_OPEN_TIME)
+  const close = toMinutes(settings?.closeTime ?? DEFAULT_CLOSE_TIME)
   const end = close <= open ? close + 1440 : close
   const slots: { time: string; start: Date; end: Date }[] = []
   for (let minutes = Math.ceil(open / 15) * 15; minutes <= 1440 && (close === 0 ? minutes + duration < end : minutes + duration <= end) && minutes < end; minutes += 15) {

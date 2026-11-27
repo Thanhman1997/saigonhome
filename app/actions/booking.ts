@@ -16,7 +16,7 @@ import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { enqueueBookingKakaoNotification } from "@/lib/kakao-notifications"
 import { asBookingLocale, type Locale } from "@/lib/booking-management-locale"
 import { isPaymentMethod, PAYMENT_METHOD_LABELS, type PaymentMethod } from "@/lib/payments/methods"
-import { MAX_BOOKING_GUESTS, MIN_BOOKING_NOTICE_MS } from "@/lib/booking-rules"
+import { DEFAULT_CLOSE_TIME, DEFAULT_OPEN_TIME, MAX_BOOKING_GUESTS, MIN_BOOKING_NOTICE_MS } from "@/lib/booking-rules"
 
 export type CreateBookingInput = {
   serviceId: number
@@ -116,8 +116,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     if (!isCalendarDateValid || !isClockTimeValid) return { success: false, error: "Invalid date or time" }
 
     const weekday = parsedDate.getUTCDay()
-    const [openHour, openMinute] = (settingsRow?.openTime ?? "09:00").split(":").map(Number)
-    const [closeHour, closeMinute] = (settingsRow?.closeTime ?? "00:00").split(":").map(Number)
+    const [openHour, openMinute] = (settingsRow?.openTime ?? DEFAULT_OPEN_TIME).split(":").map(Number)
+    const [closeHour, closeMinute] = (settingsRow?.closeTime ?? DEFAULT_CLOSE_TIME).split(":").map(Number)
     const openingMinutes = openHour * 60 + openMinute
     const configuredClosingMinutes = closeHour * 60 + closeMinute
     const closingMinutes = configuredClosingMinutes <= openingMinutes
