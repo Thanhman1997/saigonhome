@@ -21,13 +21,30 @@ describe("getSiteUrl", () => {
     expect(getEmailSiteUrl()).toBe("https://preview.lotuswellness.app")
   })
 
-  it("fails closed if the Preview host is missing", () => {
+  it("uses the current Vercel deployment host when no branded Preview host is configured", () => {
     vi.stubEnv("VERCEL_ENV", "preview")
-    vi.stubEnv("VERCEL_URL", "saigon-home-preview.vercel.app")
+    vi.stubEnv("VERCEL_URL", "saigon-home-git-end-to-end-testing.vercel.app")
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://lotuswellness.app")
     vi.stubEnv("PREVIEW_SITE_URL", "")
 
-    expect(() => getEmailSiteUrl()).toThrow("PREVIEW_SITE_URL")
+    expect(getEmailSiteUrl()).toBe("https://saigon-home-git-end-to-end-testing.vercel.app")
+  })
+
+  it("fails closed if neither a branded Preview host nor a Vercel deployment host is available", () => {
+    vi.stubEnv("VERCEL_ENV", "preview")
+    vi.stubEnv("VERCEL_URL", "")
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://lotuswellness.app")
+    vi.stubEnv("PREVIEW_SITE_URL", "")
+
+    expect(() => getEmailSiteUrl()).toThrow("VERCEL_URL")
+  })
+
+  it("rejects an untrusted automatic Preview host", () => {
+    vi.stubEnv("VERCEL_ENV", "preview")
+    vi.stubEnv("VERCEL_URL", "untrusted.example.test")
+    vi.stubEnv("PREVIEW_SITE_URL", "")
+
+    expect(() => getEmailSiteUrl()).toThrow("VERCEL_URL")
   })
 
   it.each([

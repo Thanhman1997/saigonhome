@@ -23,7 +23,11 @@ export function getEmailSiteUrl(): string {
   if (process.env.VERCEL_ENV === "preview") {
     const preview = process.env.PREVIEW_SITE_URL?.trim()
     if (!preview) {
-      throw new Error("PREVIEW_SITE_URL must point to a configured Preview host under lotuswellness.app")
+      const deploymentHost = process.env.VERCEL_URL?.trim()
+      if (!deploymentHost || !/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?\.vercel\.app$/i.test(deploymentHost)) {
+        throw new Error("VERCEL_URL must point to the current HTTPS Vercel Preview deployment")
+      }
+      return parseUrl(deploymentHost).origin
     }
 
     const url = parseUrl(preview)
