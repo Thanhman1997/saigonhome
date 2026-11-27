@@ -48,6 +48,22 @@ describe("Resend booking emails", () => {
     expect(html).not.toMatch(/Payment options|Visa|Mastercard|paymentUrl|\/payment\/result/)
   })
 
+  it("uses the configured Preview host for customer booking-management links", async () => {
+    vi.stubEnv("RESEND_API_KEY", "test-key")
+    vi.stubEnv("VERCEL_ENV", "preview")
+    vi.stubEnv("VERCEL_URL", "saigon-home-preview.vercel.app")
+    vi.stubEnv("PREVIEW_SITE_URL", "https://preview.lotuswellness.app")
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://lotuswellness.app")
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(null, { status: 200 }))
+    vi.stubGlobal("fetch", fetch)
+    const { token } = issueBookingToken()
+
+    expect(await sendBookingManagementEmail(booking, null, "received", "vi", { token })).toBe(true)
+    const { html } = JSON.parse(String(fetch.mock.calls[0][1]?.body))
+    expect(html).toContain("https://preview.lotuswellness.app/booking/manage?lang=vi#access=")
+    expect(html).not.toContain(".vercel.app")
+  })
+
   it("routes replies to the admin by default and to the customer when asked", async () => {
     vi.stubEnv("RESEND_API_KEY", "test-key")
     vi.stubEnv("ADMIN_EMAIL", "admin@example.test")

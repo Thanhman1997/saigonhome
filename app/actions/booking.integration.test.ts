@@ -66,7 +66,10 @@ describe("createBooking integration contract", () => {
     vi.resetModules()
   })
 
-  afterEach(() => vi.restoreAllMocks())
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllEnvs()
+  })
 
   it("persists Vietnam local time as the correct UTC instant", async () => {
     vi.useFakeTimers()
@@ -86,6 +89,11 @@ describe("createBooking integration contract", () => {
     ["CASH", "Cash (Tiền mặt)"],
     ["BANK_TRANSFER", "Bank transfer (Chuyển khoản ngân hàng)"],
   ] as const)("includes the customer name and selected %s payment method in the admin email", async (paymentMethod, paymentLabel) => {
+    vi.stubEnv("VERCEL_ENV", "preview")
+    vi.stubEnv("VERCEL_URL", "saigon-home-preview.vercel.app")
+    vi.stubEnv("PREVIEW_SITE_URL", "https://preview.lotuswellness.app")
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://lotuswellness.app")
+    vi.stubEnv("ADMIN_SECRET", "test-admin-secret")
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
     try {
@@ -103,6 +111,13 @@ describe("createBooking integration contract", () => {
       expect(adminEmail?.html).toContain("without signing in")
       expect(adminEmail?.html).not.toContain("/api/booking-confirmations/confirm")
       expect(adminEmail?.text).toContain("secure review page")
+      expect(adminEmail?.text).toContain("https://preview.lotuswellness.app/booking-review/42?t=")
+      expect(adminEmail?.html).toContain('href="https://preview.lotuswellness.app/booking-review/42?t=')
+      expect(adminEmail?.amp).toContain('action-xhr="https://preview.lotuswellness.app/api/booking-confirmations/confirm"')
+      for (const part of [adminEmail?.text, adminEmail?.html, adminEmail?.amp]) {
+        expect(part).toContain("preview.lotuswellness.app")
+        expect(part).not.toContain(".vercel.app")
+      }
       expect(adminEmail?.amp).toContain("CONFIRM BOOKING")
       expect(adminEmail?.amp).toContain("method=\"post\"")
       expect(adminEmail?.amp).toMatch(/name=\"token\" value=\"[A-Za-z0-9_-]{43}\"/)

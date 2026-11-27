@@ -1,5 +1,5 @@
 import { escapeHtml } from "@/lib/security"
-import { getSiteUrl } from "@/lib/site-url"
+import { getEmailSiteUrl } from "@/lib/site-url"
 
 export type AdminBookingConfirmationDetails = {
   id: number
@@ -11,7 +11,7 @@ export type AdminBookingConfirmationDetails = {
 }
 
 export function buildAdminBookingAmpConfirmationEmail(details: AdminBookingConfirmationDetails, token: string) {
-  const actionUrl = new URL("/api/booking-confirmations/confirm", getSiteUrl()).href
+  const actionUrl = new URL("/api/booking-confirmations/confirm", getEmailSiteUrl()).href
 
   return `<!doctype html>
 <html amp4email lang="en" data-css-strict>

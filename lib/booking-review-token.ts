@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto"
-import { getSiteUrl } from "@/lib/site-url"
+import { getEmailSiteUrl } from "@/lib/site-url"
 
 // "view" is the link in the admin email. The other tokens are minted by the review page for a single action
 // and cannot be exchanged for another action or for viewing the page.
@@ -42,7 +42,7 @@ export function verifyBookingReviewToken(bookingId: number, token: string | null
 }
 
 export function siteBaseUrl() {
-  return getSiteUrl()
+  return getEmailSiteUrl()
 }
 
 // Falls back to the admin booking list when no signing secret is configured.
