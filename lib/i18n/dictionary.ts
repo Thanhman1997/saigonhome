@@ -16,7 +16,7 @@ export const dictionary = {
       subtitle: "Professional massage services delivered directly to your hotel room, apartment, or accommodation.",
       cta: "BOOKING",
       ctaSecondary: "Explore services",
-      hours: "Booking Hours 9am–midnight",
+      hours: "Booking Hours 9am–1am",
     },
     about: {
       kicker: "OUR GUIDING VALUES",
@@ -314,7 +314,7 @@ titleLine1: "웰니스 마사지",
       subtitle: "Dịch vụ massage chuyên nghiệp tận nơi, đến thẳng phòng khách sạn, căn hộ hoặc nơi lưu trú của bạn.",
       cta: "Đ��T L���CH NGAY",
       ctaSecondary: "Khám phá dịch v����",
-      hours: "Giờ nhận đặt lịch: 09:00–00:00",
+      hours: "Giờ nhận đặt lịch: 09:00–01:00",
     },
     about: {
       kicker: "TRIẾT LÝ CHĂM SÓC",

@@ -56,7 +56,7 @@ describe("rescheduling time rules", () => {
   const settings = { openTime: "09:00", closeTime: "01:00", closedWeekdays: [0], advanceBookingDays: 30 }
   it("includes only future slots that fit the full service before closing", () => {
     const times = candidateSlots("2026-08-15", 60, settings, new Date(now + 60_000)).map((slot) => slot.time)
-    expect(times[0]).toBe("09:15")
+    expect(times[0]).toBe("09:00")
     expect(times.at(-1)).toBe("24:00")
     expect(candidateSlots("2026-08-15", 90, settings, new Date(now)).at(-1)?.time).toBe("23:30")
   })

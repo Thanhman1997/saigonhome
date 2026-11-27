@@ -208,9 +208,9 @@ describe("createBooking integration contract", () => {
     expect(result).toMatchObject({ success: false, error: "Selected date is outside the booking window" })
   })
 
-  it("accepts a booking exactly one hour ahead in Vietnam time", async () => {
+  it("accepts a booking exactly 30 minutes ahead in Vietnam time", async () => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date("2026-08-15T01:00:00.000Z"))
+    vi.setSystemTime(new Date("2026-08-15T01:30:00.000Z"))
     try {
       const { createBooking } = await import("./booking")
       const result = await createBooking(validInput("2026-08-15", "09:00"))
@@ -220,9 +220,9 @@ describe("createBooking integration contract", () => {
     }
   })
 
-  it("rejects a booking less than one hour ahead in Vietnam time", async () => {
+  it("rejects a booking less than 30 minutes ahead in Vietnam time", async () => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date("2026-08-15T01:01:00.000Z"))
+    vi.setSystemTime(new Date("2026-08-15T01:31:00.000Z"))
     try {
       const { createBooking } = await import("./booking")
       const result = await createBooking(validInput("2026-08-15", "09:00"))
