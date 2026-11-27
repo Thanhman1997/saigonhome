@@ -5,6 +5,7 @@ const rows = {
   service: { id: 1, nameEn: "Massage", active: true },
   duration: { serviceId: 1, minutes: 60, priceVnd: 500000 },
   therapist: { id: 1, available: true, visible: true },
+  therapists: Array.from({ length: 10 }, (_, index) => ({ id: index + 1 })),
 }
 
 vi.mock("@/lib/db", () => ({
@@ -17,7 +18,7 @@ vi.mock("@/lib/db", () => ({
     }),
     transaction: async (work: (tx: unknown) => unknown) => work({
       execute: async () => undefined,
-      select: () => ({ from: () => ({ where: async () => conflicts.value }) }),
+      select: () => ({ from: (table: unknown) => ({ where: async () => table === "therapists" ? rows.therapists : conflicts.value }) }),
       insert: () => ({ values: (value: Record<string, unknown>) => ({ returning: async () => {
         const error = databaseErrors.insertQueue.shift()
         if (error) throw Object.assign(new Error("Database constraint violation"), error)
@@ -55,6 +56,7 @@ const validInput = (date: string, time = "12:00") => ({
 
 describe("createBooking integration contract", () => {
   beforeEach(() => {
+    rows.therapists = Array.from({ length: 10 }, (_, index) => ({ id: index + 1 }))
     insertedBooking.value = null
     conflicts.value = []
     databaseErrors.insertQueue = []
@@ -139,13 +141,44 @@ describe("createBooking integration contract", () => {
     }
   })
 
-  it("rejects a slot already held by an active booking", async () => {
+  it("rejects a slot when its selected therapist is already occupied", async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
-    conflicts.value = [{}]
+    rows.therapists = [{ id: 1 }]
+    conflicts.value = [{ therapistId: 1, guests: 1 }]
     try {
       const { createBooking } = await import("./booking")
       expect(await createBooking(validInput("2026-08-18"))).toMatchObject({ success: false, error: "Selected time is unavailable" })
+      expect(insertedBooking.value).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("allows a no-preference booking when another therapist is free", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.therapists = [{ id: 1 }, { id: 2 }]
+    conflicts.value = [{ therapistId: 1, guests: 1 }]
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking({ ...validInput("2026-08-18"), therapistId: null })
+      expect(result.success).toBe(true)
+      expect(insertedBooking.value?.therapistId).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("reserves capacity for existing unassigned bookings", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.therapists = [{ id: 1 }, { id: 2 }]
+    conflicts.value = [{ therapistId: 1, guests: 1 }, { therapistId: null, guests: 1 }]
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking({ ...validInput("2026-08-18"), therapistId: null })
+      expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
       expect(insertedBooking.value).toBeNull()
     } finally {
       vi.useRealTimers()

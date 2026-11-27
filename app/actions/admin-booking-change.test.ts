@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   rows: [] as unknown[][],
   update: vi.fn(),
   slots: vi.fn(),
+  capacity: vi.fn(),
   email: vi.fn(),
   cookie: "ok",
 }))
@@ -39,7 +40,7 @@ vi.mock("@/lib/db", () => ({
     transaction: async (callback: (tx: unknown) => unknown) => callback({ select: chain, update: () => ({ set: mocks.update }) }),
   },
 }))
-vi.mock("@/lib/booking-availability", () => ({ availableBookingSlots: mocks.slots, lockBookingSchedule: vi.fn(), overlappingBookings: vi.fn() }))
+vi.mock("@/lib/booking-availability", () => ({ availableBookingSlots: mocks.slots, bookingHasAvailableCapacity: mocks.capacity, lockBookingSchedule: vi.fn() }))
 vi.mock("@/lib/booking-management-email", () => ({ sendBookingManagementEmail: mocks.email }))
 vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: vi.fn() }))
 vi.mock("@/lib/review-invitation", () => ({ createReviewInvitation: vi.fn() }))
@@ -56,7 +57,9 @@ beforeEach(() => {
   vi.resetAllMocks()
   mocks.rows = []
   mocks.cookie = "ok"
+  mocks.capacity.mockResolvedValue(true)
   mocks.update.mockImplementation((patch) => ({ where: () => ({ returning: async () => [{ ...booking([]), ...patch }] }) }))
+  mocks.capacity.mockResolvedValue(true)
   mocks.email.mockResolvedValue(true)
 })
 

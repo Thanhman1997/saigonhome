@@ -1,4 +1,4 @@
-import { and, eq, gt, inArray, isNull, lt, ne, or, sql } from "drizzle-orm"
+import { and, eq, gt, inArray, lt, ne, sql } from "drizzle-orm"
 import type { db } from "@/lib/db"
 import { bookings, bookingSettings, therapists } from "@/lib/db/schema"
 import { zonedLocalDateTimeToUtc } from "@/lib/timezone"
@@ -50,17 +50,60 @@ export function bookingIntervalsConflict(start: Date, end: Date, otherStart: Dat
   return start.getTime() < otherEnd.getTime() + BOOKING_BUFFER_MS && end.getTime() > otherStart.getTime() - BOOKING_BUFFER_MS
 }
 
+type OccupiedBooking = {
+  start: Date
+  end: Date
+  therapistId: number | null
+  guests: number
+}
+type CapacityBooking = Pick<OccupiedBooking, "therapistId" | "guests">
+
 export function overlappingBookings(reader: Reader, party: Party, start: Date, end: Date) {
   const bufferedStart = new Date(start.getTime() - BOOKING_BUFFER_MS)
   const bufferedEnd = new Date(end.getTime() + BOOKING_BUFFER_MS)
-  return reader.select({ start: bookings.startAt, end: bookings.endAt }).from(bookings).where(and(
+  return reader.select({
+    start: bookings.startAt,
+    end: bookings.endAt,
+    therapistId: bookings.therapistId,
+    guests: bookings.guests,
+  }).from(bookings).where(and(
     inArray(bookings.status, ["pending", "confirmed"]),
     party.id === undefined ? undefined : ne(bookings.id, party.id),
-    lt(bookings.startAt, bufferedEnd), gt(bookings.endAt, bufferedStart),
-    party.therapistId !== null && party.guests === 1
-      ? or(eq(bookings.therapistId, party.therapistId), isNull(bookings.therapistId), gt(bookings.guests, 1))
-      : undefined,
+    lt(bookings.startAt, bufferedEnd),
+    gt(bookings.endAt, bufferedStart),
   ))
+}
+
+export function hasAvailableTherapistCapacity(
+  availableTherapistIds: readonly number[],
+  occupiedBookings: readonly CapacityBooking[],
+  party: Party,
+) {
+  const availableTherapists = new Set(availableTherapistIds)
+  const assignedTherapists = new Set<number>()
+  let unassignedGuestCapacity = 0
+
+  for (const booking of occupiedBookings) {
+    if (booking.therapistId !== null && availableTherapists.has(booking.therapistId)) {
+      assignedTherapists.add(booking.therapistId)
+      unassignedGuestCapacity += Math.max(0, booking.guests - 1)
+    } else {
+      unassignedGuestCapacity += booking.guests
+    }
+  }
+
+  if (party.therapistId !== null && !availableTherapists.has(party.therapistId)) return false
+  const remainingCapacity = availableTherapists.size - assignedTherapists.size - unassignedGuestCapacity
+  return remainingCapacity >= party.guests && (party.therapistId === null || !assignedTherapists.has(party.therapistId))
+}
+
+export async function bookingHasAvailableCapacity(reader: Reader, party: Party, start: Date, end: Date) {
+  const availableTherapists = await reader.select({ id: therapists.id }).from(therapists).where(and(
+    eq(therapists.available, true),
+    eq(therapists.visible, true),
+  ))
+  const occupiedBookings = await overlappingBookings(reader, party, start, end)
+  return hasAvailableTherapistCapacity(availableTherapists.map(({ id }) => id), occupiedBookings, party)
 }
 
 export async function availableBookingSlots(reader: Reader, booking: Party & { durationMinutes: number; date: string; time: string }, date: string, now: Date) {
@@ -75,6 +118,14 @@ export async function availableBookingSlots(reader: Reader, booking: Party & { d
     const [therapist] = await reader.select({ id: therapists.id }).from(therapists).where(and(eq(therapists.id, booking.therapistId), eq(therapists.available, true), eq(therapists.visible, true))).limit(1)
     if (!therapist) return []
   }
+  const availableTherapists = await reader.select({ id: therapists.id }).from(therapists).where(and(
+    eq(therapists.available, true),
+    eq(therapists.visible, true),
+  ))
   const occupied = await overlappingBookings(reader, booking, first.start, last.end)
-  return slots.filter((slot) => !(booking.date === date && booking.time === slot.time) && !occupied.some((old) => bookingIntervalsConflict(slot.start, slot.end, old.start, old.end)))
+  return slots.filter((slot) => {
+    if (booking.date === date && booking.time === slot.time) return false
+    const slotBookings = occupied.filter((old) => bookingIntervalsConflict(slot.start, slot.end, old.start, old.end))
+    return hasAvailableTherapistCapacity(availableTherapists.map(({ id }) => id), slotBookings, booking)
+  })
 }

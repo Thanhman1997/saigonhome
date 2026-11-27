@@ -11,7 +11,7 @@ import { allowBookingRequest } from "@/lib/booking-rate-limit"
 import { sendTransactionalEmail } from "@/lib/transactional-email"
 import { zonedLocalDateTimeToUtc } from "@/lib/timezone"
 import { escapeHtml } from "@/lib/security"
-import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
+import { bookingHasAvailableCapacity, lockBookingSchedule } from "@/lib/booking-availability"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { enqueueBookingKakaoNotification } from "@/lib/kakao-notifications"
 import { asBookingLocale, type Locale } from "@/lib/booking-management-locale"
@@ -202,7 +202,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         if (previous) return { kind: "duplicate", receipt: previous } as const
       }
       if (startAt.getTime() < Date.now() + MIN_BOOKING_NOTICE_MS) return null
-      if ((await overlappingBookings(tx, input, startAt, endAt)).length) return null
+      if (!(await bookingHasAvailableCapacity(tx, input, startAt, endAt))) return null
       const [created] = await tx.insert(bookings).values({
         reference,
         serviceId: input.serviceId,

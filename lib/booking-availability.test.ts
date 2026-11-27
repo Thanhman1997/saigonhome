@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { PgDialect } from "drizzle-orm/pg-core"
 import type { SQL } from "drizzle-orm"
-import { bookingIntervalsConflict, candidateSlots, overlappingBookings } from "./booking-availability"
+import { bookingIntervalsConflict, candidateSlots, hasAvailableTherapistCapacity, overlappingBookings } from "./booking-availability"
 
 describe("midnight booking boundary", () => {
   it("only offers services that finish before midnight", () => {
@@ -14,6 +14,44 @@ describe("midnight booking boundary", () => {
 
     expect(slots.at(-1)?.time).toBe("22:45")
     expect(slots.some((slot) => slot.time === "23:00")).toBe(false)
+  })
+
+  it("ends a 90-minute service at 22:15 when closing at midnight", () => {
+    const slots = candidateSlots("2026-08-18", 90, {
+      openTime: "09:00",
+      closeTime: "00:00",
+      closedWeekdays: [],
+      advanceBookingDays: 30,
+    }, new Date("2026-08-17T16:00:00.000Z"))
+
+    expect(slots.at(-1)?.time).toBe("22:15")
+  })
+})
+
+describe("available therapist capacity", () => {
+  it("keeps no-preference slots open while at least one of ten therapists is free", () => {
+    const bookings = [1, 2, 3].map((therapistId) => ({ therapistId, guests: 1 }))
+    expect(hasAvailableTherapistCapacity(
+      Array.from({ length: 10 }, (_, index) => index + 1),
+      bookings,
+      { therapistId: null, guests: 1 },
+    )).toBe(true)
+  })
+
+  it("prevents a selected therapist from being double-booked", () => {
+    const bookings = [{ therapistId: 1, guests: 1 }]
+    expect(hasAvailableTherapistCapacity([1, 2], bookings, { therapistId: 1, guests: 1 })).toBe(false)
+    expect(hasAvailableTherapistCapacity([1, 2], bookings, { therapistId: 2, guests: 1 })).toBe(true)
+    expect(hasAvailableTherapistCapacity([2], [], { therapistId: 1, guests: 1 })).toBe(false)
+  })
+
+  it("counts unassigned bookings against remaining therapist capacity", () => {
+    const bookings = [{ therapistId: 1, guests: 1 }, { therapistId: null, guests: 1 }]
+    expect(hasAvailableTherapistCapacity([1, 2], bookings, { therapistId: null, guests: 1 })).toBe(false)
+  })
+
+  it("reserves one available therapist per guest", () => {
+    expect(hasAvailableTherapistCapacity([1, 2], [], { therapistId: null, guests: 3 })).toBe(false)
   })
 })
 

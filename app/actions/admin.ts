@@ -4,7 +4,7 @@ import { db } from "@/lib/db"
 import { bookings, reviews, services, siteContent, therapists } from "@/lib/db/schema"
 import { and, eq, inArray } from "drizzle-orm"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
-import { availableBookingSlots, lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
+import { availableBookingSlots, bookingHasAvailableCapacity, lockBookingSchedule } from "@/lib/booking-availability"
 import { pendingChangeRequest } from "@/lib/booking-change-request"
 import { verifyBookingReviewToken, type ReviewTokenAction } from "@/lib/booking-review-token"
 import { canTransitionBookingStatus, isBookingStatus, type BookingStatus } from "@/lib/booking-status"
@@ -32,7 +32,7 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
   await db.transaction(async (tx) => {
     await lockBookingSchedule(tx)
     if ((status === "confirmed" || status === "pending") && !["pending", "confirmed"].includes(current.status)) {
-      if ((await overlappingBookings(tx, current, current.startAt, current.endAt)).length) throw new Error("This time is no longer available")
+      if (!(await bookingHasAvailableCapacity(tx, current, current.startAt, current.endAt))) throw new Error("This time is no longer available")
     }
     const activity = status === current.status ? current.activity : [...current.activity, { kind: status, at: new Date().toISOString(), date: current.date, time: current.time }]
     const [updated] = await tx.update(bookings).set({ status, activity, updatedAt: new Date(), ...(access && { accessTokenHash: access.hash, accessTokenExpiresAt: access.expires, accessTokenRevokedAt: null }) }).where(and(
