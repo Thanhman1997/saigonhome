@@ -70,6 +70,43 @@ export async function getAllBookingsWithRelations() {
   }))
 }
 
+export async function getAdminBookingOverviewData() {
+  const rows = await db.select({
+    id: bookings.id,
+    reference: bookings.reference,
+    status: bookings.status,
+    customerName: bookings.customerName,
+    phone: bookings.phone,
+    email: bookings.email,
+    date: bookings.date,
+    time: bookings.time,
+    startAt: bookings.startAt,
+    endAt: bookings.endAt,
+    serviceId: bookings.serviceId,
+    serviceName: services.nameVi,
+    therapistId: bookings.therapistId,
+    therapistCode: therapists.code,
+    durationMinutes: bookings.durationMinutes,
+    guests: bookings.guests,
+    totalVnd: bookings.totalVnd,
+    paymentMethod: bookings.paymentMethod,
+    paymentStatus: bookings.paymentStatus,
+    accessTokenRevokedAt: bookings.accessTokenRevokedAt,
+    createdAt: bookings.createdAt,
+    activity: bookings.activity,
+  }).from(bookings)
+    .leftJoin(services, eq(bookings.serviceId, services.id))
+    .leftJoin(therapists, eq(bookings.therapistId, therapists.id))
+    .orderBy(desc(bookings.startAt), desc(bookings.createdAt))
+
+  return rows.map(({ activity, ...booking }) => ({
+    ...booking,
+    rejectedAt: [...activity].reverse().find((event) => event.kind === "rejected")?.at ?? null,
+  }))
+}
+
+export type AdminBookingOverviewBooking = Awaited<ReturnType<typeof getAdminBookingOverviewData>>[number]
+
 export async function getAllReviewsWithRelations() {
   const [allReviews, allTherapists, bookingRefs] = await Promise.all([
     db.select().from(reviews).orderBy(desc(reviews.reviewDate), desc(reviews.id)),
