@@ -34,7 +34,7 @@ vi.mock("@/lib/booking-rate-limit", () => ({ allowBookingRequest: async () => tr
 vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: transactionalEmailMock.send }))
 
 const transactionalEmailMock = vi.hoisted(() => ({
-  send: vi.fn(async (email: { to: string; subject: string; html: string; text?: string; amp?: string }) => {
+  send: vi.fn(async (email: { to: string; subject: string; html: string; text?: string }) => {
     void email
     return false
   }),
@@ -113,14 +113,11 @@ describe("createBooking integration contract", () => {
       expect(adminEmail?.text).toContain("secure review page")
       expect(adminEmail?.text).toContain("https://preview.lotuswellness.app/booking-review/42?t=")
       expect(adminEmail?.html).toContain('href="https://preview.lotuswellness.app/booking-review/42?t=')
-      expect(adminEmail?.amp).toContain('action-xhr="https://preview.lotuswellness.app/api/booking-confirmations/confirm"')
-      for (const part of [adminEmail?.text, adminEmail?.html, adminEmail?.amp]) {
+      expect(adminEmail).not.toHaveProperty("amp")
+      for (const part of [adminEmail?.text, adminEmail?.html]) {
         expect(part).toContain("preview.lotuswellness.app")
         expect(part).not.toContain(".vercel.app")
       }
-      expect(adminEmail?.amp).toContain("CONFIRM BOOKING")
-      expect(adminEmail?.amp).toContain("method=\"post\"")
-      expect(adminEmail?.amp).toMatch(/name=\"token\" value=\"[A-Za-z0-9_-]{43}\"/)
       expect(insertedBooking.value).toHaveProperty("confirmationTokenHash")
     } finally {
       vi.useRealTimers()

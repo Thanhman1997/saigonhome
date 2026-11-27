@@ -10,7 +10,10 @@ vi.mock("nodemailer", () => ({ default: { createTransport: mocks.createTransport
 
 import { sendTransactionalEmail } from "./transactional-email"
 
-afterEach(() => vi.unstubAllEnvs())
+afterEach(() => {
+  vi.unstubAllEnvs()
+  vi.unstubAllGlobals()
+})
 
 beforeEach(() => {
   vi.stubEnv("RESEND_API_KEY", "test-resend-key")
@@ -19,7 +22,26 @@ beforeEach(() => {
   mocks.close.mockReset()
 })
 
-describe("AMP transactional email delivery", () => {
+describe("transactional email delivery", () => {
+  it("sends standard mail through Resend HTTP without using SMTP", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal("fetch", fetchMock)
+
+    const result = await sendTransactionalEmail({
+      to: "admin@example.test",
+      subject: "New booking",
+      text: "A customer submitted a booking request.",
+      html: "<p>A customer submitted a booking request.</p>",
+    })
+
+    expect(result).toBe(true)
+    expect(fetchMock).toHaveBeenCalledWith("https://api.resend.com/emails", expect.objectContaining({
+      method: "POST",
+      body: expect.stringContaining('"to":["admin@example.test"]'),
+    }))
+    expect(mocks.createTransport).not.toHaveBeenCalled()
+  })
+
   it("sends the AMP MIME alternative through Resend SMTP", async () => {
     const result = await sendTransactionalEmail({
       to: "admin@example.test",
