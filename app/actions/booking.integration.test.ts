@@ -100,10 +100,11 @@ describe("createBooking integration contract", () => {
       expect(adminEmail?.html).toContain("Test &lt;Customer&gt;")
       expect(adminEmail?.html).toContain(paymentLabel)
       expect(adminEmail?.html).toContain("Review booking")
+      expect(adminEmail?.html).toContain("No admin sign-in is required")
       expect(adminEmail?.html).not.toContain("/api/booking-confirmations/confirm")
-      expect(adminEmail?.amp).toContain("CONFIRM BOOKING")
-      expect(adminEmail?.amp).toContain("method=\"post\"")
-      expect(adminEmail?.amp).toMatch(/name=\"token\" value=\"[A-Za-z0-9_-]{43}\"/)
+      expect(adminEmail?.text).toContain("without signing in")
+      expect(adminEmail?.amp).toBeUndefined()
+      expect(insertedBooking.value).not.toHaveProperty("confirmationTokenHash")
     } finally {
       vi.useRealTimers()
     }

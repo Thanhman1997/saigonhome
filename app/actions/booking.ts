@@ -6,8 +6,6 @@ import { and, eq } from "drizzle-orm"
 import { getGroupDiscountRate, getGroupDiscountLabel, DEFAULT_DISCOUNT_RATES, type DiscountRates } from "@/lib/pricing"
 import { randomInt } from "node:crypto"
 import { issueBookingToken } from "@/lib/booking-management-token"
-import { issueBookingConfirmationToken } from "@/lib/booking-confirmation-token"
-import { buildAdminBookingAmpConfirmationEmail } from "@/lib/booking-confirmation-email"
 import { adminBookingReviewUrl } from "@/lib/booking-review-token"
 import { allowBookingRequest } from "@/lib/booking-rate-limit"
 import { sendTransactionalEmail } from "@/lib/transactional-email"
@@ -196,7 +194,6 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const endAt = new Date(startAt.getTime() + input.durationMinutes * 60 * 1000)
 
     const access = issueBookingToken()
-    const emailConfirmation = issueBookingConfirmationToken()
     const save = () => db.transaction(async (tx) => {
       await lockBookingSchedule(tx)
       if (submissionKey) {
@@ -230,8 +227,6 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         submissionKey,
         accessTokenHash: access.hash,
         accessTokenExpiresAt: access.expires,
-        confirmationTokenHash: emailConfirmation.hash,
-        confirmationTokenExpiresAt: emailConfirmation.expiresAt,
         activity: [{ kind: "created", at: now.toISOString(), date: input.date, time: input.time }],
         startAt,
         endAt,
@@ -286,7 +281,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 
     const localizedService = { en: service.nameEn, vi: service.nameVi, ko: service.nameKo }[locale]
     const [adminNotificationSent, managementEmailSent] = await Promise.all([
-      sendAdminNotification(bookingDetails, emailConfirmation.token),
+      sendAdminNotification(bookingDetails),
       sendBookingManagementEmail({ ...saved.booking, reference, date: input.date, time: input.time, status: "pending" }, localizedService, "received", locale, { token: access.token, therapist: therapistCode }).catch(() => {
         console.error("Could not send booking management email")
         return false
@@ -331,7 +326,7 @@ type BookingEmailDetails = {
   discountLabel: string | null
 }
 
-async function sendAdminNotification(details: BookingEmailDetails, confirmationToken: string) {
+async function sendAdminNotification(details: BookingEmailDetails) {
   try {
     const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + "đ"
     const paymentMethod = PAYMENT_METHOD_LABELS[details.paymentMethod]
@@ -341,8 +336,7 @@ async function sendAdminNotification(details: BookingEmailDetails, confirmationT
       to: process.env.ADMIN_EMAIL ?? "saigonservice2020@gmail.com",
       replyTo: details.email,
       subject: `New booking — ${details.reference}`,
-      text: `New booking ${details.reference}: ${details.serviceName}, ${details.date} at ${details.time}. Confirm in Gmail with the AMP button, or open the secure review page: ${reviewUrl}`,
-      amp: buildAdminBookingAmpConfirmationEmail(details, confirmationToken),
+      text: `New booking ${details.reference}: ${details.serviceName}, ${details.date} at ${details.time}. Review and confirm securely without signing in: ${reviewUrl}`,
       html: `
         <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; color: #26362f;">
           <p style="font-size: 12px; letter-spacing: 2px;">LOTUS WELLNESS</p>
@@ -363,7 +357,7 @@ async function sendAdminNotification(details: BookingEmailDetails, confirmationT
             <tr><td style="padding: 6px 0; color: #666; font-weight: bold;">Total</td><td style="padding: 6px 0; font-weight: bold;">${fmt(details.totalVnd)}</td></tr>
           </table>
           <p style="margin-top: 20px;"><a href="${escapeHtml(reviewUrl)}" style="display: inline-block; padding: 12px 20px; border-radius: 24px; background: #26362f; color: #fff; text-decoration: none;">Review booking</a></p>
-          <p style="color: #666;">Gmail can show a one-click CONFIRM BOOKING button if this sender is registered for AMP for Email. In other email clients, use the secure review page and confirm there. Customer notification is sent only after confirmation.</p>
+          <p style="color: #666;">Open the secure review page to confirm or decline this booking. No admin sign-in is required. The customer is notified only after you confirm.</p>
         </div>
       `,
     })
