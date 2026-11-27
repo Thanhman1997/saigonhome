@@ -46,7 +46,15 @@ export function siteBaseUrl() {
 }
 
 // Falls back to the admin booking list when no signing secret is configured.
-export function adminBookingReviewUrl(bookingId: number) {
+export function adminBookingReviewUrl(bookingId: number, confirmationToken?: string, decision?: "confirm" | "reject") {
   const token = createBookingReviewToken(bookingId)
-  return token ? `${siteBaseUrl()}/booking-review/${bookingId}?t=${encodeURIComponent(token)}` : `${siteBaseUrl()}/admin/bookings`
+  if (!token) return `${siteBaseUrl()}/admin/bookings`
+
+  const url = new URL(`/booking-review/${bookingId}`, siteBaseUrl())
+  url.searchParams.set("t", token)
+  if (confirmationToken && /^[A-Za-z0-9_-]{43}$/.test(confirmationToken)) {
+    url.searchParams.set("c", confirmationToken)
+  }
+  if (decision) url.searchParams.set("decision", decision)
+  return url.href
 }

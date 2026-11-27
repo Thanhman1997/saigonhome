@@ -31,7 +31,7 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/db/schema", () => ({ bookingSettings: "settings", services: "services", serviceDurations: "durations", therapists: "therapists", bookings: "bookings" }))
 vi.mock("@/lib/booking-rate-limit", () => ({ allowBookingRequest: async () => true }))
-vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: transactionalEmailMock.send }))
+vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: transactionalEmailMock.send, selectAdminBookingEmailFormat: () => "HTML" }))
 
 const transactionalEmailMock = vi.hoisted(() => ({
   send: vi.fn(async (email: { to: string; subject: string; html: string; text?: string }) => {
@@ -98,7 +98,7 @@ describe("createBooking integration contract", () => {
     vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
     try {
       const { createBooking } = await import("./booking")
-      const result = await createBooking({ ...validInput("2026-08-18"), customerName: "Test <Customer>", paymentMethod })
+      const result = await createBooking({ ...validInput("2026-08-18"), customerName: "Test <Customer>", notes: "Please call on arrival", paymentMethod })
       expect(result.success).toBe(true)
       expect(insertedBooking.value?.paymentMethod).toBe(paymentMethod)
       const adminEmail = transactionalEmailMock.send.mock.calls
@@ -107,12 +107,21 @@ describe("createBooking integration contract", () => {
       expect(adminEmail?.html).toContain("Customer name")
       expect(adminEmail?.html).toContain("Test &lt;Customer&gt;")
       expect(adminEmail?.html).toContain(paymentLabel)
-      expect(adminEmail?.html).toContain("Review booking")
+      expect(adminEmail?.html).toContain("test@example.com")
+      expect(adminEmail?.html).toContain("0900000000")
+      expect(adminEmail?.html).toContain("Test address")
+      expect(adminEmail?.html).toContain("60 min")
+      expect(adminEmail?.html).toContain("Please call on arrival")
+      expect(adminEmail?.html).toContain("CONFIRM BOOKING")
+      expect(adminEmail?.html).toContain("REJECT BOOKING")
       expect(adminEmail?.html).toContain("without signing in")
       expect(adminEmail?.html).not.toContain("/api/booking-confirmations/confirm")
-      expect(adminEmail?.text).toContain("secure review page")
+      expect(adminEmail?.text).toContain("Confirm this booking:")
+      expect(adminEmail?.text).toContain("Reject this booking:")
       expect(adminEmail?.text).toContain("https://preview.lotuswellness.app/booking-review/42?t=")
       expect(adminEmail?.html).toContain('href="https://preview.lotuswellness.app/booking-review/42?t=')
+      expect(adminEmail?.html).toContain("decision=confirm")
+      expect(adminEmail?.html).toContain("decision=reject")
       expect(adminEmail).not.toHaveProperty("amp")
       for (const part of [adminEmail?.text, adminEmail?.html]) {
         expect(part).toContain("preview.lotuswellness.app")

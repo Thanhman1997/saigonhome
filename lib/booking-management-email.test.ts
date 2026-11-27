@@ -48,6 +48,23 @@ describe("Resend booking emails", () => {
     expect(html).not.toMatch(/Payment options|Visa|Mastercard|paymentUrl|\/payment\/result/)
   })
 
+  it.each([
+    ["en", "Booking request declined", "Rejected"],
+    ["vi", "Yêu cầu đặt lịch đã bị từ chối", "Bị từ chối"],
+    ["ko", "예약 요청이 거절되었습니다", "예약 거절"],
+  ] as const)("sends a localized rejection email in %s", async (locale, title, status) => {
+    vi.stubEnv("RESEND_API_KEY", "test-key")
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(null, { status: 200 }))
+    vi.stubGlobal("fetch", fetch)
+
+    expect(await sendBookingManagementEmail({ ...booking, status: "rejected" }, null, "rejected", locale)).toBe(true)
+    const payload = JSON.parse(String(fetch.mock.calls[0][1]?.body))
+    expect(payload.subject).toBe(`${title} — ${booking.reference}`)
+    expect(payload.html).toContain(title)
+    expect(payload.html).toContain(status)
+    expect(payload.html).not.toContain("Manage my booking")
+  })
+
   it("uses the configured Preview host for customer booking-management links", async () => {
     vi.stubEnv("RESEND_API_KEY", "test-key")
     vi.stubEnv("VERCEL_ENV", "preview")

@@ -13,6 +13,7 @@ import { assertAdmin } from "@/lib/admin-auth"
 import { sendTransactionalEmail } from "@/lib/transactional-email"
 import { issueBookingToken } from "@/lib/booking-management-token"
 import { localizedServiceName } from "@/lib/booking-management-locale"
+import { confirmBookingFromEmailToken as confirmOneTimeBooking, rejectBookingFromEmailToken as rejectOneTimeBooking } from "@/lib/booking-email-confirmation"
 import { createReviewInvitation } from "@/lib/review-invitation"
 import { escapeHtml } from "@/lib/security"
 import { getSiteUrl } from "@/lib/site-url"
@@ -22,7 +23,7 @@ export async function updateBookingStatus(id: number, status: BookingStatus) {
   return applyBookingStatus(id, status)
 }
 
-async function applyBookingStatus(id: number, status: BookingStatus) {
+async function applyBookingStatus(id: number, status: BookingStatus, actor: "admin" | "admin_email" = "admin") {
   if (!isBookingStatus(status)) throw new Error("Invalid status")
   const [booking] = await db.select({ booking: bookings, service: services, therapist: therapists }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).leftJoin(therapists, eq(bookings.therapistId, therapists.id)).where(eq(bookings.id, id)).limit(1)
   if (!booking) throw new Error("Booking not found")
@@ -35,7 +36,7 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
       if (!(await bookingHasAvailableCapacity(tx, current, current.startAt, current.endAt))) throw new Error("This time is no longer available")
     }
     const now = new Date()
-    const activity = status === current.status ? current.activity : [...current.activity, { kind: status, at: now.toISOString(), date: current.date, time: current.time }]
+    const activity = status === current.status ? current.activity : [...current.activity, { kind: status, at: now.toISOString(), date: current.date, time: current.time, actor }]
     const [updated] = await tx.update(bookings).set({
       status,
       activity,
@@ -44,12 +45,13 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
       confirmationTokenHash: status === "pending" ? current.confirmationTokenHash : null,
       confirmationTokenExpiresAt: status === "pending" ? current.confirmationTokenExpiresAt : null,
       ...(access && { accessTokenHash: access.hash, accessTokenExpiresAt: access.expires, accessTokenRevokedAt: null }),
+      ...(status === "rejected" && { accessTokenHash: null, accessTokenExpiresAt: null, accessTokenRevokedAt: now }),
     }).where(and(
       eq(bookings.id, id), eq(bookings.status, current.status), eq(bookings.startAt, current.startAt),
     )).returning({ id: bookings.id })
     if (!updated) throw new Error("The booking changed. Refresh and try again.")
   })
-  if ((status === "confirmed" || status === "cancelled") && current.status !== status) {
+  if ((status === "confirmed" || status === "cancelled" || status === "rejected") && current.status !== status) {
     const [template] = await db.select().from(siteContent).where(eq(siteContent.key, `booking_${status}_email`)).limit(1)
     const locale = current.locale ?? "en"
     await sendBookingManagementEmail({ ...current, status }, localizedServiceName(booking.service, locale), status, locale, {
@@ -171,7 +173,15 @@ export async function confirmBookingFromEmail(id: number, token: string) {
   assertReviewToken(id, token, "confirm")
   const [current] = await db.select({ status: bookings.status }).from(bookings).where(eq(bookings.id, id)).limit(1)
   if (current?.status !== "pending") throw new Error("This booking is no longer waiting for confirmation")
-  await applyBookingStatus(id, "confirmed")
+  await applyBookingStatus(id, "confirmed", "admin_email")
+}
+
+export async function confirmBookingWithOneTimeToken(id: number, token: string) {
+  return confirmOneTimeBooking(id, token)
+}
+
+export async function rejectBookingWithOneTimeToken(id: number, token: string) {
+  return rejectOneTimeBooking(id, token)
 }
 
 export async function approveBookingChangeFromEmail(id: number, token: string) {

@@ -5,6 +5,7 @@ describe("booking status transitions", () => {
   it.each([
     ["pending", "confirmed"],
     ["pending", "cancelled"],
+    ["pending", "rejected"],
     ["confirmed", "completed"],
     ["confirmed", "cancelled"],
     ["cancelled", "confirmed"],
@@ -14,6 +15,9 @@ describe("booking status transitions", () => {
 
   it.each([
     ["pending", "completed"],
+    ["confirmed", "rejected"],
+    ["rejected", "confirmed"],
+    ["rejected", "cancelled"],
     ["completed", "pending"],
     ["completed", "confirmed"],
     ["completed", "cancelled"],
@@ -28,6 +32,7 @@ describe("booking status transitions", () => {
 
   it("lists the current status first so the select can render it", () => {
     expect(allowedBookingStatuses("completed")).toEqual(["completed"])
-    expect(allowedBookingStatuses("pending")).toEqual(["pending", "confirmed", "cancelled"])
+    expect(allowedBookingStatuses("pending")).toEqual(["pending", "confirmed", "cancelled", "rejected"])
+    expect(allowedBookingStatuses("rejected")).toEqual(["rejected"])
   })
 })

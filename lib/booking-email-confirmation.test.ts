@@ -138,9 +138,42 @@ describe("single-use email booking confirmation", () => {
 
     expect(result).toEqual({ ok: true, customerNotificationSent: true })
     expect(state.booking).toMatchObject({ status: "confirmed", confirmedAt: NOW, confirmationTokenHash: null, confirmationTokenExpiresAt: null })
-    expect(state.booking?.activity).toContainEqual({ kind: "confirmed", at: NOW.toISOString(), date: "2026-12-12", time: "10:00" })
+    expect(state.booking?.activity).toContainEqual({ kind: "confirmed", at: NOW.toISOString(), date: "2026-12-12", time: "10:00", actor: "admin_email" })
     expect(state.updateCount).toBe(1)
     expect(state.lock).toHaveBeenCalledOnce()
+    expect(state.sendEmail).toHaveBeenCalledOnce()
+  })
+
+  it("rejects a pending booking, consumes the token, records the action, and sends the locale-specific rejection", async () => {
+    state.booking!.locale = "ko"
+    const { rejectBookingFromEmailToken } = await import("./booking-email-confirmation")
+    const result = await rejectBookingFromEmailToken(42, state.token, NOW)
+
+    expect(result).toEqual({ ok: true, customerNotificationSent: true })
+    expect(state.booking).toMatchObject({
+      status: "rejected",
+      confirmedAt: null,
+      confirmationTokenHash: null,
+      confirmationTokenExpiresAt: null,
+      accessTokenHash: null,
+      accessTokenExpiresAt: null,
+    })
+    expect(state.booking?.activity).toContainEqual({ kind: "rejected", at: NOW.toISOString(), date: "2026-12-12", time: "10:00", actor: "admin_email" })
+    expect(state.updateCount).toBe(1)
+    expect(state.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ status: "rejected" }), "Massage", "rejected", "ko", expect.objectContaining({ therapist: "T01" }))
+    expect(await rejectBookingFromEmailToken(42, state.token, NOW)).toEqual({ ok: false, reason: "invalid" })
+    const { confirmBookingFromEmailToken } = await import("./booking-email-confirmation")
+    expect(await confirmBookingFromEmailToken(42, state.token, NOW)).toEqual({ ok: false, reason: "invalid" })
+    expect(state.sendEmail).toHaveBeenCalledOnce()
+  })
+
+  it("rejects a booking even when confirmation capacity is unavailable", async () => {
+    state.capacityAvailable = false
+    const { rejectBookingFromEmailToken } = await import("./booking-email-confirmation")
+    const result = await rejectBookingFromEmailToken(42, state.token, NOW)
+
+    expect(result).toEqual({ ok: true, customerNotificationSent: true })
+    expect(state.booking?.status).toBe("rejected")
     expect(state.sendEmail).toHaveBeenCalledOnce()
   })
 
@@ -160,6 +193,16 @@ describe("single-use email booking confirmation", () => {
     state.booking!.confirmationTokenExpiresAt = new Date(NOW.getTime() - 1)
     expect(await confirmBookingFromEmailToken(42, state.token, NOW)).toEqual({ ok: false, reason: "invalid" })
     expect(await confirmBookingFromEmailToken(42, "bad-token", NOW)).toEqual({ ok: false, reason: "invalid" })
+    expect(state.booking?.status).toBe("pending")
+    expect(state.updateCount).toBe(0)
+    expect(state.sendEmail).not.toHaveBeenCalled()
+  })
+
+  it("rejects expired rejection tokens without changing state or sending email", async () => {
+    state.booking!.confirmationTokenExpiresAt = new Date(NOW.getTime() - 1)
+    const { rejectBookingFromEmailToken } = await import("./booking-email-confirmation")
+
+    expect(await rejectBookingFromEmailToken(42, state.token, NOW)).toEqual({ ok: false, reason: "invalid" })
     expect(state.booking?.status).toBe("pending")
     expect(state.updateCount).toBe(0)
     expect(state.sendEmail).not.toHaveBeenCalled()

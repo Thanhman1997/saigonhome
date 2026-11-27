@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { confirmBookingFromEmailToken } from "@/lib/booking-email-confirmation"
+import { confirmBookingFromEmailToken, rejectBookingFromEmailToken } from "@/lib/booking-email-confirmation"
 import { TRANSACTIONAL_EMAIL_FROM_ADDRESS } from "@/lib/transactional-email"
 
 export const runtime = "nodejs"
@@ -74,23 +74,28 @@ export async function POST(request: Request) {
   const form = new URLSearchParams(rawBody)
   const idValue = form.get("bookingId")
   const token = form.get("token")
+  const actionValue = form.get("action") ?? "confirm"
+  const action = actionValue === "confirm" || actionValue === "reject" ? actionValue : null
   const id = typeof idValue === "string" && /^\d{1,10}$/.test(idValue) ? Number(idValue) : Number.NaN
-  if (!Number.isSafeInteger(id) || typeof token !== "string") {
-    return json({ message: "Invalid confirmation request." }, 400, cors.headers)
+  if (!Number.isSafeInteger(id) || typeof token !== "string" || !action) {
+    return json({ message: "Invalid booking decision request." }, 400, cors.headers)
   }
 
-  const result = await confirmBookingFromEmailToken(id, token)
+  const result = action === "confirm"
+    ? await confirmBookingFromEmailToken(id, token)
+    : await rejectBookingFromEmailToken(id, token)
   if (!result.ok) {
     const message = result.reason === "unavailable"
       ? "This time is no longer available. The booking was not changed. Please review it in the admin dashboard."
       : result.reason === "error"
-        ? "We could not confirm the booking right now. Please try again later."
-        : "This confirmation link is invalid, expired, or already used. No changes were made."
+        ? "We could not process this booking decision right now. Please try again later."
+        : "This link is invalid, expired, or already used. No changes were made."
     return json({ message }, result.reason === "error" ? 500 : 409, cors.headers)
   }
 
+  const decision = action === "confirm" ? "confirmed" : "rejected"
   const message = result.customerNotificationSent
-    ? "Booking confirmed. The customer has been notified."
-    : "Booking confirmed, but the customer email could not be sent. Please contact the customer."
+    ? `Booking ${decision}. Resend accepted the customer notification.`
+    : `Booking ${decision}, but Resend did not accept the customer email. Please contact the customer.`
   return json({ message }, 200, cors.headers)
 }

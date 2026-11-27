@@ -9,13 +9,16 @@ import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { hashBookingConfirmationToken } from "@/lib/booking-confirmation-token"
 
 type ConfirmationFailure = "invalid" | "unavailable" | "error"
+type EmailDecision = "confirm" | "reject"
 export type BookingEmailConfirmationResult =
   | { ok: true; customerNotificationSent: boolean }
   | { ok: false; reason: ConfirmationFailure }
 
 type TransactionOutcome =
   | { kind: "confirmed"; booking: typeof bookings.$inferSelect; accessToken: string }
-  | { kind: "invalid" | "unavailable" }
+  | { kind: "rejected"; booking: typeof bookings.$inferSelect }
+  | { kind: "invalid" }
+  | { kind: "unavailable" }
 
 function isOverlapConstraint(error: unknown) {
   if (typeof error !== "object" || error === null) return false
@@ -23,7 +26,15 @@ function isOverlapConstraint(error: unknown) {
   return candidate.code === "23P01" && candidate.constraint === "bookings_therapist_no_overlap"
 }
 
-export async function confirmBookingFromEmailToken(id: number, token: unknown, now = new Date()): Promise<BookingEmailConfirmationResult> {
+export function confirmBookingFromEmailToken(id: number, token: unknown, now = new Date()) {
+  return applyBookingEmailDecision(id, token, "confirm", now)
+}
+
+export function rejectBookingFromEmailToken(id: number, token: unknown, now = new Date()) {
+  return applyBookingEmailDecision(id, token, "reject", now)
+}
+
+async function applyBookingEmailDecision(id: number, token: unknown, decision: EmailDecision, now: Date): Promise<BookingEmailConfirmationResult> {
   const tokenHash = hashBookingConfirmationToken(token)
   if (!tokenHash || !Number.isSafeInteger(id) || id < 1 || id > 2147483647) return { ok: false, reason: "invalid" }
 
@@ -38,18 +49,21 @@ export async function confirmBookingFromEmailToken(id: number, token: unknown, n
 
       if (!current || !current.confirmationTokenExpiresAt || current.confirmationTokenExpiresAt <= now) return { kind: "invalid" }
       if (current.status !== "pending") return { kind: "invalid" }
-      if (!(await bookingHasAvailableCapacity(tx, current, current.startAt, current.endAt))) return { kind: "unavailable" }
+      if (decision === "confirm" && !(await bookingHasAvailableCapacity(tx, current, current.startAt, current.endAt))) {
+        return { kind: "unavailable" }
+      }
 
-      const access = issueBookingToken()
-      const activity = [...current.activity, { kind: "confirmed", at: now.toISOString(), date: current.date, time: current.time }]
+      const status = decision === "confirm" ? "confirmed" : "rejected"
+      const access = decision === "confirm" ? issueBookingToken() : null
+      const activity = [...current.activity, { kind: status, at: now.toISOString(), date: current.date, time: current.time, actor: "admin_email" as const }]
       const [updated] = await tx.update(bookings).set({
-        status: "confirmed",
-        confirmedAt: now,
+        status,
+        confirmedAt: access ? now : null,
         confirmationTokenHash: null,
         confirmationTokenExpiresAt: null,
-        accessTokenHash: access.hash,
-        accessTokenExpiresAt: access.expires,
-        accessTokenRevokedAt: null,
+        accessTokenHash: access?.hash ?? null,
+        accessTokenExpiresAt: access?.expires ?? null,
+        accessTokenRevokedAt: access ? null : now,
         activity,
         updatedAt: now,
       }).where(and(
@@ -59,15 +73,18 @@ export async function confirmBookingFromEmailToken(id: number, token: unknown, n
         gt(bookings.confirmationTokenExpiresAt, now),
       )).returning()
 
-      return updated ? { kind: "confirmed", booking: updated, accessToken: access.token } : { kind: "invalid" }
+      if (!updated) return { kind: "invalid" }
+      return access
+        ? { kind: "confirmed", booking: updated, accessToken: access.token }
+        : { kind: "rejected", booking: updated }
     })
   } catch (error) {
     if (isOverlapConstraint(error)) return { ok: false, reason: "unavailable" }
-    console.error("Email booking confirmation transaction failed", { bookingId: id, error: error instanceof Error ? error.message : "unknown" })
+    console.error("Email booking decision transaction failed", { bookingId: id, error: error instanceof Error ? error.message : "unknown" })
     return { ok: false, reason: "error" }
   }
 
-  if (outcome.kind !== "confirmed") return { ok: false, reason: outcome.kind }
+  if (outcome.kind === "invalid" || outcome.kind === "unavailable") return { ok: false, reason: outcome.kind }
 
   let customerNotificationSent = false
   try {
@@ -79,12 +96,12 @@ export async function confirmBookingFromEmailToken(id: number, token: unknown, n
     customerNotificationSent = await sendBookingManagementEmail(
       outcome.booking,
       localizedServiceName(service, locale),
-      "confirmed",
+      outcome.kind,
       locale,
-      { token: outcome.accessToken, therapist: therapist?.code },
+      { ...(outcome.kind === "confirmed" ? { token: outcome.accessToken } : {}), therapist: therapist?.code },
     )
   } catch (error) {
-    console.error("Customer confirmation email could not be sent", { bookingId: id, error: error instanceof Error ? error.message : "unknown" })
+    console.error("Customer booking decision email could not be sent", { bookingId: id, error: error instanceof Error ? error.message : "unknown" })
   }
 
   revalidatePath("/admin/bookings")

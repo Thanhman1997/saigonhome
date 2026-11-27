@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("nodemailer", () => ({ default: { createTransport: mocks.createTransport } }))
 
-import { sendTransactionalEmail } from "./transactional-email"
+import { getAdminBookingEmailConfig, selectAdminBookingEmailFormat, sendTransactionalEmail } from "./transactional-email"
 
 afterEach(() => {
   vi.unstubAllEnvs()
@@ -69,15 +69,74 @@ describe("transactional email delivery", () => {
     expect(mocks.close).toHaveBeenCalledOnce()
   })
 
-  it("does not report success when SMTP rejects the recipient", async () => {
+  it("falls back through Resend API only after an explicit SMTP rejection", async () => {
     mocks.sendMail.mockResolvedValue({ accepted: [], rejected: ["admin@example.test"] })
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal("fetch", fetchMock)
+
     const result = await sendTransactionalEmail({
       to: "admin@example.test",
       subject: "New booking",
-      html: "<p>Review this booking.</p>",
+      text: "Plain fallback",
+      html: "<p>HTML fallback</p>",
+      amp: "<html amp4email></html>",
+      idempotencyKey: "booking-42",
+    })
+
+    expect(result).toBe(true)
+    expect(mocks.sendMail).toHaveBeenCalledOnce()
+    expect(fetchMock).toHaveBeenCalledWith("https://api.resend.com/emails", expect.objectContaining({
+      method: "POST",
+      headers: expect.objectContaining({ "Idempotency-Key": "booking-42" }),
+      body: expect.stringContaining('"html":"<p>HTML fallback</p>"'),
+    }))
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).not.toHaveProperty("amp")
+  })
+
+  it("falls back when the SMTP server explicitly rejects the AMP message before acceptance", async () => {
+    mocks.sendMail.mockRejectedValue(Object.assign(new Error("SMTP 550 rejected"), { responseCode: 550 }))
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal("fetch", fetchMock)
+
+    expect(await sendTransactionalEmail({
+      to: "admin@example.test",
+      subject: "New booking",
+      html: "<p>HTML fallback</p>",
+      amp: "<html amp4email></html>",
+    })).toBe(true)
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
+
+  it("does not send a second email when the SMTP result is ambiguous", async () => {
+    mocks.sendMail.mockRejectedValue(new Error("socket timeout after DATA"))
+    const fetchMock = vi.fn()
+    vi.stubGlobal("fetch", fetchMock)
+
+    const result = await sendTransactionalEmail({
+      to: "admin@example.test",
+      subject: "New booking",
+      html: "<p>HTML fallback</p>",
       amp: "<html amp4email></html>",
     })
 
     expect(result).toBe(false)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("does not send a second email when SMTP returns no recipient disposition", async () => {
+    mocks.sendMail.mockResolvedValue({ accepted: [], rejected: [] })
+    const fetchMock = vi.fn()
+    vi.stubGlobal("fetch", fetchMock)
+
+    expect(await sendTransactionalEmail({ to: "admin@example.test", subject: "New booking", html: "<p>Fallback</p>", amp: "<html amp4email></html>" })).toBe(false)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("requires both Google approval and successful Gmail testing, not AMP_ENABLED alone", () => {
+    const ampEnabledOnly = getAdminBookingEmailConfig({ ADMIN_BOOKING_EMAIL_MODE: "AMP", AMP_ENABLED: "true" })
+    expect(selectAdminBookingEmailFormat(ampEnabledOnly)).toBe("HTML")
+    expect(selectAdminBookingEmailFormat({ mode: "AUTO", gmailSenderApproved: true, ampLiveDeliveryVerified: false })).toBe("HTML")
+    expect(selectAdminBookingEmailFormat({ mode: "AUTO", gmailSenderApproved: true, ampLiveDeliveryVerified: true })).toBe("AMP")
+    expect(selectAdminBookingEmailFormat({ mode: "HTML", gmailSenderApproved: true, ampLiveDeliveryVerified: true })).toBe("HTML")
   })
 })
