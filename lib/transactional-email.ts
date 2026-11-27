@@ -53,10 +53,10 @@ export async function sendTransactionalEmail({
         amp,
         ...(replyToAddress ? { replyTo: replyToAddress } : {}),
       })
-      return info.accepted.length > 0 && info.rejected.length === 0
+      if (info.accepted.length > 0 && info.rejected.length === 0) return true
+      console.error("Resend SMTP did not accept AMP transactional email; falling back to HTML")
     } catch {
-      console.error("Resend SMTP rejected AMP transactional email")
-      return false
+      console.error("Resend SMTP rejected AMP transactional email; falling back to HTML")
     } finally {
       transport.close()
     }
