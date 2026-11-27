@@ -48,6 +48,22 @@ describe("Resend booking emails", () => {
     expect(html).not.toMatch(/Payment options|Visa|Mastercard|paymentUrl|\/payment\/result/)
   })
 
+  it("routes replies to the admin by default and to the customer when asked", async () => {
+    vi.stubEnv("RESEND_API_KEY", "test-key")
+    vi.stubEnv("ADMIN_EMAIL", "admin@example.test")
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(null, { status: 200 }))
+    vi.stubGlobal("fetch", fetch)
+    const { sendTransactionalEmail } = await import("./transactional-email")
+    await sendTransactionalEmail({ to: "guest@example.test", subject: "Hi", html: "<p>Hi</p>" })
+    await sendTransactionalEmail({ to: "admin@example.test", subject: "Hi", html: "<p>Hi</p>", replyTo: "guest@example.test" })
+    await sendTransactionalEmail({ to: "admin@example.test", subject: "Hi", html: "<p>Hi</p>", replyTo: "not an email" })
+    const bodies = fetch.mock.calls.map(([, request]) => JSON.parse(String(request?.body)))
+    expect(bodies[0].reply_to).toBe("admin@example.test")
+    expect(bodies[1].reply_to).toBe("guest@example.test")
+    expect(bodies[2].reply_to).toBe("admin@example.test")
+    expect(bodies[0].from).toBe("Lotus Wellness <booking@lotuswellness.app>")
+  })
+
   it("does not claim delivery when Resend is unconfigured or rejects a send", async () => {
     vi.stubEnv("RESEND_API_KEY", "")
     const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(null, { status: 401 }))

@@ -332,6 +332,7 @@ async function sendAdminNotification(details: BookingEmailDetails) {
 
     await sendTransactionalEmail({
       to: process.env.ADMIN_EMAIL ?? "saigonservice2020@gmail.com",
+      replyTo: details.email,
       subject: `New booking — ${details.reference}`,
       html: `
         <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
