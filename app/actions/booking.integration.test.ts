@@ -1,10 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const rows = {
   settings: { advanceBookingDays: 30, minNoticeHours: 2, maxGuests: 20, openTime: "09:00", closeTime: "00:00", closedWeekdays: [0] },
   service: { id: 1, nameEn: "Massage", active: true },
   duration: { serviceId: 1, minutes: 60, priceVnd: 500000 },
   therapist: { id: 1, available: true, visible: true },
+  therapists: Array.from({ length: 10 }, (_, index) => ({ id: index + 1 })),
 }
 
 vi.mock("@/lib/db", () => ({
@@ -17,7 +18,7 @@ vi.mock("@/lib/db", () => ({
     }),
     transaction: async (work: (tx: unknown) => unknown) => work({
       execute: async () => undefined,
-      select: () => ({ from: () => ({ where: async () => conflicts.value }) }),
+      select: () => ({ from: (table: unknown) => ({ where: async () => table === "therapists" ? rows.therapists : conflicts.value }) }),
       insert: () => ({ values: (value: Record<string, unknown>) => ({ returning: async () => {
         const error = databaseErrors.insertQueue.shift()
         if (error) throw Object.assign(new Error("Database constraint violation"), error)
@@ -30,10 +31,10 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/db/schema", () => ({ bookingSettings: "settings", services: "services", serviceDurations: "durations", therapists: "therapists", bookings: "bookings" }))
 vi.mock("@/lib/booking-rate-limit", () => ({ allowBookingRequest: async () => true }))
-vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: transactionalEmailMock.send }))
+vi.mock("@/lib/transactional-email", () => ({ sendTransactionalEmail: transactionalEmailMock.send, selectAdminBookingEmailFormat: () => "HTML" }))
 
 const transactionalEmailMock = vi.hoisted(() => ({
-  send: vi.fn(async (email: { to: string; subject: string; html: string }) => {
+  send: vi.fn(async (email: { to: string; subject: string; html: string; text?: string }) => {
     void email
     return false
   }),
@@ -55,12 +56,19 @@ const validInput = (date: string, time = "12:00") => ({
 
 describe("createBooking integration contract", () => {
   beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    rows.therapists = Array.from({ length: 10 }, (_, index) => ({ id: index + 1 }))
     insertedBooking.value = null
     conflicts.value = []
     databaseErrors.insertQueue = []
     kakaoNotificationMock.enqueueBooking.mockClear()
     transactionalEmailMock.send.mockClear()
     vi.resetModules()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllEnvs()
   })
 
   it("persists Vietnam local time as the correct UTC instant", async () => {
@@ -81,11 +89,16 @@ describe("createBooking integration contract", () => {
     ["CASH", "Cash (Tiền mặt)"],
     ["BANK_TRANSFER", "Bank transfer (Chuyển khoản ngân hàng)"],
   ] as const)("includes the customer name and selected %s payment method in the admin email", async (paymentMethod, paymentLabel) => {
+    vi.stubEnv("VERCEL_ENV", "preview")
+    vi.stubEnv("VERCEL_URL", "saigon-home-preview.vercel.app")
+    vi.stubEnv("PREVIEW_SITE_URL", "https://preview.lotuswellness.app")
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://lotuswellness.app")
+    vi.stubEnv("ADMIN_SECRET", "test-admin-secret")
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
     try {
       const { createBooking } = await import("./booking")
-      const result = await createBooking({ ...validInput("2026-08-18"), customerName: "Test <Customer>", paymentMethod })
+      const result = await createBooking({ ...validInput("2026-08-18"), customerName: "Test <Customer>", notes: "Please call on arrival", paymentMethod })
       expect(result.success).toBe(true)
       expect(insertedBooking.value?.paymentMethod).toBe(paymentMethod)
       const adminEmail = transactionalEmailMock.send.mock.calls
@@ -94,6 +107,42 @@ describe("createBooking integration contract", () => {
       expect(adminEmail?.html).toContain("Customer name")
       expect(adminEmail?.html).toContain("Test &lt;Customer&gt;")
       expect(adminEmail?.html).toContain(paymentLabel)
+      expect(adminEmail?.html).toContain("test@example.com")
+      expect(adminEmail?.html).toContain("0900000000")
+      expect(adminEmail?.html).toContain("Test address")
+      expect(adminEmail?.html).toContain("60 min")
+      expect(adminEmail?.html).toContain("Please call on arrival")
+      expect(adminEmail?.html).toContain("CONFIRM BOOKING")
+      expect(adminEmail?.html).toContain("REJECT BOOKING")
+      expect(adminEmail?.html).toContain("without signing in")
+      expect(adminEmail?.html).not.toContain("/api/booking-confirmations/confirm")
+      expect(adminEmail?.text).toContain("Confirm this booking:")
+      expect(adminEmail?.text).toContain("Reject this booking:")
+      expect(adminEmail?.text).toContain("https://preview.lotuswellness.app/booking-review/42?t=")
+      expect(adminEmail?.html).toContain('href="https://preview.lotuswellness.app/booking-review/42?t=')
+      expect(adminEmail?.html).toContain("decision=confirm")
+      expect(adminEmail?.html).toContain("decision=reject")
+      expect(adminEmail).not.toHaveProperty("amp")
+      for (const part of [adminEmail?.text, adminEmail?.html]) {
+        expect(part).toContain("preview.lotuswellness.app")
+        expect(part).not.toContain(".vercel.app")
+      }
+      expect(insertedBooking.value).toHaveProperty("confirmationTokenHash")
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("reports admin email rejection without exposing confirmation credentials", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    transactionalEmailMock.send.mockResolvedValue(false)
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking(validInput("2026-08-18", "10:00"))
+      expect(result.success).toBe(true)
+      expect(console.error).toHaveBeenCalledWith("Admin booking notification could not be delivered")
+      expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toMatch(/[A-Za-z0-9_-]{43}/)
     } finally {
       vi.useRealTimers()
     }
@@ -139,13 +188,44 @@ describe("createBooking integration contract", () => {
     }
   })
 
-  it("rejects a slot already held by an active booking", async () => {
+  it("rejects a slot when its selected therapist is already occupied", async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
-    conflicts.value = [{}]
+    rows.therapists = [{ id: 1 }]
+    conflicts.value = [{ therapistId: 1, guests: 1 }]
     try {
       const { createBooking } = await import("./booking")
       expect(await createBooking(validInput("2026-08-18"))).toMatchObject({ success: false, error: "Selected time is unavailable" })
+      expect(insertedBooking.value).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("allows a no-preference booking when another therapist is free", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.therapists = [{ id: 1 }, { id: 2 }]
+    conflicts.value = [{ therapistId: 1, guests: 1 }]
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking({ ...validInput("2026-08-18"), therapistId: null })
+      expect(result.success).toBe(true)
+      expect(insertedBooking.value?.therapistId).toBeNull()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("reserves capacity for existing unassigned bookings", async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-08-15T00:00:00.000Z"))
+    rows.therapists = [{ id: 1 }, { id: 2 }]
+    conflicts.value = [{ therapistId: 1, guests: 1 }, { therapistId: null, guests: 1 }]
+    try {
+      const { createBooking } = await import("./booking")
+      const result = await createBooking({ ...validInput("2026-08-18"), therapistId: null })
+      expect(result).toMatchObject({ success: false, error: "Selected time is unavailable" })
       expect(insertedBooking.value).toBeNull()
     } finally {
       vi.useRealTimers()
@@ -175,9 +255,9 @@ describe("createBooking integration contract", () => {
     expect(result).toMatchObject({ success: false, error: "Selected date is outside the booking window" })
   })
 
-  it("accepts a booking exactly one hour ahead in Vietnam time", async () => {
+  it("accepts a booking exactly 30 minutes ahead in Vietnam time", async () => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date("2026-08-15T01:00:00.000Z"))
+    vi.setSystemTime(new Date("2026-08-15T01:30:00.000Z"))
     try {
       const { createBooking } = await import("./booking")
       const result = await createBooking(validInput("2026-08-15", "09:00"))
@@ -187,9 +267,9 @@ describe("createBooking integration contract", () => {
     }
   })
 
-  it("rejects a booking less than one hour ahead in Vietnam time", async () => {
+  it("rejects a booking less than 30 minutes ahead in Vietnam time", async () => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date("2026-08-15T01:01:00.000Z"))
+    vi.setSystemTime(new Date("2026-08-15T01:31:00.000Z"))
     try {
       const { createBooking } = await import("./booking")
       const result = await createBooking(validInput("2026-08-15", "09:00"))

@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto"
-import { getSiteUrl } from "@/lib/site-url"
+import { getEmailSiteUrl } from "@/lib/site-url"
 
 // "view" is the link in the admin email. The other tokens are minted by the review page for a single action
 // and cannot be exchanged for another action or for viewing the page.
@@ -42,11 +42,19 @@ export function verifyBookingReviewToken(bookingId: number, token: string | null
 }
 
 export function siteBaseUrl() {
-  return getSiteUrl()
+  return getEmailSiteUrl()
 }
 
 // Falls back to the admin booking list when no signing secret is configured.
-export function adminBookingReviewUrl(bookingId: number) {
+export function adminBookingReviewUrl(bookingId: number, confirmationToken?: string, decision?: "confirm" | "reject") {
   const token = createBookingReviewToken(bookingId)
-  return token ? `${siteBaseUrl()}/booking-review/${bookingId}?t=${encodeURIComponent(token)}` : `${siteBaseUrl()}/admin/bookings`
+  if (!token) return `${siteBaseUrl()}/admin/bookings`
+
+  const url = new URL(`/booking-review/${bookingId}`, siteBaseUrl())
+  url.searchParams.set("t", token)
+  if (confirmationToken && /^[A-Za-z0-9_-]{43}$/.test(confirmationToken)) {
+    url.searchParams.set("c", confirmationToken)
+  }
+  if (decision) url.searchParams.set("decision", decision)
+  return url.href
 }

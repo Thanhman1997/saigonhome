@@ -6,17 +6,19 @@ import { and, eq } from "drizzle-orm"
 import { getGroupDiscountRate, getGroupDiscountLabel, DEFAULT_DISCOUNT_RATES, type DiscountRates } from "@/lib/pricing"
 import { randomInt } from "node:crypto"
 import { issueBookingToken } from "@/lib/booking-management-token"
+import { issueBookingConfirmationToken } from "@/lib/booking-confirmation-token"
+import { buildAdminBookingAmpConfirmationEmail } from "@/lib/booking-confirmation-email"
 import { adminBookingReviewUrl } from "@/lib/booking-review-token"
 import { allowBookingRequest } from "@/lib/booking-rate-limit"
-import { sendTransactionalEmail } from "@/lib/transactional-email"
+import { selectAdminBookingEmailFormat, sendTransactionalEmail } from "@/lib/transactional-email"
 import { zonedLocalDateTimeToUtc } from "@/lib/timezone"
 import { escapeHtml } from "@/lib/security"
-import { lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
+import { bookingHasAvailableCapacity, lockBookingSchedule } from "@/lib/booking-availability"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
 import { enqueueBookingKakaoNotification } from "@/lib/kakao-notifications"
 import { asBookingLocale, type Locale } from "@/lib/booking-management-locale"
 import { isPaymentMethod, PAYMENT_METHOD_LABELS, type PaymentMethod } from "@/lib/payments/methods"
-import { MAX_BOOKING_GUESTS, MIN_BOOKING_NOTICE_MS } from "@/lib/booking-rules"
+import { DEFAULT_CLOSE_TIME, DEFAULT_OPEN_TIME, MAX_BOOKING_GUESTS, MIN_BOOKING_NOTICE_MS } from "@/lib/booking-rules"
 
 export type CreateBookingInput = {
   serviceId: number
@@ -116,8 +118,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     if (!isCalendarDateValid || !isClockTimeValid) return { success: false, error: "Invalid date or time" }
 
     const weekday = parsedDate.getUTCDay()
-    const [openHour, openMinute] = (settingsRow?.openTime ?? "09:00").split(":").map(Number)
-    const [closeHour, closeMinute] = (settingsRow?.closeTime ?? "00:00").split(":").map(Number)
+    const [openHour, openMinute] = (settingsRow?.openTime ?? DEFAULT_OPEN_TIME).split(":").map(Number)
+    const [closeHour, closeMinute] = (settingsRow?.closeTime ?? DEFAULT_CLOSE_TIME).split(":").map(Number)
     const openingMinutes = openHour * 60 + openMinute
     const configuredClosingMinutes = closeHour * 60 + closeMinute
     const closingMinutes = configuredClosingMinutes <= openingMinutes
@@ -194,6 +196,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     const endAt = new Date(startAt.getTime() + input.durationMinutes * 60 * 1000)
 
     const access = issueBookingToken()
+    const emailConfirmation = issueBookingConfirmationToken()
     const save = () => db.transaction(async (tx) => {
       await lockBookingSchedule(tx)
       if (submissionKey) {
@@ -202,7 +205,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         if (previous) return { kind: "duplicate", receipt: previous } as const
       }
       if (startAt.getTime() < Date.now() + MIN_BOOKING_NOTICE_MS) return null
-      if ((await overlappingBookings(tx, input, startAt, endAt)).length) return null
+      if (!(await bookingHasAvailableCapacity(tx, input, startAt, endAt))) return null
       const [created] = await tx.insert(bookings).values({
         reference,
         serviceId: input.serviceId,
@@ -227,6 +230,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         submissionKey,
         accessTokenHash: access.hash,
         accessTokenExpiresAt: access.expires,
+        confirmationTokenHash: emailConfirmation.hash,
+        confirmationTokenExpiresAt: emailConfirmation.expiresAt,
         activity: [{ kind: "created", at: now.toISOString(), date: input.date, time: input.time }],
         startAt,
         endAt,
@@ -263,6 +268,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       reference,
       serviceName: service.nameEn,
       durationMinutes: input.durationMinutes,
+      therapistCode,
       date: input.date,
       time: input.time,
       guests: input.guests,
@@ -280,8 +286,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     }
 
     const localizedService = { en: service.nameEn, vi: service.nameVi, ko: service.nameKo }[locale]
-    const [, managementEmailSent] = await Promise.all([
-      sendAdminNotification(bookingDetails),
+    const [adminNotificationSent, managementEmailSent] = await Promise.all([
+      sendAdminNotification(bookingDetails, emailConfirmation.token),
       sendBookingManagementEmail({ ...saved.booking, reference, date: input.date, time: input.time, status: "pending" }, localizedService, "received", locale, { token: access.token, therapist: therapistCode }).catch(() => {
         console.error("Could not send booking management email")
         return false
@@ -290,6 +296,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         console.error("[v0] Failed to queue Kakao booking notification:", error)
       }),
     ])
+    if (!adminNotificationSent) console.error("Admin booking notification could not be delivered")
     if (managementEmailSent) {
       await db.update(bookings).set({ confirmationEmailSentAt: new Date() }).where(eq(bookings.id, saved.booking.id)).catch(() => {
         console.error("Could not record booking email delivery")
@@ -309,6 +316,7 @@ type BookingEmailDetails = {
   reference: string
   serviceName: string
   durationMinutes: number
+  therapistCode: string | null
   date: string
   time: string
   guests: number
@@ -325,21 +333,33 @@ type BookingEmailDetails = {
   discountLabel: string | null
 }
 
-async function sendAdminNotification(details: BookingEmailDetails) {
+async function sendAdminNotification(details: BookingEmailDetails, confirmationToken: string) {
   try {
     const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + "đ"
     const paymentMethod = PAYMENT_METHOD_LABELS[details.paymentMethod]
+    const confirmUrl = adminBookingReviewUrl(details.id, confirmationToken, "confirm")
+    const rejectUrl = adminBookingReviewUrl(details.id, confirmationToken, "reject")
+    const amp = selectAdminBookingEmailFormat() === "AMP"
+      ? buildAdminBookingAmpConfirmationEmail(details, confirmationToken)
+      : undefined
 
-    await sendTransactionalEmail({
+    return await sendTransactionalEmail({
       to: process.env.ADMIN_EMAIL ?? "saigonservice2020@gmail.com",
+      replyTo: details.email,
       subject: `New booking — ${details.reference}`,
+      text: `A customer submitted a booking request to Lotus Wellness.\nReference: ${details.reference}\nService: ${details.serviceName}\nAppointment: ${details.date} at ${details.time}\nConfirm this booking: ${confirmUrl}\nReject this booking: ${rejectUrl}\nOpening either link does not change the booking. The customer is notified only after your decision.`,
+      idempotencyKey: `booking-admin-notification-${details.id}`,
+      ...(amp ? { amp } : {}),
       html: `
-        <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">
+        <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; color: #26362f;">
+          <p style="font-size: 12px; letter-spacing: 2px;">LOTUS WELLNESS</p>
           <h2 style="margin-bottom: 4px;">New Booking Received</h2>
-          <p style="color: #666; margin-top: 0;">Reference: <strong>${escapeHtml(details.reference)}</strong></p>
+          <p style="color: #666; margin-top: 0;">A customer submitted a booking request to Lotus Wellness.</p>
+          <p>Reference: <strong>${escapeHtml(details.reference)}</strong></p>
           <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
             <tr><td style="padding: 6px 0; color: #666;">Service</td><td style="padding: 6px 0;">${escapeHtml(details.serviceName)} (${Number(details.durationMinutes)} min)</td></tr>
-            <tr><td style="padding: 6px 0; color: #666;">Date &amp; Time</td><td style="padding: 6px 0;">${escapeHtml(details.date)} at ${escapeHtml(details.time)}</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Date &amp; Time</td><td style="padding: 6px 0;">${escapeHtml(details.date)} at ${escapeHtml(details.time)} Vietnam time</td></tr>
+            <tr><td style="padding: 6px 0; color: #666;">Therapist</td><td style="padding: 6px 0;">${escapeHtml(details.therapistCode ?? "No preference / to be assigned")}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Guests</td><td style="padding: 6px 0;">${Number(details.guests)}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Customer name</td><td style="padding: 6px 0;">${escapeHtml(details.customerName)}</td></tr>
             <tr><td style="padding: 6px 0; color: #666;">Payment method</td><td style="padding: 6px 0;">${paymentMethod.en} (${paymentMethod.vi})</td></tr>
@@ -351,12 +371,13 @@ async function sendAdminNotification(details: BookingEmailDetails) {
             ${details.discountLabel ? `<tr><td style="padding: 6px 0; color: #666;">Discount</td><td style="padding: 6px 0;">${escapeHtml(details.discountLabel)} (-${fmt(details.discountVnd)})</td></tr>` : ""}
             <tr><td style="padding: 6px 0; color: #666; font-weight: bold;">Total</td><td style="padding: 6px 0; font-weight: bold;">${fmt(details.totalVnd)}</td></tr>
           </table>
-          <p style="margin-top: 20px;"><a href="${escapeHtml(adminBookingReviewUrl(details.id))}" style="display: inline-block; padding: 12px 20px; border-radius: 24px; background: #26362f; color: #fff; text-decoration: none;">Confirm booking</a></p>
-          <p style="color: #666;">The button opens a secure page where you confirm the booking, with no login needed. The customer receives the confirmation email only after you confirm.</p>
+          <p style="margin-top: 20px;"><a href="${escapeHtml(confirmUrl)}" style="display: inline-block; padding: 12px 20px; border-radius: 24px; background: #26362f; color: #fff; text-decoration: none;">CONFIRM BOOKING</a></p>
+          <p><a href="${escapeHtml(rejectUrl)}" style="display: inline-block; padding: 12px 20px; border-radius: 24px; border: 1px solid #8b5e5e; color: #713838; text-decoration: none;">REJECT BOOKING</a></p>
+          <p style="color: #666;">Each link opens a secure review page without signing in. Opening a link does not change the booking; you must confirm your choice on the page. The customer receives the matching notification only after the database update succeeds.</p>
         </div>
       `,
     })
   } catch {
-    console.error("Could not send admin booking notification")
+    return false
   }
 }

@@ -4,25 +4,23 @@ import { db } from "@/lib/db"
 import { bookings, reviews, services, siteContent, therapists } from "@/lib/db/schema"
 import { and, eq, inArray } from "drizzle-orm"
 import { sendBookingManagementEmail } from "@/lib/booking-management-email"
-import { availableBookingSlots, lockBookingSchedule, overlappingBookings } from "@/lib/booking-availability"
+import { availableBookingSlots, bookingHasAvailableCapacity, lockBookingSchedule } from "@/lib/booking-availability"
 import { pendingChangeRequest } from "@/lib/booking-change-request"
 import { verifyBookingReviewToken, type ReviewTokenAction } from "@/lib/booking-review-token"
 import { canTransitionBookingStatus, isBookingStatus, type BookingStatus } from "@/lib/booking-status"
 import { revalidatePath } from "next/cache"
 import { assertAdmin } from "@/lib/admin-auth"
-import { sendTransactionalEmail } from "@/lib/transactional-email"
 import { issueBookingToken } from "@/lib/booking-management-token"
 import { localizedServiceName } from "@/lib/booking-management-locale"
-import { createReviewInvitation } from "@/lib/review-invitation"
-import { escapeHtml } from "@/lib/security"
-import { getSiteUrl } from "@/lib/site-url"
+import { confirmBookingFromEmailToken as confirmOneTimeBooking, rejectBookingFromEmailToken as rejectOneTimeBooking } from "@/lib/booking-email-confirmation"
+import { sendBookingReviewInvitation } from "@/lib/booking-review-invitation-email"
 
 export async function updateBookingStatus(id: number, status: BookingStatus) {
   await assertAdmin()
   return applyBookingStatus(id, status)
 }
 
-async function applyBookingStatus(id: number, status: BookingStatus) {
+async function applyBookingStatus(id: number, status: BookingStatus, actor: "admin" | "admin_email" = "admin") {
   if (!isBookingStatus(status)) throw new Error("Invalid status")
   const [booking] = await db.select({ booking: bookings, service: services, therapist: therapists }).from(bookings).leftJoin(services, eq(bookings.serviceId, services.id)).leftJoin(therapists, eq(bookings.therapistId, therapists.id)).where(eq(bookings.id, id)).limit(1)
   if (!booking) throw new Error("Booking not found")
@@ -32,15 +30,25 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
   await db.transaction(async (tx) => {
     await lockBookingSchedule(tx)
     if ((status === "confirmed" || status === "pending") && !["pending", "confirmed"].includes(current.status)) {
-      if ((await overlappingBookings(tx, current, current.startAt, current.endAt)).length) throw new Error("This time is no longer available")
+      if (!(await bookingHasAvailableCapacity(tx, current, current.startAt, current.endAt))) throw new Error("This time is no longer available")
     }
-    const activity = status === current.status ? current.activity : [...current.activity, { kind: status, at: new Date().toISOString(), date: current.date, time: current.time }]
-    const [updated] = await tx.update(bookings).set({ status, activity, updatedAt: new Date(), ...(access && { accessTokenHash: access.hash, accessTokenExpiresAt: access.expires, accessTokenRevokedAt: null }) }).where(and(
+    const now = new Date()
+    const activity = status === current.status ? current.activity : [...current.activity, { kind: status, at: now.toISOString(), date: current.date, time: current.time, actor }]
+    const [updated] = await tx.update(bookings).set({
+      status,
+      activity,
+      updatedAt: now,
+      confirmedAt: status === "confirmed" ? current.confirmedAt ?? now : status === "pending" ? null : current.confirmedAt,
+      confirmationTokenHash: status === "pending" ? current.confirmationTokenHash : null,
+      confirmationTokenExpiresAt: status === "pending" ? current.confirmationTokenExpiresAt : null,
+      ...(access && { accessTokenHash: access.hash, accessTokenExpiresAt: access.expires, accessTokenRevokedAt: null }),
+      ...(status === "rejected" && { accessTokenHash: null, accessTokenExpiresAt: null, accessTokenRevokedAt: now }),
+    }).where(and(
       eq(bookings.id, id), eq(bookings.status, current.status), eq(bookings.startAt, current.startAt),
     )).returning({ id: bookings.id })
     if (!updated) throw new Error("The booking changed. Refresh and try again.")
   })
-  if ((status === "confirmed" || status === "cancelled") && current.status !== status) {
+  if ((status === "confirmed" || status === "cancelled" || status === "rejected") && current.status !== status) {
     const [template] = await db.select().from(siteContent).where(eq(siteContent.key, `booking_${status}_email`)).limit(1)
     const locale = current.locale ?? "en"
     await sendBookingManagementEmail({ ...current, status }, localizedServiceName(booking.service, locale), status, locale, {
@@ -49,8 +57,9 @@ async function applyBookingStatus(id: number, status: BookingStatus) {
       template: template ? { en: template.valueEn, vi: template.valueVi, ko: template.valueKo }[locale] : null,
     })
   }
-  const reviewEmailSent = status === "completed" && current.status !== "completed" ? await sendReviewInvitation(current) : null
+  const reviewEmailSent = status === "completed" && current.status !== "completed" ? await sendBookingReviewInvitation(current) : null
   revalidatePath("/admin/bookings")
+  revalidatePath("/admin/dashboard")
   return { reviewEmailSent }
 }
 
@@ -62,6 +71,7 @@ export async function markBookingPaid(id: number) {
     .where(and(eq(bookings.id, id), eq(bookings.paymentStatus, "PENDING_PAYMENT"), inArray(bookings.status, ["confirmed", "completed"])))
     .returning({ id: bookings.id })
   revalidatePath("/admin/bookings")
+  revalidatePath("/admin/dashboard")
   return { updated: Boolean(updated) }
 }
 
@@ -69,31 +79,7 @@ export async function resendBookingReviewInvitation(id: number) {
   await assertAdmin()
   if (!Number.isSafeInteger(id) || id < 1 || id > 2147483647) throw new Error("Invalid booking")
   const [booking] = await db.select({ id: bookings.id, locale: bookings.locale, email: bookings.email, reference: bookings.reference }).from(bookings).where(and(eq(bookings.id, id), eq(bookings.status, "completed"))).limit(1)
-  return booking ? sendReviewInvitation(booking) : false
-}
-
-async function sendReviewInvitation(booking: Pick<typeof bookings.$inferSelect, "id" | "locale" | "email" | "reference">) {
-  try {
-    const reviewUrl = new URL("/reviews", getSiteUrl())
-    reviewUrl.searchParams.set("invite", createReviewInvitation(booking.id))
-    reviewUrl.hash = "write-review"
-    const locale = booking.locale === "vi" || booking.locale === "ko" ? booking.locale : "en"
-    const copy = {
-      en: { subject: "How was your visit?", title: "Thank you for choosing Lotus Wellness", body: "Your feedback helps us care for every guest better.", action: "Write a review", expires: "This private link expires in 30 days." },
-      vi: { subject: "Trải nghiệm của bạn thế nào?", title: "Cảm ơn bạn đã chọn Lotus Wellness", body: "Góp ý của bạn giúp chúng tôi phục vụ khách hàng tốt hơn.", action: "Viết đánh giá", expires: "Liên kết riêng này hết hạn sau 30 ngày." },
-      ko: { subject: "이용 경험은 어떠셨나요?", title: "Lotus Wellness를 이용해 주셔서 감사합니다", body: "고객님의 의견은 더 나은 서비스를 제공하는 데 도움이 됩니다.", action: "후기 작성", expires: "이 전용 링크는 30일 후 만료됩니다." },
-    }[locale]
-    const accepted = await sendTransactionalEmail({
-      to: booking.email,
-      subject: `${copy.subject} — ${booking.reference}`,
-      html: `<div lang="${locale}" style="font-family:sans-serif;max-width:560px;margin:auto;color:#24312d"><h2>${copy.title}</h2><p>${copy.body}</p><p><a href="${escapeHtml(reviewUrl.href)}" style="display:inline-block;padding:12px 24px;border-radius:999px;background:#24312d;color:#ffffff;text-decoration:none">${copy.action}</a></p><p>${copy.expires}</p></div>`,
-    })
-    if (!accepted) console.error("Review invitation was not accepted", { bookingId: booking.id })
-    return accepted
-  } catch {
-    console.error("Review invitation could not be prepared or sent", { bookingId: booking.id })
-    return false
-  }
+  return booking ? sendBookingReviewInvitation(booking) : false
 }
 
 export async function approveBookingChange(id: number) {
@@ -114,7 +100,7 @@ async function applyBookingChange(id: number) {
     const activity = [...current.activity]
     if (request.kind === "cancel") {
       activity.push({ kind: "cancelled", at: now.toISOString(), date: current.date, time: current.time })
-      const [updated] = await tx.update(bookings).set({ status: "cancelled", activity, updatedAt: now }).where(eq(bookings.id, id)).returning()
+      const [updated] = await tx.update(bookings).set({ status: "cancelled", activity, updatedAt: now, confirmationTokenHash: null, confirmationTokenExpiresAt: null }).where(eq(bookings.id, id)).returning()
       return { updated, kind: "cancelled" as const }
     }
     const slot = (await availableBookingSlots(tx, current, request.date, now)).find((candidate) => candidate.time === request.time)
@@ -162,7 +148,15 @@ export async function confirmBookingFromEmail(id: number, token: string) {
   assertReviewToken(id, token, "confirm")
   const [current] = await db.select({ status: bookings.status }).from(bookings).where(eq(bookings.id, id)).limit(1)
   if (current?.status !== "pending") throw new Error("This booking is no longer waiting for confirmation")
-  await applyBookingStatus(id, "confirmed")
+  await applyBookingStatus(id, "confirmed", "admin_email")
+}
+
+export async function confirmBookingWithOneTimeToken(id: number, token: string) {
+  return confirmOneTimeBooking(id, token)
+}
+
+export async function rejectBookingWithOneTimeToken(id: number, token: string) {
+  return rejectOneTimeBooking(id, token)
 }
 
 export async function approveBookingChangeFromEmail(id: number, token: string) {

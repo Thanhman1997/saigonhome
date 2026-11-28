@@ -23,7 +23,7 @@ export function stripLegacyPaymentInstructions(template: string) {
     .replace(/^.*{{paymentUrl}}.*(?:\r?\n|$)/gm, "")
 }
 
-export async function sendBookingManagementEmail(booking: EmailBooking, service: string | null, type: "received" | "rescheduled" | "cancelled" | "link" | "confirmed" | "reminder", locale: Locale = "en", options?: { token?: string; therapist?: string | null; template?: string | null }) {
+export async function sendBookingManagementEmail(booking: EmailBooking, service: string | null, type: "received" | "rescheduled" | "cancelled" | "rejected" | "link" | "confirmed" | "reminder", locale: Locale = "en", options?: { token?: string; therapist?: string | null; template?: string | null }) {
   const text = { ...bookingEmailCopy[locale], ...additionalCopy[locale] }
   const title = text[type]
   const [customSubject, ...customBody] = options?.template?.split("\n") ?? []

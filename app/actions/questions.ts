@@ -173,6 +173,7 @@ async function sendAdminNewQuestionNotification(details: { name: string; phone: 
   try {
     await sendTransactionalEmail({
       to: adminEmail,
+      replyTo: details.email,
       subject: `New question from ${details.name.replace(/[\r\n]+/g, " ").slice(0, 80)}`,
       html: `
         <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto;">

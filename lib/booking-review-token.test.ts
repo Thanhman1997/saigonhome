@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { createBookingReviewToken, verifyBookingReviewToken } from "./booking-review-token"
+import { adminBookingReviewUrl, createBookingReviewToken, verifyBookingReviewToken } from "./booking-review-token"
 
 beforeEach(() => vi.stubEnv("ADMIN_SECRET", "test-secret"))
 afterEach(() => vi.unstubAllEnvs())
@@ -43,6 +43,19 @@ describe("booking review token", () => {
     const token = createBookingReviewToken(7, 0, "confirm")!
     expect(verifyBookingReviewToken(7, token, HOUR, "confirm")).toBe(true)
     expect(verifyBookingReviewToken(7, token, 3 * HOUR, "confirm")).toBe(false)
+  })
+
+  it("adds the one-time confirmation token to the review URL without changing the view token", () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://lotuswellness.app")
+    const confirmationToken = "a".repeat(43)
+    const confirmUrl = new URL(adminBookingReviewUrl(42, confirmationToken, "confirm"))
+    const rejectUrl = new URL(adminBookingReviewUrl(42, confirmationToken, "reject"))
+
+    expect(confirmUrl.pathname).toBe("/booking-review/42")
+    expect(confirmUrl.searchParams.get("t")).toBeTruthy()
+    expect(confirmUrl.searchParams.get("c")).toBe(confirmationToken)
+    expect(confirmUrl.searchParams.get("decision")).toBe("confirm")
+    expect(rejectUrl.searchParams.get("decision")).toBe("reject")
   })
 
   it("still opens review links that were emailed before tokens were scoped", () => {

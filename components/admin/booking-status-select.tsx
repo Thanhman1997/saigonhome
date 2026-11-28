@@ -11,6 +11,7 @@ const STATUS_OPTIONS = [
   { value: "confirmed", label: "Confirmed" },
   { value: "completed", label: "Completed" },
   { value: "cancelled", label: "Cancelled" },
+  { value: "rejected", label: "Rejected" },
 ] as const
 
 const STATUS_STYLES: Record<string, string> = {
@@ -18,6 +19,7 @@ const STATUS_STYLES: Record<string, string> = {
   confirmed: "text-primary",
   completed: "text-emerald-600",
   cancelled: "text-destructive",
+  rejected: "text-destructive",
 }
 
 export function BookingStatusSelect({ bookingId, status, revoked }: { bookingId: number; status: string; revoked: boolean }) {

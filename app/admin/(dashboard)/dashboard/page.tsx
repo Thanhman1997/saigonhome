@@ -1,8 +1,9 @@
 import Link from "next/link"
-import { ArrowRight, CalendarDays, CheckCircle2, Clock3, MessageSquare, Star, Tag } from "lucide-react"
+import { ArrowRight, CalendarDays, CheckCircle2, MessageSquare, Star, Tag } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getAllEventsAdmin, getDashboardOverview } from "@/lib/admin-data"
+import { getAdminBookingOverviewData, getAllEventsAdmin, getDashboardOverview } from "@/lib/admin-data"
+import { AdminBookingOverview } from "@/components/admin/booking-overview"
 
 const vietnamDateFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" })
 const readableDateFormatter = new Intl.DateTimeFormat("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", weekday: "long", day: "numeric", month: "long", year: "numeric" })
@@ -12,8 +13,8 @@ export const metadata = { title: "Tổng quan | Admin" }
 export default async function DashboardPage() {
   const now = new Date()
   const today = vietnamDateFormatter.format(now)
-  const [overview, events] = await Promise.all([getDashboardOverview(today), getAllEventsAdmin()])
-  const { todayBookings, pendingBookings, pendingQuestions, pendingReviews, pendingChangeRequests, todayAppointments } = overview
+  const [overview, events, bookingRows] = await Promise.all([getDashboardOverview(today), getAllEventsAdmin(), getAdminBookingOverviewData()])
+  const { todayBookings, pendingQuestions, pendingReviews, pendingChangeRequests, todayAppointments } = overview
   const endingSoon = events.filter((event) => {
     if (!event.active || !event.endDate) return false
     const endOfPromotion = new Date(`${event.endDate}T23:59:59+07:00`)
@@ -21,16 +22,8 @@ export default async function DashboardPage() {
     return remaining >= 0 && remaining < 7 * 86400000
   }).length
 
-  const metrics = [
-    { label: "Lịch hẹn hôm nay", value: todayBookings, detail: "Lịch đang hoạt động", href: "/admin/bookings", icon: CalendarDays },
-    { label: "Chờ xác nhận", value: pendingBookings, detail: "Đặt lịch mới cần duyệt", href: "/admin/bookings", icon: Clock3 },
-    { label: "Câu hỏi chưa trả lời", value: pendingQuestions, detail: "Khách đang chờ phản hồi", href: "/admin/questions", icon: MessageSquare },
-    { label: "Đánh giá chờ duyệt", value: pendingReviews, detail: "Chưa hiển thị trên website", href: "/admin/reviews", icon: Star },
-  ]
-
   const tasks = [
     { label: "Yêu cầu đổi hoặc hủy lịch", count: pendingChangeRequests, detail: "Khách đang chờ xử lý yêu cầu", href: "/admin/bookings", icon: CalendarDays },
-    { label: "Lịch đặt mới cần xác nhận", count: pendingBookings, detail: "Xem và cập nhật trạng thái đặt lịch", href: "/admin/bookings", icon: Clock3 },
     { label: "Câu hỏi cần phản hồi", count: pendingQuestions, detail: "Trả lời thắc mắc của khách", href: "/admin/questions", icon: MessageSquare },
     { label: "Đánh giá cần duyệt", count: pendingReviews, detail: "Kiểm tra trước khi đăng công khai", href: "/admin/reviews", icon: Star },
     { label: "Ưu đãi sắp kết thúc", count: endingSoon, detail: "Kết thúc trong 7 ngày tới", href: "/admin/promotions", icon: Tag },
@@ -47,22 +40,7 @@ export default async function DashboardPage() {
         <p className="max-w-2xl text-muted-foreground">Những lịch hẹn và việc cần ưu tiên xử lý trong ngày.</p>
       </header>
 
-      <section aria-label="Tình hình hôm nay" className="grid gap-3 @min-[30rem]:grid-cols-2 @min-[62rem]:grid-cols-4">
-        {metrics.map(({ label, value, detail, href, icon: Icon }) => (
-          <Link key={label} href={href} className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-            <Card className="h-full transition-colors group-hover:border-primary/40">
-              <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-                <Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-semibold leading-none text-foreground">{value}</p>
-                <p className="mt-2 text-xs text-muted-foreground">{detail}</p>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </section>
+      <AdminBookingOverview bookings={bookingRows} />
 
       <div className="grid gap-5 @min-[52rem]:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <Card>

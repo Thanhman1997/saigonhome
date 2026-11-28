@@ -1,12 +1,13 @@
-export const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled"] as const
+export const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled", "rejected"] as const
 export type BookingStatus = (typeof BOOKING_STATUSES)[number]
 
-// Completed is terminal. Cancelled bookings can be restored (the schedule is re-checked when that happens).
+// Rejected bookings are terminal; cancelled bookings can still be restored with a schedule check.
 const TRANSITIONS: Record<BookingStatus, readonly BookingStatus[]> = {
-  pending: ["confirmed", "cancelled"],
+  pending: ["confirmed", "cancelled", "rejected"],
   confirmed: ["pending", "completed", "cancelled"],
   completed: [],
   cancelled: ["pending", "confirmed"],
+  rejected: [],
 }
 
 export function isBookingStatus(value: string): value is BookingStatus {

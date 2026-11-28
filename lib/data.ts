@@ -1,4 +1,3 @@
-import { list } from "@vercel/blob"
 import { db } from "@/lib/db"
 import {
   services,
@@ -20,6 +19,7 @@ import {
 } from "@/lib/db/schema"
 import { and, asc, eq, desc, sql } from "drizzle-orm"
 import { unstable_cache } from "next/cache"
+import { DEFAULT_EXPERIENCE_VIDEO_URL, getYouTubeVideoId } from "@/lib/youtube"
 
 export const LAYOUT_DATA_TAG = "site-layout"
 
@@ -63,14 +63,14 @@ export async function getLatestVideoMedia() {
   if (value) {
     try {
       const parsed = JSON.parse(value) as { videoUrl?: string; thumbnailUrl?: string; aspectRatio?: number }
-      if (parsed.videoUrl) return { videoUrl: parsed.videoUrl, thumbnailUrl: parsed.thumbnailUrl ?? null, aspectRatio: parsed.aspectRatio ?? 16 / 9 }
+      if (getYouTubeVideoId(parsed.videoUrl)) {
+        return { videoUrl: parsed.videoUrl!, thumbnailUrl: parsed.thumbnailUrl ?? null, aspectRatio: parsed.aspectRatio ?? 16 / 9 }
+      }
     } catch {
-      // Ignore legacy or malformed configuration and use the media fallback below.
+      // Ignore legacy or malformed configuration and use the default YouTube video.
     }
   }
-  const { blobs } = await list({ prefix: "lotus-wellness/" })
-  const video = blobs.filter((blob) => /\.(mp4|webm)$/i.test(blob.pathname)).sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())[0]
-  return video ? { videoUrl: `/api/media?pathname=${encodeURIComponent(video.pathname)}`, thumbnailUrl: null, aspectRatio: 16 / 9 } : null
+  return { videoUrl: DEFAULT_EXPERIENCE_VIDEO_URL, thumbnailUrl: null, aspectRatio: 16 / 9 }
 }
 
 export async function getServicesContent() {

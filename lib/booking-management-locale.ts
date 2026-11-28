@@ -37,9 +37,9 @@ export function localizedServiceName(service: { nameEn: string; nameVi: string; 
 const formats = { en: "en-US", vi: "vi-VN", ko: "ko-KR" }
 
 export const bookingStatusLabels = {
-  en: { pending: "Pending confirmation", confirmed: "Confirmed", completed: "Completed", cancelled: "Cancelled" },
-  vi: { pending: "Chờ xác nhận", confirmed: "Đã xác nhận", completed: "Đã hoàn thành", cancelled: "Đã hủy" },
-  ko: { pending: "확인 대기 중", confirmed: "예약 확정", completed: "이용 완료", cancelled: "예약 취소" },
+  en: { pending: "Pending confirmation", confirmed: "Confirmed", completed: "Completed", cancelled: "Cancelled", rejected: "Rejected" },
+  vi: { pending: "Chờ xác nhận", confirmed: "Đã xác nhận", completed: "Đã hoàn thành", cancelled: "Đã hủy", rejected: "Bị từ chối" },
+  ko: { pending: "확인 대기 중", confirmed: "예약 확정", completed: "이용 완료", cancelled: "예약 취소", rejected: "예약 거절" },
 }
 
 export function formatBookingDate(date: string, locale: Locale) {
@@ -55,7 +55,7 @@ export function formatBookingTime(time: string, locale: Locale) {
 export const bookingManagementTitles = { en: "Manage your booking", vi: "Quản lý lịch hẹn", ko: "예약 관리" }
 
 export const bookingEmailCopy = {
-  en: { received: "Booking request received", rescheduled: "Booking time updated", cancelled: "Booking cancelled", link: "Your private booking link", manage: "Manage my booking", private: "This private link expires after 45 days. Do not share it.", time: "Vietnam time", reference: "Reference", pending: "Your request is pending confirmation.", service: "Massage" },
-  vi: { received: "Đã nhận yêu cầu đặt lịch", rescheduled: "Đã cập nhật giờ hẹn", cancelled: "Đã hủy lịch hẹn", link: "Liên kết riêng để quản lý lịch hẹn", manage: "Quản lý lịch hẹn của tôi", private: "Liên kết riêng này hết hạn sau 45 ngày. Vui lòng không chia sẻ.", time: "giờ Việt Nam", reference: "Mã lịch hẹn", pending: "Yêu cầu của bạn đang chờ xác nhận.", service: "Massage" },
-  ko: { received: "예약 요청이 접수되었습니다", rescheduled: "예약 시간이 변경되었습니다", cancelled: "예약이 취소되었습니다", link: "예약 관리 전용 링크", manage: "내 예약 관리", private: "이 전용 링크는 45일 후 만료됩니다. 다른 사람과 공유하지 마세요.", time: "베트남 시간", reference: "예약 번호", pending: "예약 요청은 확인 대기 중입니다.", service: "마사지" },
+  en: { received: "Booking request received", rescheduled: "Booking time updated", cancelled: "Booking cancelled", rejected: "Booking request declined", link: "Your private booking link", manage: "Manage my booking", private: "This private link expires after 45 days. Do not share it.", time: "Vietnam time", reference: "Reference", pending: "Your request is pending confirmation.", service: "Massage" },
+  vi: { received: "Đã nhận yêu cầu đặt lịch", rescheduled: "Đã cập nhật giờ hẹn", cancelled: "Đã hủy lịch hẹn", rejected: "Yêu cầu đặt lịch đã bị từ chối", link: "Liên kết riêng để quản lý lịch hẹn", manage: "Quản lý lịch hẹn của tôi", private: "Liên kết riêng này hết hạn sau 45 ngày. Vui lòng không chia sẻ.", time: "giờ Việt Nam", reference: "Mã lịch hẹn", pending: "Yêu cầu của bạn đang chờ xác nhận.", service: "Massage" },
+  ko: { received: "예약 요청이 접수되었습니다", rescheduled: "예약 시간이 변경되었습니다", cancelled: "예약이 취소되었습니다", rejected: "예약 요청이 거절되었습니다", link: "예약 관리 전용 링크", manage: "내 예약 관리", private: "이 전용 링크는 45일 후 만료됩니다. 다른 사람과 공유하지 마세요.", time: "베트남 시간", reference: "예약 번호", pending: "예약 요청은 확인 대기 중입니다.", service: "마사지" },
 }

@@ -43,7 +43,7 @@ export function BookingSettingsForm({ settings }: { settings: BookingSettingsRow
 
       <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
         <h3 className="text-sm font-medium text-foreground">Availability window</h3>
-        <p className="text-sm leading-relaxed text-muted-foreground">Customers can book at least 1 hour ahead, based on Vietnam time.</p>
+        <p className="text-sm leading-relaxed text-muted-foreground">Customers can book at least 30 minutes ahead, based on Vietnam time. A therapist becomes bookable again as soon as their current service ends.</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="advanceBookingDays">Advance booking (days)</Label>
@@ -77,7 +77,7 @@ export function BookingSettingsForm({ settings }: { settings: BookingSettingsRow
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="closeTime">Closing time</Label>
-            <Input id="closeTime" name="closeTime" type="time" defaultValue={settings?.closeTime ?? "00:00"} required />
+            <Input id="closeTime" name="closeTime" type="time" defaultValue={settings?.closeTime ?? "01:00"} required />
           </div>
         </div>
         <div className="flex flex-col gap-2">

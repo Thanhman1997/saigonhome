@@ -8,6 +8,7 @@ const contentSecurityPolicy = [
   `script-src ${scriptSources.join(" ")}`,
   "connect-src 'self' https://vitals.vercel-insights.com https://vercel.com https://*.blob.vercel-storage.com",
   "font-src 'self' data:",
+  "frame-src https://www.youtube-nocookie.com https://www.youtube.com",
 ].join("; ")
 
 /** @type {import('next').NextConfig} */
