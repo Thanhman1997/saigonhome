@@ -17,6 +17,7 @@ export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbna
   const videoRef = useRef<HTMLVideoElement>(null)
   const [ratio, setRatio] = useState(clampRatio(video?.aspectRatio ?? 16 / 9))
   const [started, setStarted] = useState(false)
+  const [playbackError, setPlaybackError] = useState(false)
 
   const poster = video?.thumbnailUrl ?? "/images/service-deep-tissue.png"
 
@@ -26,11 +27,21 @@ export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbna
     }
   }
 
+  function handlePlaybackError() {
+    setStarted(false)
+    setPlaybackError(true)
+  }
+
   function handlePlay() {
     const videoElement = videoRef.current
     if (!videoElement) return
+    setPlaybackError(false)
+    if (videoElement.error || videoElement.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+      handlePlaybackError()
+      return
+    }
     if (videoElement.ended) videoElement.currentTime = 0
-    void videoElement.play().catch(() => {})
+    void videoElement.play().catch(handlePlaybackError)
   }
 
   return (
@@ -74,7 +85,8 @@ export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbna
                 poster={poster}
                 aria-label={t.experienceVideo.posterAlt}
                 onLoadedMetadata={(event) => handleMetadata(event.currentTarget)}
-                onPlay={() => setStarted(true)}
+                onPlay={() => { setStarted(true); setPlaybackError(false) }}
+                onError={handlePlaybackError}
                 onEnded={() => setStarted(false)}
               >
                 <source src={video.videoUrl} type={video.videoUrl.endsWith(".webm") ? "video/webm" : "video/mp4"} />
@@ -94,7 +106,9 @@ export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbna
                     <Play className="ml-1 h-7 w-7 fill-current" aria-hidden="true" />
                   </span>
                 </button>
-                <span className="pointer-events-none absolute bottom-5 left-5 right-5 text-sm font-medium tracking-wide text-header-background">{t.experienceVideo.watchLabel}</span>
+                <span className="pointer-events-none absolute bottom-5 left-5 right-5 text-sm font-medium tracking-wide text-header-background" aria-live="polite">
+                  {playbackError ? t.experienceVideo.unavailable : t.experienceVideo.watchLabel}
+                </span>
               </>
             ) : null}
           </div>
