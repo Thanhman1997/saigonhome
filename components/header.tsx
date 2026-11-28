@@ -3,17 +3,14 @@
 import { useEffect, useState, type MouseEvent } from "react"
 import Image from "next/image"
 import { Menu, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { pickLocalized, useLanguage } from "@/lib/i18n/language-provider"
-import { useBooking } from "@/lib/booking-context"
 
 type NavigationSetting = { menuKey: string; labelEn: string; labelVi: string; labelKo: string; href: string; visible: boolean; fontFamily?: string; fontSize?: string; fontWeight?: string; textColor?: string; hoverColor?: string }
 
 export function Header({ navigationSettings = [] }: { navigationSettings?: NavigationSetting[] }) {
   const [open, setOpen] = useState(false)
   const { locale, t } = useLanguage()
-  const { openBooking } = useBooking()
   const [pathname, setPathname] = useState("/")
   const [activeSection, setActiveSection] = useState("")
 
@@ -103,11 +100,8 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
-        <div className="hidden items-center gap-5 lg:flex">
+        <div className="hidden items-center lg:flex">
           <LanguageSwitcher />
-          <Button type="button" size="sm" onClick={() => openBooking()} className="rounded-full px-5 text-xs uppercase tracking-[0.14em]">
-            {t.nav.book}
-          </Button>
         </div>
       </div>
       {open && (
@@ -118,9 +112,6 @@ export function Header({ navigationSettings = [] }: { navigationSettings?: Navig
                 {link.label}
               </a>
             ))}
-            <Button type="button" onClick={() => { setOpen(false); openBooking() }} className="w-fit rounded-full px-5 text-xs uppercase tracking-[0.14em]">
-              {t.nav.book}
-            </Button>
           </div>
         </nav>
       )}
