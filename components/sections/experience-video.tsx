@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 import Image from "next/image"
 import { Play, Sparkles } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/language-provider"
+import { getYouTubeEmbedUrl } from "@/lib/youtube"
 
 const MIN_RATIO = 0.4
 const MAX_RATIO = 3
@@ -20,6 +21,7 @@ export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbna
   const [playbackError, setPlaybackError] = useState(false)
 
   const poster = video?.thumbnailUrl ?? "/images/service-deep-tissue.png"
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(video?.videoUrl, true)
 
   function handleMetadata(element: HTMLVideoElement) {
     if (element.videoWidth > 0 && element.videoHeight > 0) {
@@ -33,9 +35,14 @@ export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbna
   }
 
   function handlePlay() {
+    setPlaybackError(false)
+    if (youtubeEmbedUrl) {
+      setStarted(true)
+      return
+    }
+
     const videoElement = videoRef.current
     if (!videoElement) return
-    setPlaybackError(false)
     if (videoElement.error || videoElement.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
       handlePlaybackError()
       return
@@ -74,7 +81,17 @@ export function ExperienceVideo({ video }: { video?: { videoUrl: string; thumbna
                 className="object-cover transition duration-700 group-hover:scale-105"
               />
             ) : null}
-            {video?.videoUrl ? (
+            {started && youtubeEmbedUrl ? (
+              <iframe
+                src={youtubeEmbedUrl}
+                title={t.experienceVideo.title}
+                className="absolute inset-0 h-full w-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            ) : null}
+            {video?.videoUrl && !youtubeEmbedUrl ? (
               <video
                 ref={videoRef}
                 className={`absolute inset-0 h-full w-full bg-foreground object-contain transition-opacity duration-300 ${started ? "opacity-100" : "pointer-events-none opacity-0"}`}

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { siteContent } from "@/lib/db/schema"
 import { assertAdmin } from "@/lib/admin-auth"
+import { getYouTubeVideoId } from "@/lib/youtube"
 
 export async function deleteMediaFile(url: string) {
   await assertAdmin()
@@ -16,8 +17,8 @@ export async function deleteMediaFile(url: string) {
 
 export async function saveExperienceVideo(config: { videoUrl: string; thumbnailUrl: string | null; aspectRatio: number }) {
   await assertAdmin()
-  if (!config.videoUrl || !Number.isFinite(config.aspectRatio) || config.aspectRatio <= 0) {
-    throw new Error("A video and a valid aspect ratio are required")
+  if (!getYouTubeVideoId(config.videoUrl) || !Number.isFinite(config.aspectRatio) || config.aspectRatio <= 0) {
+    throw new Error("A valid YouTube video link and aspect ratio are required")
   }
   const value = JSON.stringify({ videoUrl: config.videoUrl, thumbnailUrl: config.thumbnailUrl || null, aspectRatio: config.aspectRatio })
   await db.insert(siteContent).values({ key: "experience_video", valueEn: value, valueKo: value, valueVi: value, updatedAt: new Date() }).onConflictDoUpdate({

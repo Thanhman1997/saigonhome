@@ -20,6 +20,7 @@ import {
 } from "@/lib/db/schema"
 import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm"
 import { pendingChangeRequest } from "@/lib/booking-change-request"
+import { getYouTubeVideoId } from "@/lib/youtube"
 
 const activeBookingStatuses = ["pending", "confirmed"] as const
 
@@ -150,7 +151,13 @@ export async function getExperienceVideoAdmin() {
   const rows = await db.select().from(siteContent).where(eq(siteContent.key, "experience_video")).limit(1)
   const value = rows[0]?.valueEn
   if (!value) return null
-  try { return JSON.parse(value) as { videoUrl: string; thumbnailUrl: string | null; aspectRatio: number } } catch { return null }
+  try {
+    const parsed = JSON.parse(value) as { videoUrl?: string; thumbnailUrl?: string | null; aspectRatio?: number }
+    if (!getYouTubeVideoId(parsed.videoUrl)) return null
+    return { videoUrl: parsed.videoUrl!, thumbnailUrl: parsed.thumbnailUrl ?? null, aspectRatio: parsed.aspectRatio ?? 16 / 9 }
+  } catch {
+    return null
+  }
 }
 
 export async function getAllTherapistsAdmin() {
